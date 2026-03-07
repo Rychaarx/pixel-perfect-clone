@@ -1,0 +1,109 @@
+import { motion } from "framer-motion";
+import { Star } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import type { Movie } from "@/data/movies";
+
+interface MovieCardProps {
+  movie: Movie;
+  variant?: "grid" | "trending" | "rated";
+  index?: number;
+}
+
+const MovieCard = ({ movie, variant = "grid", index = 0 }: MovieCardProps) => {
+  const navigate = useNavigate();
+
+  if (variant === "trending") {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: index * 0.1 }}
+        onClick={() => navigate(`/movie/${movie.id}`)}
+        className="relative flex-shrink-0 w-[280px] cursor-pointer group"
+      >
+        <div className="relative h-[160px] rounded-lg overflow-hidden">
+          <img
+            src={movie.backdrop}
+            alt={movie.title}
+            className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500"
+            onError={(e) => { (e.target as HTMLImageElement).src = "/placeholder.svg"; }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-background/90 to-transparent" />
+          <div className="absolute top-3 left-3 font-display text-5xl text-foreground/20">
+            {index + 1}
+          </div>
+        </div>
+        <div className="mt-2">
+          <h3 className="text-sm font-semibold text-foreground truncate">{movie.title}</h3>
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <span className="flex items-center gap-0.5 text-accent">
+              <Star className="h-3 w-3 fill-current" />
+              {movie.rating}
+            </span>
+            <span>{movie.year}</span>
+          </div>
+        </div>
+      </motion.div>
+    );
+  }
+
+  if (variant === "rated") {
+    return (
+      <div
+        onClick={() => navigate(`/movie/${movie.id}`)}
+        className="relative flex-shrink-0 w-[200px] cursor-pointer group"
+      >
+        <div className="relative h-[300px] rounded-lg overflow-hidden" style={{ boxShadow: "var(--shadow-card)" }}>
+          <img
+            src={movie.poster}
+            alt={movie.title}
+            className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
+            onError={(e) => { (e.target as HTMLImageElement).src = "/placeholder.svg"; }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+          <div className="absolute bottom-0 left-0 right-0 p-3 translate-y-full group-hover:translate-y-0 transition-transform">
+            <div className="flex items-center gap-1 text-accent mb-1">
+              <Star className="h-3 w-3 fill-current" />
+              <span className="text-xs font-bold">{movie.rating}</span>
+            </div>
+            <p className="text-xs text-foreground font-medium">{movie.title}</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Grid variant
+  return (
+    <motion.div
+      layout
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      onClick={() => navigate(`/movie/${movie.id}`)}
+      className="cursor-pointer group"
+    >
+      <div className="relative aspect-[2/3] rounded-lg overflow-hidden" style={{ boxShadow: "var(--shadow-card)" }}>
+        <img
+          src={movie.poster}
+          alt={movie.title}
+          className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
+          onError={(e) => { (e.target as HTMLImageElement).src = "/placeholder.svg"; }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+        <div className="absolute bottom-0 left-0 right-0 p-3 translate-y-2 group-hover:translate-y-0 opacity-0 group-hover:opacity-100 transition-all">
+          <div className="flex items-center gap-1 text-accent mb-1">
+            <Star className="h-3 w-3 fill-current" />
+            <span className="text-xs font-bold">{movie.rating}</span>
+          </div>
+        </div>
+      </div>
+      <div className="mt-2">
+        <h3 className="text-sm font-medium text-foreground truncate">{movie.title}</h3>
+        <p className="text-xs text-muted-foreground">{movie.year} · {movie.genre[0]}</p>
+      </div>
+    </motion.div>
+  );
+};
+
+export default MovieCard;
