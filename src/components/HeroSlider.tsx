@@ -78,13 +78,13 @@ const HeroSlider = ({ movies }: HeroSliderProps) => {
                 style={{ background: "var(--gradient-primary)" }}
               >
                 <Play className="h-4 w-4 fill-current text-primary-foreground" />
-                <span className="text-primary-foreground">Watch Now</span>
+                <span className="text-primary-foreground">Assistir Agora</span>
               </button>
               <button
                 onClick={() => navigate(`/movie/${movie.id}`)}
                 className="flex items-center gap-2 rounded-full border border-border bg-secondary/50 px-6 py-3 text-sm font-semibold text-foreground backdrop-blur-sm hover:bg-secondary transition-all"
               >
-                More Info
+                Mais Info
               </button>
             </div>
           </motion.div>

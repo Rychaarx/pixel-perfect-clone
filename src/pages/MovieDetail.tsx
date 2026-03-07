@@ -13,7 +13,7 @@ const MovieDetail = () => {
   if (!movie) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
-        <p className="text-foreground">Movie not found</p>
+        <p className="text-foreground">Filme não encontrado</p>
       </div>
     );
   }
@@ -95,7 +95,7 @@ const MovieDetail = () => {
                 style={{ background: "var(--gradient-primary)" }}
               >
                 <Play className="h-4 w-4 fill-current text-primary-foreground" />
-                <span className="text-primary-foreground">Watch Now</span>
+                <span className="text-primary-foreground">Assistir Agora</span>
               </button>
               <button className="flex h-11 w-11 items-center justify-center rounded-full border border-border bg-secondary/50 text-foreground hover:bg-secondary transition-colors">
                 <Heart className="h-4 w-4" />
@@ -109,11 +109,19 @@ const MovieDetail = () => {
             </p>
             <div className="space-y-2 text-sm">
               <p>
-                <span className="text-muted-foreground">Director: </span>
+                <span className="text-muted-foreground">Gênero: </span>
+                <span className="text-foreground">{movie.genre.join(", ")}</span>
+              </p>
+              <p>
+                <span className="text-muted-foreground">Diretor: </span>
                 <span className="text-foreground">{movie.director}</span>
               </p>
               <p>
-                <span className="text-muted-foreground">Cast: </span>
+                <span className="text-muted-foreground">Avaliação: </span>
+                <span className="text-foreground">{movie.rating}/10</span>
+              </p>
+              <p>
+                <span className="text-muted-foreground">Elenco: </span>
                 <span className="text-foreground">{movie.cast.join(", ")}</span>
               </p>
             </div>
@@ -124,7 +132,7 @@ const MovieDetail = () => {
       {/* Related */}
       {related.length > 0 && (
         <section className="px-4 md:px-12 mt-12">
-          <h2 className="font-display text-2xl text-foreground mb-4 tracking-wider">YOU MAY ALSO LIKE</h2>
+          <h2 className="font-display text-2xl text-foreground mb-4 tracking-wider">VOCÊ TAMBÉM PODE GOSTAR</h2>
           <div className="flex gap-4 overflow-x-auto no-scrollbar pb-2">
             {related.map((m) => (
               <div key={m.id} className="flex-shrink-0 w-[160px]">
