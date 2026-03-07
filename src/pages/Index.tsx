@@ -1,7 +1,5 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Play, Star, Clock, Info } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { movies, genres, getMoviesByGenre, getFeaturedMovies } from "@/data/movies";
 import MovieCard from "@/components/MovieCard";
 import HeroSlider from "@/components/HeroSlider";
@@ -14,6 +12,11 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background pb-20">
+      {/* Logo Header */}
+      <div className="absolute top-0 left-0 right-0 z-20 px-4 py-4">
+        <h2 className="font-display text-2xl text-primary tracking-widest">CINE CLOUD</h2>
+      </div>
+
       {/* Hero */}
       <HeroSlider movies={featured} />
 
@@ -30,15 +33,15 @@ const Index = () => {
                   : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
               }`}
             >
-              {genre}
+              {genre === "All" ? "Todos" : genre}
             </button>
           ))}
         </div>
       </div>
 
-      {/* Trending Section */}
+      {/* Em Alta */}
       <section className="px-4 mb-8">
-        <h2 className="font-display text-2xl text-foreground mb-4 tracking-wider">TRENDING NOW</h2>
+        <h2 className="font-display text-2xl text-foreground mb-4 tracking-wider">EM ALTA</h2>
         <div className="flex gap-4 overflow-x-auto no-scrollbar pb-2">
           {movies.slice(0, 5).map((movie, i) => (
             <MovieCard key={movie.id} movie={movie} variant="trending" index={i} />
@@ -46,10 +49,10 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Browse by Genre */}
+      {/* Browse */}
       <section className="px-4 mb-8">
         <h2 className="font-display text-2xl text-foreground mb-4 tracking-wider">
-          {selectedGenre === "All" ? "ALL MOVIES" : selectedGenre.toUpperCase()}
+          {selectedGenre === "All" ? "TODOS OS FILMES" : selectedGenre.toUpperCase()}
         </h2>
         <motion.div
           layout
@@ -61,9 +64,9 @@ const Index = () => {
         </motion.div>
       </section>
 
-      {/* Top Rated */}
+      {/* Adicionados Recentemente */}
       <section className="px-4 mb-8">
-        <h2 className="font-display text-2xl text-foreground mb-4 tracking-wider">TOP RATED</h2>
+        <h2 className="font-display text-2xl text-foreground mb-4 tracking-wider">ADICIONADOS RECENTEMENTE</h2>
         <div className="flex gap-4 overflow-x-auto no-scrollbar pb-2">
           {[...movies].sort((a, b) => b.rating - a.rating).slice(0, 5).map((movie) => (
             <MovieCard key={movie.id} movie={movie} variant="rated" />

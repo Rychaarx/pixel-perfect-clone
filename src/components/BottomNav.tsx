@@ -2,10 +2,10 @@ import { Home, Search, Heart, User } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 
 const tabs = [
-  { icon: Home, label: "Home", path: "/" },
-  { icon: Search, label: "Search", path: "/search" },
-  { icon: Heart, label: "Favorites", path: "/favorites" },
-  { icon: User, label: "Profile", path: "/profile" },
+  { icon: Home, label: "Início", path: "/" },
+  { icon: Search, label: "Buscar", path: "/search" },
+  { icon: Heart, label: "Lista", path: "/favorites" },
+  { icon: User, label: "Perfil", path: "/profile" },
 ];
 
 const BottomNav = () => {
