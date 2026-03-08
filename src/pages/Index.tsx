@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { movies, genres, getMoviesByGenre, getFeaturedMovies } from "@/data/movies";
 import MovieCard from "@/components/MovieCard";
 import HeroSlider from "@/components/HeroSlider";
-import BottomNav from "@/components/BottomNav";
+import Navbar from "@/components/Navbar";
 
 const Index = () => {
   const [selectedGenre, setSelectedGenre] = useState("All");

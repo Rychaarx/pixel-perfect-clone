@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Film, Calendar, Lightbulb, MessageSquare, LogIn, Menu, X, User, LogOut, Users, Shield } from "lucide-react";
+import { Film, Calendar, Lightbulb, MessageSquare, LogIn, Menu, X, User, LogOut, Users, Shield, Search, Heart } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRole } from "@/hooks/useRole";
