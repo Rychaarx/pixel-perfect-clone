@@ -315,14 +315,49 @@ const AdminCatalog = () => {
                 <Input placeholder="URL da imagem para a home" value={form.backdropUrl} onChange={(e) => setForm({ ...form, backdropUrl: e.target.value })} className="bg-secondary/50 border-border/50" />
               </div>
               
-              {/* Video URL - auto-filled from TMDB */}
-              <div>
-                <label className="text-xs text-muted-foreground mb-1 block">URL do Vídeo (trailer - preenchido automaticamente do TMDB)</label>
+              {/* Video Upload */}
+              <div className="space-y-2">
+                <label className="text-xs text-muted-foreground block">Vídeo do Filme</label>
+                <div className="flex gap-2">
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="video/mp4,video/webm,video/ogg,video/quicktime"
+                    onChange={handleVideoUpload}
+                    className="hidden"
+                    id="video-upload"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={uploading}
+                    className="gap-2 flex-1 bg-secondary/50 border-border/50"
+                  >
+                    {uploading ? (
+                      <><Loader2 className="w-4 h-4 animate-spin" /> Enviando...</>
+                    ) : (
+                      <><Upload className="w-4 h-4" /> Upload de Vídeo</>
+                    )}
+                  </Button>
+                </div>
+                {uploading && (
+                  <Progress value={uploadProgress} className="h-2" />
+                )}
+                {form.videoUrl && (
+                  <div className="flex items-center gap-2 p-2 rounded-lg bg-secondary/30 border border-border/30">
+                    <Film className="w-4 h-4 text-primary flex-shrink-0" />
+                    <p className="text-xs text-muted-foreground truncate flex-1">{form.videoUrl}</p>
+                    <button onClick={() => setForm({ ...form, videoUrl: "" })} className="text-muted-foreground hover:text-destructive">
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                )}
                 <Input
-                  placeholder="Preenchido automaticamente do TMDB"
+                  placeholder="Ou cole a URL do vídeo/trailer manualmente"
                   value={form.videoUrl}
                   onChange={(e) => setForm({ ...form, videoUrl: e.target.value })}
-                  className="bg-secondary/50 border-border/50"
+                  className="bg-secondary/50 border-border/50 text-xs"
                 />
               </div>
 
