@@ -251,7 +251,14 @@ const AdminCatalog = () => {
                 <Input placeholder="Duração" value={form.duration} onChange={(e) => setForm({ ...form, duration: e.target.value })} className="bg-secondary/50 border-border/50" />
               </div>
               <Input placeholder="Gêneros (separados por vírgula)" value={form.genres} onChange={(e) => setForm({ ...form, genres: e.target.value })} className="bg-secondary/50 border-border/50" />
-              <Input placeholder="URL da Imagem (preenchido do TMDB)" value={form.imageUrl} onChange={(e) => setForm({ ...form, imageUrl: e.target.value })} className="bg-secondary/50 border-border/50" />
+              <div>
+                <label className="text-xs text-muted-foreground mb-1 block">Capa do filme (poster)</label>
+                <Input placeholder="URL da capa do filme" value={form.imageUrl} onChange={(e) => setForm({ ...form, imageUrl: e.target.value })} className="bg-secondary/50 border-border/50" />
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground mb-1 block">Imagem da Home (backdrop/banner)</label>
+                <Input placeholder="URL da imagem para a home" value={form.backdropUrl} onChange={(e) => setForm({ ...form, backdropUrl: e.target.value })} className="bg-secondary/50 border-border/50" />
+              </div>
               
               {/* Video URL - auto-filled from TMDB */}
               <div>
