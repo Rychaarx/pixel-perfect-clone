@@ -31,19 +31,34 @@ const AdminCatalog = () => {
   const [uploadProgress, setUploadProgress] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const formatFileSize = (bytes: number) => {
+    if (bytes >= 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`;
+    if (bytes >= 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+    return `${(bytes / 1024).toFixed(0)} KB`;
+  };
+
   const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     const maxSize = 3 * 1024 * 1024 * 1024; // 3GB
     if (file.size > maxSize) {
-      toast.error("Arquivo muito grande. Máximo: 3GB");
+      toast.error(`Arquivo muito grande (${formatFileSize(file.size)}). O tamanho máximo permitido é 3 GB.`);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      return;
+    }
+
+    if (file.size === 0) {
+      toast.error("O arquivo selecionado está vazio.");
+      if (fileInputRef.current) fileInputRef.current.value = "";
       return;
     }
 
     const allowedTypes = ["video/mp4", "video/webm", "video/ogg", "video/quicktime"];
     if (!allowedTypes.includes(file.type)) {
-      toast.error("Formato não suportado. Use MP4, WebM, OGG ou MOV.");
+      const ext = file.name.split('.').pop()?.toUpperCase() || "desconhecido";
+      toast.error(`Formato "${ext}" não suportado. Use MP4, WebM, OGG ou MOV.`);
+      if (fileInputRef.current) fileInputRef.current.value = "";
       return;
     }
 
