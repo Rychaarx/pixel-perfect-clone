@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Play, Clock, Calendar, Tag, Film, X, ChevronDown } from "lucide-react";
+import { ArrowLeft, Play, Clock, Calendar, Tag, Film, X, ChevronDown, Eye, EyeOff } from "lucide-react";
 import Navbar from "@/components/Navbar";
+import { useWatchProgress } from "@/hooks/useWatchProgress";
 
 import { useCatalog, statusConfig } from "@/hooks/useCatalog";
 import { useSeasons, Season } from "@/hooks/useSeasons";
@@ -16,6 +17,7 @@ const TitleDetails = () => {
   const item = items.find((c) => c.id === id);
   const [watching, setWatching] = useState(false);
   const { fetchSeasons } = useSeasons();
+  const { markEpisodeWatched, unmarkEpisodeWatched, isEpisodeWatched } = useWatchProgress();
   const [seasons, setSeasons] = useState<Season[]>([]);
   const [openSeason, setOpenSeason] = useState<number | null>(null);
 
@@ -240,34 +242,54 @@ const TitleDetails = () => {
                 </CollapsibleTrigger>
                 <CollapsibleContent>
                   <div className="mt-1 space-y-1 pl-2">
-                    {season.episodes.map((ep) => (
+                    {season.episodes.map((ep) => {
+                      const watched = ep.id ? isEpisodeWatched(ep.id) : false;
+                      return (
                       <div
                         key={ep.episode_number}
-                        className="flex items-center justify-between rounded-md px-4 py-3 hover:bg-secondary/30 transition-colors group"
+                        className={`flex items-center justify-between rounded-md px-4 py-3 hover:bg-secondary/30 transition-colors group ${watched ? "opacity-60" : ""}`}
                       >
                         <div className="flex items-center gap-3">
                           <span className="text-muted-foreground text-sm w-6 text-center">{ep.episode_number}</span>
-                          <span className="text-foreground text-sm">{ep.title || `Episódio ${ep.episode_number}`}</span>
+                          <span className={`text-sm ${watched ? "text-muted-foreground line-through" : "text-foreground"}`}>
+                            {ep.title || `Episódio ${ep.episode_number}`}
+                          </span>
+                          {watched && <span className="text-[10px] text-primary font-medium">✓ Assistido</span>}
                         </div>
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2">
                           {ep.duration && (
                             <span className="text-muted-foreground text-xs flex items-center gap-1">
                               <Clock className="h-3 w-3" /> {ep.duration}
                             </span>
+                          )}
+                          {ep.id && id && (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-8 w-8 p-0"
+                              title={watched ? "Desmarcar como assistido" : "Marcar como assistido"}
+                              onClick={() => watched ? unmarkEpisodeWatched(ep.id!) : markEpisodeWatched(ep.id!, id)}
+                            >
+                              {watched ? <EyeOff className="h-3.5 w-3.5 text-muted-foreground" /> : <Eye className="h-3.5 w-3.5 text-muted-foreground" />}
+                            </Button>
                           )}
                           {ep.redirect_url && (
                             <Button
                               size="sm"
                               variant="ghost"
                               className="opacity-0 group-hover:opacity-100 transition-opacity"
-                              onClick={() => window.open(ep.redirect_url, "_blank")}
+                              onClick={() => {
+                                if (ep.id && id) markEpisodeWatched(ep.id, id);
+                                window.open(ep.redirect_url, "_blank");
+                              }}
                             >
                               <Play className="h-3.5 w-3.5" />
                             </Button>
                           )}
                         </div>
                       </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </CollapsibleContent>
               </Collapsible>

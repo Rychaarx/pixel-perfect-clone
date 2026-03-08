@@ -297,6 +297,48 @@ export type Database = {
         }
         Relationships: []
       }
+      watch_progress: {
+        Row: {
+          catalog_item_id: string
+          episode_id: string
+          id: string
+          last_watched_at: string
+          user_id: string
+          watched: boolean
+        }
+        Insert: {
+          catalog_item_id: string
+          episode_id: string
+          id?: string
+          last_watched_at?: string
+          user_id: string
+          watched?: boolean
+        }
+        Update: {
+          catalog_item_id?: string
+          episode_id?: string
+          id?: string
+          last_watched_at?: string
+          user_id?: string
+          watched?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "watch_progress_catalog_item_id_fkey"
+            columns: ["catalog_item_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "watch_progress_episode_id_fkey"
+            columns: ["episode_id"]
+            isOneToOne: false
+            referencedRelation: "episodes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

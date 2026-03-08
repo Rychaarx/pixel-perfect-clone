@@ -2,14 +2,17 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { useCatalog } from "@/hooks/useCatalog";
 import { useSections } from "@/hooks/useSections";
+import { useWatchProgress } from "@/hooks/useWatchProgress";
 import MovieCard from "@/components/MovieCard";
 import HomeSection from "@/components/HomeSection";
+import ContinueWatchingSection from "@/components/ContinueWatchingSection";
 import HeroSlider from "@/components/HeroSlider";
 import Navbar from "@/components/Navbar";
 
 
 const Index = () => {
   const { items: catalogItems, loading: catalogLoading } = useCatalog();
+  const { continueWatching } = useWatchProgress();
   const { sections, loading: sectionsLoading } = useSections();
 
   // Unique genres from catalog
@@ -42,6 +45,9 @@ const Index = () => {
 
       {/* Hero */}
       <HeroSlider items={heroItems.length > 0 ? heroItems : catalogItems.slice(0, 5)} />
+
+      {/* Continue Watching */}
+      <ContinueWatchingSection items={continueWatching} />
 
       {/* Catalog sections from DB */}
       {!sectionsLoading && sections.length > 0 && (
