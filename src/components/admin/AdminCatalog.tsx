@@ -33,6 +33,7 @@ const AdminCatalog = () => {
   const [uploadSpeed, setUploadSpeed] = useState("");
   const uploadRef = useRef<tus.Upload | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [pendingTmdbDetail, setPendingTmdbDetail] = useState<TmdbDetail | null>(null);
 
   const formatFileSize = (bytes: number) => {
     if (bytes >= 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`;
