@@ -3,11 +3,12 @@ import { useRole } from "@/hooks/useRole";
 import { useAuth } from "@/contexts/AuthContext";
 import Navbar from "@/components/Navbar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Film, LayoutGrid, Tv, MessageSquare } from "lucide-react";
+import { Film, LayoutGrid, Tv, MessageSquare, Lightbulb } from "lucide-react";
 import AdminCatalog from "@/components/admin/AdminCatalog";
 import AdminSections from "@/components/admin/AdminSections";
 import AdminSeasons from "@/components/admin/AdminSeasons";
 import AdminFeedback from "@/components/admin/AdminFeedback";
+import AdminSuggestions from "@/components/admin/AdminSuggestions";
 
 const Admin = () => {
   const { isAdmin, loading } = useRole();
@@ -53,6 +54,9 @@ const Admin = () => {
             <TabsTrigger value="feedback" className="flex items-center gap-2 data-[state=active]:bg-primary/20 data-[state=active]:text-primary">
               <MessageSquare className="w-4 h-4" /> Feedbacks
             </TabsTrigger>
+            <TabsTrigger value="suggestions" className="flex items-center gap-2 data-[state=active]:bg-primary/20 data-[state=active]:text-primary">
+              <Lightbulb className="w-4 h-4" /> Sugestões
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="catalog">
@@ -66,6 +70,9 @@ const Admin = () => {
           </TabsContent>
           <TabsContent value="feedback">
             <AdminFeedback />
+          </TabsContent>
+          <TabsContent value="suggestions">
+            <AdminSuggestions />
           </TabsContent>
         </Tabs>
       </div>
