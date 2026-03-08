@@ -40,17 +40,28 @@ const AdminCatalog = () => {
     return `${(bytes / 1024).toFixed(0)} KB`;
   };
 
+  const cancelUpload = useCallback(() => {
+    if (uploadRef.current) {
+      uploadRef.current.abort();
+      uploadRef.current = null;
+    }
+    setUploading(false);
+    setUploadProgress(0);
+    setUploadSpeed("");
+    if (fileInputRef.current) fileInputRef.current.value = "";
+    toast.info("Upload cancelado");
+  }, []);
+
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const maxSize = 3 * 1024 * 1024 * 1024; // 3GB
+    const maxSize = 3 * 1024 * 1024 * 1024;
     if (file.size > maxSize) {
-      toast.error(`Arquivo muito grande (${formatFileSize(file.size)}). O tamanho máximo permitido é 3 GB.`);
+      toast.error(`Arquivo muito grande (${formatFileSize(file.size)}). Máximo: 3 GB.`);
       if (fileInputRef.current) fileInputRef.current.value = "";
       return;
     }
-
     if (file.size === 0) {
       toast.error("O arquivo selecionado está vazio.");
       if (fileInputRef.current) fileInputRef.current.value = "";
@@ -59,6 +70,7 @@ const AdminCatalog = () => {
 
     setUploading(true);
     setUploadProgress(0);
+    setUploadSpeed("");
 
     const fileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
 
@@ -69,53 +81,76 @@ const AdminCatalog = () => {
       return;
     }
 
-    const url = `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/videos/${fileName}`;
+    const bucketName = "videos";
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    let lastLoaded = 0;
+    let lastTime = Date.now();
 
-    const xhr = new XMLHttpRequest();
-
-    xhr.upload.addEventListener('progress', (event) => {
-      if (event.lengthComputable) {
-        const percent = Math.round((event.loaded / event.total) * 100);
+    const upload = new tus.Upload(file, {
+      endpoint: `${supabaseUrl}/storage/v1/upload/resumable`,
+      retryDelays: [0, 1000, 3000, 5000],
+      chunkSize: 6 * 1024 * 1024, // 6MB chunks
+      headers: {
+        authorization: `Bearer ${session.access_token}`,
+        "x-upsert": "false",
+      },
+      uploadDataDuringCreation: true,
+      removeFingerprintOnSuccess: true,
+      metadata: {
+        bucketName,
+        objectName: fileName,
+        contentType: file.type || "application/octet-stream",
+        cacheControl: "3600",
+      },
+      onError: (error) => {
+        console.error("TUS upload error:", error);
+        toast.error("Erro no upload. Tentando novamente...");
+        // Auto-retry once
+        setTimeout(() => upload.start(), 1000);
+      },
+      onProgress: (bytesUploaded, bytesTotal) => {
+        const percent = Math.round((bytesUploaded / bytesTotal) * 100);
         setUploadProgress(percent);
-      }
-    });
 
-    xhr.addEventListener('load', () => {
-      if (xhr.status >= 200 && xhr.status < 300) {
-        const { data: urlData } = supabase.storage.from("videos").getPublicUrl(fileName);
-        const publicUrl = urlData.publicUrl;
-        console.log("Upload success, public URL:", publicUrl);
-        setForm((prev) => ({ ...prev, redirectUrl: publicUrl }));
+        const now = Date.now();
+        const elapsed = (now - lastTime) / 1000;
+        if (elapsed >= 1) {
+          const speed = (bytesUploaded - lastLoaded) / elapsed;
+          const remaining = (bytesTotal - bytesUploaded) / speed;
+          const speedStr = speed >= 1024 * 1024
+            ? `${(speed / (1024 * 1024)).toFixed(1)} MB/s`
+            : `${(speed / 1024).toFixed(0)} KB/s`;
+          const timeStr = remaining > 60
+            ? `${Math.ceil(remaining / 60)} min restantes`
+            : `${Math.ceil(remaining)}s restantes`;
+          setUploadSpeed(`${speedStr} · ${timeStr}`);
+          lastLoaded = bytesUploaded;
+          lastTime = now;
+        }
+      },
+      onSuccess: () => {
+        const { data: urlData } = supabase.storage.from(bucketName).getPublicUrl(fileName);
+        console.log("TUS upload success, public URL:", urlData.publicUrl);
+        setForm((prev) => ({ ...prev, redirectUrl: urlData.publicUrl }));
         setUploadProgress(100);
+        setUploadSpeed("");
+        setUploading(false);
+        uploadRef.current = null;
+        if (fileInputRef.current) fileInputRef.current.value = "";
         toast.success("Vídeo enviado com sucesso!");
-      } else {
-        console.error("Upload failed:", xhr.status, xhr.responseText);
-        toast.error(`Erro no upload: ${xhr.statusText || xhr.status}`);
-        setUploadProgress(0);
+      },
+    });
+
+    uploadRef.current = upload;
+
+    // Check for previous uploads to resume
+    upload.findPreviousUploads().then((previousUploads) => {
+      if (previousUploads.length > 0) {
+        upload.resumeFromPreviousUpload(previousUploads[0]);
+        toast.info("Retomando upload anterior...");
       }
-      setUploading(false);
-      if (fileInputRef.current) fileInputRef.current.value = "";
+      upload.start();
     });
-
-    xhr.addEventListener('error', () => {
-      toast.error("Erro de rede durante o upload");
-      setUploadProgress(0);
-      setUploading(false);
-      if (fileInputRef.current) fileInputRef.current.value = "";
-    });
-
-    xhr.addEventListener('abort', () => {
-      toast.error("Upload cancelado");
-      setUploadProgress(0);
-      setUploading(false);
-      if (fileInputRef.current) fileInputRef.current.value = "";
-    });
-
-    xhr.open('POST', url);
-    xhr.setRequestHeader('Authorization', `Bearer ${session.access_token}`);
-    xhr.setRequestHeader('Content-Type', file.type || 'application/octet-stream');
-    xhr.setRequestHeader('x-upsert', 'false');
-    xhr.send(file);
   };
 
   // Debounced TMDB search
