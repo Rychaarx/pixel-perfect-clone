@@ -177,9 +177,13 @@ const AdminSeasons = () => {
       tasks.push({ file, epIdx: idx, filePath, fileKey: `${seasonIdx}-${idx}` });
     }
 
-    const uploadOne = (task: typeof tasks[0]) =>
-      new Promise<void>((resolve, reject) => {
-        let timedOut = false;
+    const uploadOne = (task: typeof tasks[0]) => {
+      let timer: ReturnType<typeof setTimeout>;
+
+      const promise = new Promise<void>((resolve, reject) => {
+        let settled = false;
+        const settle = (fn: () => void) => { if (!settled) { settled = true; clearTimeout(timer); fn(); } };
+
         const upload = new tus.Upload(task.file, {
           endpoint: `https://${projectId}.supabase.co/storage/v1/upload/resumable`,
           retryDelays: [0, 3000, 5000],
@@ -196,19 +200,15 @@ const AdminSeasons = () => {
             cacheControl: "3600",
           },
           chunkSize: 6 * 1024 * 1024,
-          onError: (error) => {
-            if (!timedOut) reject(error);
-          },
+          onError: (error) => settle(() => reject(error)),
           onProgress: (bytesUploaded, bytesTotal) => {
             setUploadProgress((prev) => ({
               ...prev,
               [task.fileKey]: Math.round((bytesUploaded / bytesTotal) * 100),
             }));
           },
-          onSuccess: () => {
-            if (timedOut) return;
+          onSuccess: () => settle(() => {
             const publicUrl = `https://${projectId}.supabase.co/storage/v1/object/public/videos/${task.filePath}`;
-            // Use functional update to avoid stale state
             setSeasons((prev) =>
               prev.map((season, i) => {
                 if (i !== seasonIdx) return season;
@@ -222,35 +222,19 @@ const AdminSeasons = () => {
             );
             setUploadProgress((prev) => ({ ...prev, [task.fileKey]: 100 }));
             resolve();
-          },
+          }),
         });
 
-        // Timeout guard
-        const timer = setTimeout(() => {
-          timedOut = true;
+        timer = setTimeout(() => {
           upload.abort();
-          reject(new Error(`Timeout: ${task.file.name}`));
+          settle(() => reject(new Error(`Timeout: ${task.file.name}`)));
         }, UPLOAD_TIMEOUT);
 
-        // Start directly — no findPreviousUploads/resumeFrom
         upload.start();
-
-        // Clear timer on settle
-        const origResolve = resolve;
-        const origReject = reject;
-        const cleanup = () => clearTimeout(timer);
-        // Wrap via onSuccess/onError above; cleanup on promise settle
-        Promise.resolve().then(() => {
-          // Attach cleanup — this runs after the microtask
-        });
-        // We clean up in a finally-like pattern below
-        void Promise.race([]).catch(() => {});
-        // Simpler: just clear on resolve/reject path above
-        const origOnSuccess = upload.options.onSuccess!;
-        upload.options.onSuccess = () => { cleanup(); origOnSuccess(); };
-        const origOnError = upload.options.onError!;
-        upload.options.onError = (err) => { cleanup(); origOnError(err); };
       });
+
+      return promise;
+    };
 
     // Process with concurrency pool
     let completed = 0;
