@@ -11,7 +11,7 @@ const BottomNav = () => {
     { icon: Home, label: "Início", path: "/" },
     { icon: Calendar, label: "Agenda", path: "/agenda" },
     { icon: Lightbulb, label: "Sugestões", path: "/sugestoes" },
-    { icon: MessageSquare, label: "Feedback", path: "/feedback" },
+    { icon: MessageSquare, label: "Problemas", path: "/feedback" },
   ];
 
   const handleAuthAction = () => {
