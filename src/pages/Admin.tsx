@@ -54,6 +54,9 @@ const Admin = () => {
             <TabsTrigger value="feedback" className="flex items-center gap-2 data-[state=active]:bg-primary/20 data-[state=active]:text-primary">
               <MessageSquare className="w-4 h-4" /> Feedbacks
             </TabsTrigger>
+            <TabsTrigger value="suggestions" className="flex items-center gap-2 data-[state=active]:bg-primary/20 data-[state=active]:text-primary">
+              <Lightbulb className="w-4 h-4" /> Sugestões
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="catalog">
@@ -67,6 +70,9 @@ const Admin = () => {
           </TabsContent>
           <TabsContent value="feedback">
             <AdminFeedback />
+          </TabsContent>
+          <TabsContent value="suggestions">
+            <AdminSuggestions />
           </TabsContent>
         </Tabs>
       </div>
