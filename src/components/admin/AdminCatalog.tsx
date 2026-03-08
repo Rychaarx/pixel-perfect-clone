@@ -418,14 +418,24 @@ const AdminCatalog = () => {
                     className="gap-2 flex-1 bg-secondary/50 border-border/50"
                   >
                     {uploading ? (
-                      <><Loader2 className="w-4 h-4 animate-spin" /> Enviando...</>
+                      <><Loader2 className="w-4 h-4 animate-spin" /> Enviando {uploadProgress}%</>
                     ) : (
                       <><Upload className="w-4 h-4" /> Upload de Vídeo</>
                     )}
                   </Button>
+                  {uploading && (
+                    <Button type="button" variant="destructive" size="sm" onClick={cancelUpload} className="shrink-0">
+                      <X className="w-4 h-4" />
+                    </Button>
+                  )}
                 </div>
                 {uploading && (
-                  <Progress value={uploadProgress} className="h-2" />
+                  <div className="space-y-1">
+                    <Progress value={uploadProgress} className="h-2" />
+                    {uploadSpeed && (
+                      <p className="text-[10px] text-muted-foreground text-right">{uploadSpeed}</p>
+                    )}
+                  </div>
                 )}
                 {form.redirectUrl && (
                   <div className="flex items-center gap-2 p-2 rounded-lg bg-secondary/30 border border-border/30">
