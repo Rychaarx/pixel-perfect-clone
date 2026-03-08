@@ -1,10 +1,10 @@
-import { useState, useEffect, useRef, useCallback } from "react";
-import { useCatalog, CatalogItem } from "@/hooks/useCatalog";
+import { useState, useEffect, useRef } from "react";
+import { useCatalog } from "@/hooks/useCatalog";
 import { useSeasons, Season, createEmptySeason, createEmptyEpisode } from "@/hooks/useSeasons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Trash2, Save, ChevronDown, ChevronUp, Upload, FolderUp, GripVertical } from "lucide-react";
+import { Plus, Trash2, Save, ChevronDown, ChevronUp, FolderUp, GripVertical } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import * as tus from "tus-js-client";
@@ -69,45 +69,65 @@ const AdminSeasons = () => {
   }, [selectedItemId, fetchSeasons]);
 
   const addSeason = () => {
-    const num = seasons.length > 0 ? Math.max(...seasons.map((s) => s.season_number)) + 1 : 1;
-    setSeasons([...seasons, createEmptySeason(num)]);
-    setExpandedSeason(seasons.length);
+    setSeasons((prev) => {
+      const num = prev.length > 0 ? Math.max(...prev.map((s) => s.season_number)) + 1 : 1;
+      const next = [...prev, createEmptySeason(num)];
+      setExpandedSeason(next.length - 1);
+      return next;
+    });
   };
 
   const removeSeason = (idx: number) => {
     if (!confirm("Remover esta temporada?")) return;
-    setSeasons(seasons.filter((_, i) => i !== idx));
+    setSeasons((prev) => prev.filter((_, i) => i !== idx));
   };
 
   const updateSeason = (idx: number, patch: Partial<Season>) => {
-    setSeasons(seasons.map((s, i) => (i === idx ? { ...s, ...patch } : s)));
+    setSeasons((prev) => prev.map((s, i) => (i === idx ? { ...s, ...patch } : s)));
   };
 
   const addEpisode = (seasonIdx: number) => {
-    const season = seasons[seasonIdx];
-    const num = season.episodes.length > 0 ? Math.max(...season.episodes.map((e) => e.episode_number)) + 1 : 1;
-    updateSeason(seasonIdx, { episodes: [...season.episodes, createEmptyEpisode(num)] });
+    setSeasons((prev) =>
+      prev.map((season, i) => {
+        if (i !== seasonIdx) return season;
+        const num = season.episodes.length > 0 ? Math.max(...season.episodes.map((e) => e.episode_number)) + 1 : 1;
+        return { ...season, episodes: [...season.episodes, createEmptyEpisode(num)] };
+      })
+    );
   };
 
   const addBulkEpisodes = (seasonIdx: number) => {
     const count = bulkCount[seasonIdx] || 5;
-    const season = seasons[seasonIdx];
-    const startNum = season.episodes.length > 0 ? Math.max(...season.episodes.map((e) => e.episode_number)) + 1 : 1;
-    const newEps = Array.from({ length: count }, (_, i) => createEmptyEpisode(startNum + i));
-    updateSeason(seasonIdx, { episodes: [...season.episodes, ...newEps] });
-    setBulkCount({ ...bulkCount, [seasonIdx]: 5 });
+    setSeasons((prev) =>
+      prev.map((season, i) => {
+        if (i !== seasonIdx) return season;
+        const startNum = season.episodes.length > 0 ? Math.max(...season.episodes.map((e) => e.episode_number)) + 1 : 1;
+        const newEps = Array.from({ length: count }, (_, j) => createEmptyEpisode(startNum + j));
+        return { ...season, episodes: [...season.episodes, ...newEps] };
+      })
+    );
+    setBulkCount((prev) => ({ ...prev, [seasonIdx]: 5 }));
     toast.success(`${count} episódios adicionados!`);
   };
 
   const removeEpisode = (seasonIdx: number, epIdx: number) => {
-    const season = seasons[seasonIdx];
-    updateSeason(seasonIdx, { episodes: season.episodes.filter((_, i) => i !== epIdx) });
+    setSeasons((prev) =>
+      prev.map((season, i) =>
+        i === seasonIdx ? { ...season, episodes: season.episodes.filter((_, j) => j !== epIdx) } : season
+      )
+    );
   };
 
   const updateEpisode = (seasonIdx: number, epIdx: number, patch: Record<string, string>) => {
-    const season = seasons[seasonIdx];
-    const newEps = season.episodes.map((e, i) => (i === epIdx ? { ...e, ...patch } : e));
-    updateSeason(seasonIdx, { episodes: newEps });
+    setSeasons((prev) =>
+      prev.map((season, i) => {
+        if (i !== seasonIdx) return season;
+        return {
+          ...season,
+          episodes: season.episodes.map((ep, j) => (j === epIdx ? { ...ep, ...patch } : ep)),
+        };
+      })
+    );
   };
 
   const handleSave = async () => {
@@ -120,22 +140,23 @@ const AdminSeasons = () => {
   const handleBulkFileUpload = async (seasonIdx: number, files: FileList) => {
     if (!files.length) return;
     setUploading(true);
-    const season = seasons[seasonIdx];
     const sortedFiles = Array.from(files).sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
 
+    const baseEpisodes = seasons[seasonIdx]?.episodes ?? [];
+    let workingEpisodes = [...baseEpisodes];
+
     // Ensure we have enough episodes
-    const startEpCount = season.episodes.length;
-    if (sortedFiles.length > startEpCount) {
-      const startNum = startEpCount > 0 ? Math.max(...season.episodes.map((e) => e.episode_number)) + 1 : 1;
-      const extraEps = Array.from({ length: sortedFiles.length - startEpCount }, (_, i) =>
+    if (sortedFiles.length > workingEpisodes.length) {
+      const startNum = workingEpisodes.length > 0 ? Math.max(...workingEpisodes.map((e) => e.episode_number)) + 1 : 1;
+      const extraEps = Array.from({ length: sortedFiles.length - workingEpisodes.length }, (_, i) =>
         createEmptyEpisode(startNum + i)
       );
-      season.episodes = [...season.episodes, ...extraEps];
-      updateSeason(seasonIdx, { episodes: season.episodes });
+      workingEpisodes = [...workingEpisodes, ...extraEps];
+      updateSeason(seasonIdx, { episodes: workingEpisodes });
     }
 
     // Get episodes without URLs (in order)
-    const emptyUrlEps = season.episodes
+    const emptyUrlEps = workingEpisodes
       .map((ep, idx) => ({ ep, idx }))
       .filter(({ ep }) => !ep.redirect_url);
 
@@ -337,10 +358,10 @@ const AdminSeasons = () => {
                           {season.episodes.map((ep, eIdx) => (
                             <div
                               key={eIdx}
-                              draggable
-                              onDragStart={() => handleDragStart(sIdx, eIdx)}
-                              onDragOver={(e) => handleDragOver(e, eIdx)}
-                              onDrop={() => handleDrop(sIdx, eIdx)}
+                              draggable={!uploading}
+                              onDragStart={() => !uploading && handleDragStart(sIdx, eIdx)}
+                              onDragOver={(e) => !uploading && handleDragOver(e, eIdx)}
+                              onDrop={() => !uploading && handleDrop(sIdx, eIdx)}
                               onDragEnd={handleDragEnd}
                               className={`flex items-center gap-2 bg-secondary/20 rounded-lg p-2 transition-all ${
                                 dragState?.seasonIdx === sIdx && dragState?.epIdx === eIdx
@@ -350,7 +371,7 @@ const AdminSeasons = () => {
                                 dragOverIdx === eIdx && dragState?.seasonIdx === sIdx && dragState?.epIdx !== eIdx
                                   ? "border-t-2 border-primary"
                                   : "border-t-2 border-transparent"
-                              }`}
+                              } ${uploading ? "opacity-70" : ""}`}
                             >
                               <div className="cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground shrink-0">
                                 <GripVertical className="w-4 h-4" />
@@ -359,18 +380,21 @@ const AdminSeasons = () => {
                               <Input
                                 placeholder="Título"
                                 value={ep.title}
+                                disabled={uploading}
                                 onChange={(e) => updateEpisode(sIdx, eIdx, { title: e.target.value })}
                                 className="bg-secondary/50 border-border/50 text-sm h-8 flex-1"
                               />
                               <Input
                                 placeholder="Duração"
                                 value={ep.duration}
+                                disabled={uploading}
                                 onChange={(e) => updateEpisode(sIdx, eIdx, { duration: e.target.value })}
                                 className="bg-secondary/50 border-border/50 text-sm h-8 w-20"
                               />
                               <Input
                                 placeholder="URL"
                                 value={ep.redirect_url}
+                                disabled={uploading}
                                 onChange={(e) => updateEpisode(sIdx, eIdx, { redirect_url: e.target.value })}
                                 className={`bg-secondary/50 border-border/50 text-sm h-8 flex-1 ${ep.redirect_url ? "border-primary/30" : ""}`}
                               />
@@ -379,7 +403,8 @@ const AdminSeasons = () => {
                               )}
                               <button
                                 onClick={() => removeEpisode(sIdx, eIdx)}
-                                className="p-1 rounded hover:bg-destructive/20 text-muted-foreground hover:text-destructive transition-colors shrink-0"
+                                disabled={uploading}
+                                className="p-1 rounded hover:bg-destructive/20 text-muted-foreground hover:text-destructive transition-colors shrink-0 disabled:opacity-40"
                               >
                                 <Trash2 className="w-3 h-3" />
                               </button>
