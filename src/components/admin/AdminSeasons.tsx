@@ -151,7 +151,7 @@ const AdminSeasons = () => {
             },
           });
           upload.findPreviousUploads().then((prev) => {
-            if (prev.length) upload.resumeFrom(prev[0]);
+            if (prev.length) (upload as any).resumeFrom(prev[0]);
             upload.start();
           });
         });
