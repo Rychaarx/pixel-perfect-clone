@@ -36,7 +36,7 @@ const Admin = () => {
       <div className="pt-20 pb-12 px-4 sm:px-6 max-w-7xl mx-auto">
         <div className="mb-8">
           <h1 className="font-display text-2xl md:text-3xl font-bold text-foreground neon-text">Painel Admin</h1>
-          <p className="text-muted-foreground text-sm mt-1">Gerencie o catálogo, seções e episódios</p>
+          <p className="text-muted-foreground text-sm mt-1">Gerencie o catálogo, seções, episódios e feedbacks</p>
         </div>
 
         <Tabs defaultValue="catalog" className="w-full">
