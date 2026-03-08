@@ -53,8 +53,8 @@ const Navbar = () => {
       {/* Slide-in menu */}
       <nav
         ref={navRef}
-        className={`fixed top-0 left-0 z-[58] h-full w-64 glass border-r border-border/50 transition-transform duration-300 ${
-          menuOpen ? "translate-x-0" : "-translate-x-full"
+        className={`fixed top-0 right-0 z-[58] h-full w-64 glass border-l border-border/50 transition-transform duration-300 ${
+          menuOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
         <div className="pt-20 px-4 space-y-2">
