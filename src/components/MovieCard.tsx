@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Star } from "lucide-react";
+import { Star, Sparkles, Film, Tv } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import type { Movie } from "@/data/movies";
 import type { CatalogStatus } from "@/hooks/useCatalog";
