@@ -3,9 +3,11 @@ import { motion } from "framer-motion";
 import { useCatalog } from "@/hooks/useCatalog";
 import { useSections } from "@/hooks/useSections";
 import { useWatchProgress } from "@/hooks/useWatchProgress";
+import { useWatchedMovies } from "@/hooks/useWatchedMovies";
 import MovieCard from "@/components/MovieCard";
 import HomeSection from "@/components/HomeSection";
 import ContinueWatchingSection from "@/components/ContinueWatchingSection";
+import RecentlyWatchedSection from "@/components/RecentlyWatchedSection";
 import HeroSlider from "@/components/HeroSlider";
 import Navbar from "@/components/Navbar";
 
