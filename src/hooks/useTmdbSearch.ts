@@ -34,6 +34,7 @@ export interface TmdbDetail {
   backdropUrl: string | null;
   trailerUrl: string | null;
   mediaType: "movie" | "tv";
+  isAnime?: boolean;
   seasons?: TmdbSeason[];
 }
 

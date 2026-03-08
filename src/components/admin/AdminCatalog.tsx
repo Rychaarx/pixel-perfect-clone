@@ -392,7 +392,7 @@ const AdminCatalog = () => {
                           <div className="min-w-0">
                             <p className="text-sm font-medium text-foreground truncate">{r.title}</p>
                             <p className="text-xs text-muted-foreground">
-                              {r.mediaType === "movie" ? "Filme" : "Série"} · {r.year}
+                              {r.mediaType === "movie" ? "Filme" : r.isAnime ? "Anime" : "Série"} · {r.year}
                             </p>
                           </div>
                         </button>
