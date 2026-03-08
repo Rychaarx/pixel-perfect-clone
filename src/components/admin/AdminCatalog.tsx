@@ -225,8 +225,10 @@ const AdminCatalog = () => {
 
     const detail = await getDetails(result.id, result.mediaType);
     if (detail) {
+      const detailType = detail.mediaType === "movie" ? "Filme" : detail.isAnime ? "Anime" : "Série";
       setForm((prev) => ({
         ...prev,
+        type: detailType as CatalogItem["type"],
         duration: detail.duration || prev.duration,
         genres: detail.genres?.join(", ") || prev.genres,
         synopsis: detail.synopsis || prev.synopsis,
