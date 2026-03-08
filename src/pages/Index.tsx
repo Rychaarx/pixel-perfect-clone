@@ -75,7 +75,7 @@ const Index = () => {
 
       {/* Catálogo */}
       <section className="px-4 mb-8">
-        <h2 className="font-display text-2xl text-foreground mb-4 tracking-wider">CATÁLOGO</h2>
+        <h2 className="font-display text-lg sm:text-2xl text-foreground mb-4 tracking-wider">CATÁLOGO</h2>
         {filteredCatalog.length === 0 ? (
           <p className="text-muted-foreground text-sm">Nenhum título no catálogo ainda. Adicione pelo painel Admin.</p>
         ) : (

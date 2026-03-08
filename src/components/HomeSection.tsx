@@ -27,8 +27,8 @@ const HomeSection = ({ section, catalogItems }: HomeSectionProps) => {
     <section className="py-6 md:py-10 px-4 sm:px-6">
       <div className="w-full max-w-[1320px] mx-auto">
         <div className="flex items-center gap-3 mb-5 md:mb-8">
-          <h2 className="font-display text-lg md:text-xl font-bold text-foreground">{section.title}</h2>
-          <span className="px-3 py-1 rounded-full bg-primary/20 text-primary text-xs font-medium">{items.length} títulos</span>
+          <h2 className="font-display text-base md:text-xl font-bold text-foreground">{section.title}</h2>
+          <span className="px-2 py-0.5 rounded-full bg-primary/20 text-primary text-[10px] sm:text-xs font-medium">{items.length} títulos</span>
         </div>
         <div className="hidden md:grid md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-5 lg:gap-6">
           {items.map((movie, idx) => (

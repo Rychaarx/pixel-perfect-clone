@@ -83,7 +83,7 @@ const HeroSlider = ({ items = [] }: HeroSliderProps) => {
                 </span>
               )}
             </div>
-            <h1 className="font-display text-2xl sm:text-3xl md:text-5xl text-foreground mb-2 tracking-wide">
+            <h1 className="font-display text-lg sm:text-2xl md:text-5xl text-foreground mb-2 tracking-wide">
               {item.title.toUpperCase()}
             </h1>
             {item.synopsis && (
