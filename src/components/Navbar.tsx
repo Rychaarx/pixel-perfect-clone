@@ -9,8 +9,6 @@ const navItems = [
   { label: "Agenda", path: "/agenda", icon: Calendar },
   { label: "Sugestões", path: "/sugestoes", icon: Lightbulb },
   { label: "Feedback", path: "/feedback", icon: MessageSquare },
-  { label: "Buscar", path: "/buscar", icon: Search },
-  { label: "Lista", path: "/lista", icon: Heart },
 ];
 
 const Navbar = () => {
