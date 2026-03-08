@@ -35,11 +35,25 @@ const TitleDetails = () => {
   }
 
   const sc = statusConfig[item.status];
-  const hasVideo = !!(item.videoUrl || item.redirectUrl);
+  const hasVideo = !!(item.redirectUrl || item.videoUrl);
+
+  // Determine if redirectUrl is a direct file (video) or an external link
+  const isDirectVideo = (url: string) => {
+    return /\.(mp4|webm|ogg|mov|mkv|avi)(\?.*)?$/i.test(url) || url.includes('/storage/v1/object/');
+  };
 
   // Full-screen video player
   if (watching) {
-    const videoSrc = item.videoUrl || item.redirectUrl;
+    // Priority: redirectUrl (link to watch) > videoUrl (trailer)
+    const videoSrc = item.redirectUrl || item.videoUrl;
+
+    if (item.redirectUrl && !isDirectVideo(item.redirectUrl)) {
+      // External link - open in new tab and stop watching state
+      window.open(item.redirectUrl, '_blank');
+      setWatching(false);
+      return null;
+    }
+
     return (
       <div className="fixed inset-0 z-50 bg-black flex flex-col">
         <button
@@ -48,21 +62,12 @@ const TitleDetails = () => {
         >
           <X className="h-5 w-5" />
         </button>
-        {item.videoUrl ? (
-          <video
-            src={item.videoUrl}
-            controls
-            autoPlay
-            className="w-full h-full object-contain"
-          />
-        ) : item.redirectUrl ? (
-          <iframe
-            src={item.redirectUrl}
-            className="w-full h-full"
-            allow="autoplay; fullscreen; encrypted-media"
-            allowFullScreen
-          />
-        ) : null}
+        <video
+          src={videoSrc}
+          controls
+          autoPlay
+          className="w-full h-full object-contain"
+        />
       </div>
     );
   }
