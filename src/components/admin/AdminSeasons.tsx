@@ -69,45 +69,65 @@ const AdminSeasons = () => {
   }, [selectedItemId, fetchSeasons]);
 
   const addSeason = () => {
-    const num = seasons.length > 0 ? Math.max(...seasons.map((s) => s.season_number)) + 1 : 1;
-    setSeasons([...seasons, createEmptySeason(num)]);
-    setExpandedSeason(seasons.length);
+    setSeasons((prev) => {
+      const num = prev.length > 0 ? Math.max(...prev.map((s) => s.season_number)) + 1 : 1;
+      const next = [...prev, createEmptySeason(num)];
+      setExpandedSeason(next.length - 1);
+      return next;
+    });
   };
 
   const removeSeason = (idx: number) => {
     if (!confirm("Remover esta temporada?")) return;
-    setSeasons(seasons.filter((_, i) => i !== idx));
+    setSeasons((prev) => prev.filter((_, i) => i !== idx));
   };
 
   const updateSeason = (idx: number, patch: Partial<Season>) => {
-    setSeasons(seasons.map((s, i) => (i === idx ? { ...s, ...patch } : s)));
+    setSeasons((prev) => prev.map((s, i) => (i === idx ? { ...s, ...patch } : s)));
   };
 
   const addEpisode = (seasonIdx: number) => {
-    const season = seasons[seasonIdx];
-    const num = season.episodes.length > 0 ? Math.max(...season.episodes.map((e) => e.episode_number)) + 1 : 1;
-    updateSeason(seasonIdx, { episodes: [...season.episodes, createEmptyEpisode(num)] });
+    setSeasons((prev) =>
+      prev.map((season, i) => {
+        if (i !== seasonIdx) return season;
+        const num = season.episodes.length > 0 ? Math.max(...season.episodes.map((e) => e.episode_number)) + 1 : 1;
+        return { ...season, episodes: [...season.episodes, createEmptyEpisode(num)] };
+      })
+    );
   };
 
   const addBulkEpisodes = (seasonIdx: number) => {
     const count = bulkCount[seasonIdx] || 5;
-    const season = seasons[seasonIdx];
-    const startNum = season.episodes.length > 0 ? Math.max(...season.episodes.map((e) => e.episode_number)) + 1 : 1;
-    const newEps = Array.from({ length: count }, (_, i) => createEmptyEpisode(startNum + i));
-    updateSeason(seasonIdx, { episodes: [...season.episodes, ...newEps] });
-    setBulkCount({ ...bulkCount, [seasonIdx]: 5 });
+    setSeasons((prev) =>
+      prev.map((season, i) => {
+        if (i !== seasonIdx) return season;
+        const startNum = season.episodes.length > 0 ? Math.max(...season.episodes.map((e) => e.episode_number)) + 1 : 1;
+        const newEps = Array.from({ length: count }, (_, j) => createEmptyEpisode(startNum + j));
+        return { ...season, episodes: [...season.episodes, ...newEps] };
+      })
+    );
+    setBulkCount((prev) => ({ ...prev, [seasonIdx]: 5 }));
     toast.success(`${count} episódios adicionados!`);
   };
 
   const removeEpisode = (seasonIdx: number, epIdx: number) => {
-    const season = seasons[seasonIdx];
-    updateSeason(seasonIdx, { episodes: season.episodes.filter((_, i) => i !== epIdx) });
+    setSeasons((prev) =>
+      prev.map((season, i) =>
+        i === seasonIdx ? { ...season, episodes: season.episodes.filter((_, j) => j !== epIdx) } : season
+      )
+    );
   };
 
   const updateEpisode = (seasonIdx: number, epIdx: number, patch: Record<string, string>) => {
-    const season = seasons[seasonIdx];
-    const newEps = season.episodes.map((e, i) => (i === epIdx ? { ...e, ...patch } : e));
-    updateSeason(seasonIdx, { episodes: newEps });
+    setSeasons((prev) =>
+      prev.map((season, i) => {
+        if (i !== seasonIdx) return season;
+        return {
+          ...season,
+          episodes: season.episodes.map((ep, j) => (j === epIdx ? { ...ep, ...patch } : ep)),
+        };
+      })
+    );
   };
 
   const handleSave = async () => {
