@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { movies, genres, getMoviesByGenre, getFeaturedMovies } from "@/data/movies";
 import MovieCard from "@/components/MovieCard";
 import HeroSlider from "@/components/HeroSlider";
-import BottomNav from "@/components/BottomNav";
+import Navbar from "@/components/Navbar";
 
 const Index = () => {
   const [selectedGenre, setSelectedGenre] = useState("All");
@@ -11,7 +11,8 @@ const Index = () => {
   const featured = getFeaturedMovies();
 
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <div className="min-h-screen bg-background">
+      <Navbar />
       {/* Logo Header */}
       <div className="absolute top-0 left-0 right-0 z-20 px-4 py-4">
         <h2 className="font-display text-2xl text-primary tracking-widest">CINE CLOUD</h2>
@@ -74,7 +75,7 @@ const Index = () => {
         </div>
       </section>
 
-      <BottomNav />
+      
     </div>
   );
 };
