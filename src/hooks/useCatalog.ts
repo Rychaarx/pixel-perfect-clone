@@ -16,6 +16,7 @@ export interface CatalogItem {
   type: "Filme" | "Série" | "Anime";
   status: CatalogStatus;
   imageUrl?: string;
+  backdropUrl?: string;
   videoUrl?: string;
   redirectUrl?: string;
   year?: string;
