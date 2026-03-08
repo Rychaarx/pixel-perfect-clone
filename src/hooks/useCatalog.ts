@@ -89,6 +89,7 @@ export function useCatalog() {
           type: item.type,
           status: item.status,
           image_url: item.imageUrl || null,
+          backdrop_url: (item as any).backdropUrl || null,
           video_url: item.videoUrl || null,
           redirect_url: item.redirectUrl || null,
           year: item.year || null,
