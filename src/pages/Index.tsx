@@ -52,24 +52,6 @@ const Index = () => {
       {/* Hero */}
       <HeroSlider items={heroItems.length > 0 ? heroItems : catalogItems.slice(0, 5)} />
 
-      {/* Continue Watching */}
-      <ContinueWatchingSection items={continueWatching} />
-
-      {/* Recently Watched Movies */}
-      <RecentlyWatchedSection items={watchedMovies} />
-
-      {/* Favorites */}
-      <FavoritesSection items={favorites} />
-
-      {/* Catalog sections from DB */}
-      {!sectionsLoading && sections.length > 0 && (
-        <div>
-          {sections.map((section) => (
-            <HomeSection key={section.id} section={section} catalogItems={catalogItems} />
-          ))}
-        </div>
-      )}
-
       {/* Genre Filter */}
       {catalogGenres.length > 0 && (
         <div className="px-4 py-6">
@@ -115,6 +97,24 @@ const Index = () => {
           </motion.div>
         )}
       </section>
+
+      {/* Favorites */}
+      <FavoritesSection items={favorites} />
+
+      {/* Continue Watching */}
+      <ContinueWatchingSection items={continueWatching} />
+
+      {/* Recently Watched Movies */}
+      <RecentlyWatchedSection items={watchedMovies} />
+
+      {/* Catalog sections from DB */}
+      {!sectionsLoading && sections.length > 0 && (
+        <div>
+          {sections.map((section) => (
+            <HomeSection key={section.id} section={section} catalogItems={catalogItems} />
+          ))}
+        </div>
+      )}
 
       
     </div>
