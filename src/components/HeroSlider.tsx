@@ -87,7 +87,7 @@ const HeroSlider = ({ items = [] }: HeroSliderProps) => {
               {item.title.toUpperCase()}
             </h1>
             {item.synopsis && (
-              <p className="text-muted-foreground max-w-xl text-sm md:text-base line-clamp-2 mb-5">
+              <p className="text-muted-foreground max-w-md text-xs md:text-sm line-clamp-2 mb-4">
                 {item.synopsis}
               </p>
             )}
