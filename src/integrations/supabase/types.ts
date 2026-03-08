@@ -14,16 +14,271 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      catalog_items: {
+        Row: {
+          created_at: string
+          duration: string | null
+          genres: string[] | null
+          id: string
+          image_url: string | null
+          redirect_url: string | null
+          status: string
+          synopsis: string | null
+          title: string
+          type: string
+          updated_at: string
+          user_id: string
+          video_url: string | null
+          year: string | null
+        }
+        Insert: {
+          created_at?: string
+          duration?: string | null
+          genres?: string[] | null
+          id?: string
+          image_url?: string | null
+          redirect_url?: string | null
+          status?: string
+          synopsis?: string | null
+          title: string
+          type: string
+          updated_at?: string
+          user_id: string
+          video_url?: string | null
+          year?: string | null
+        }
+        Update: {
+          created_at?: string
+          duration?: string | null
+          genres?: string[] | null
+          id?: string
+          image_url?: string | null
+          redirect_url?: string | null
+          status?: string
+          synopsis?: string | null
+          title?: string
+          type?: string
+          updated_at?: string
+          user_id?: string
+          video_url?: string | null
+          year?: string | null
+        }
+        Relationships: []
+      }
+      episodes: {
+        Row: {
+          created_at: string
+          duration: string | null
+          episode_number: number
+          id: string
+          redirect_url: string | null
+          season_id: string
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          duration?: string | null
+          episode_number: number
+          id?: string
+          redirect_url?: string | null
+          season_id: string
+          title?: string
+        }
+        Update: {
+          created_at?: string
+          duration?: string | null
+          episode_number?: number
+          id?: string
+          redirect_url?: string | null
+          season_id?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "episodes_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "seasons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      feedback_requests: {
+        Row: {
+          created_at: string
+          id: string
+          message: string | null
+          title: string
+          type: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message?: string | null
+          title: string
+          type?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string | null
+          title?: string
+          type?: string
+        }
+        Relationships: []
+      }
+      seasons: {
+        Row: {
+          catalog_item_id: string
+          created_at: string
+          id: string
+          name: string | null
+          season_number: number
+        }
+        Insert: {
+          catalog_item_id: string
+          created_at?: string
+          id?: string
+          name?: string | null
+          season_number: number
+        }
+        Update: {
+          catalog_item_id?: string
+          created_at?: string
+          id?: string
+          name?: string | null
+          season_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seasons_catalog_item_id_fkey"
+            columns: ["catalog_item_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      section_items: {
+        Row: {
+          catalog_item_id: string
+          id: string
+          section_id: string
+          sort_order: number
+        }
+        Insert: {
+          catalog_item_id: string
+          id?: string
+          section_id: string
+          sort_order?: number
+        }
+        Update: {
+          catalog_item_id?: string
+          id?: string
+          section_id?: string
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "section_items_catalog_item_id_fkey"
+            columns: ["catalog_item_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "section_items_section_id_fkey"
+            columns: ["section_id"]
+            isOneToOne: false
+            referencedRelation: "sections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sections: {
+        Row: {
+          content_type: string
+          created_at: string
+          id: string
+          sort_order: number
+          title: string
+        }
+        Insert: {
+          content_type?: string
+          created_at?: string
+          id?: string
+          sort_order?: number
+          title: string
+        }
+        Update: {
+          content_type?: string
+          created_at?: string
+          id?: string
+          sort_order?: number
+          title?: string
+        }
+        Relationships: []
+      }
+      user_profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          id: string
+          is_default: boolean
+          name: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          id?: string
+          is_default?: boolean
+          name: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          id?: string
+          is_default?: boolean
+          name?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "moderator" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +405,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "moderator", "user"],
+    },
   },
 } as const
