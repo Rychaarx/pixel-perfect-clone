@@ -27,6 +27,59 @@ const AdminCatalog = () => {
   const [tmdbQuery, setTmdbQuery] = useState("");
   const [showTmdbResults, setShowTmdbResults] = useState(false);
   const [fillingFromTmdb, setFillingFromTmdb] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const maxSize = 500 * 1024 * 1024; // 500MB
+    if (file.size > maxSize) {
+      toast.error("Arquivo muito grande. Máximo: 500MB");
+      return;
+    }
+
+    const allowedTypes = ["video/mp4", "video/webm", "video/ogg", "video/quicktime"];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error("Formato não suportado. Use MP4, WebM, OGG ou MOV.");
+      return;
+    }
+
+    setUploading(true);
+    setUploadProgress(0);
+
+    const fileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+
+    // Simulate progress since supabase doesn't provide upload progress natively
+    const progressInterval = setInterval(() => {
+      setUploadProgress((prev) => Math.min(prev + 10, 90));
+    }, 300);
+
+    const { data, error } = await supabase.storage
+      .from("videos")
+      .upload(fileName, file, { cacheControl: "3600", upsert: false });
+
+    clearInterval(progressInterval);
+
+    if (error) {
+      toast.error("Erro ao fazer upload: " + error.message);
+      setUploading(false);
+      setUploadProgress(0);
+      return;
+    }
+
+    const { data: urlData } = supabase.storage.from("videos").getPublicUrl(data.path);
+    
+    setForm((prev) => ({ ...prev, videoUrl: urlData.publicUrl }));
+    setUploadProgress(100);
+    setUploading(false);
+    toast.success("Vídeo enviado com sucesso!");
+
+    // Reset file input
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
 
   // Debounced TMDB search
   useEffect(() => {
