@@ -50,14 +50,14 @@ const Navbar = () => {
         />
       )}
 
-      {/* Slide-in menu */}
+      {/* Pop-up menu */}
       <nav
         ref={navRef}
-        className={`fixed top-0 right-0 z-[58] h-full w-64 glass border-l border-border/50 transition-transform duration-300 ${
-          menuOpen ? "translate-x-0" : "translate-x-full"
+        className={`fixed top-16 right-4 z-[58] w-64 glass rounded-xl border border-border/50 shadow-2xl transition-all duration-200 origin-top-right ${
+          menuOpen ? "scale-100 opacity-100" : "scale-90 opacity-0 pointer-events-none"
         }`}
       >
-        <div className="pt-20 px-4 space-y-2">
+        <div className="py-3 px-3 space-y-1">
           <Link to="/" onClick={() => setMenuOpen(false)} className="flex items-center gap-2 px-3 pb-4 mb-2 border-b border-border/50">
             <div className="w-9 h-9 rounded-lg gradient-neon flex items-center justify-center">
               <Film className="w-5 h-5 text-primary-foreground" />
