@@ -222,6 +222,17 @@ const TitleDetails = () => {
                   {isMovieWatched(id) ? "Assistido" : "Marcar como Assistido"}
                 </Button>
               )}
+              {id && (
+                <Button
+                  variant={isFavorite(id) ? "secondary" : "outline"}
+                  onClick={() => toggleFavorite(id)}
+                  className="gap-2 rounded-full px-5"
+                  size="lg"
+                >
+                  <Heart className={`h-4 w-4 ${isFavorite(id) ? "text-destructive fill-destructive" : ""}`} />
+                  {isFavorite(id) ? "Favoritado" : "Favoritar"}
+                </Button>
+              )}
             </div>
 
             {item.synopsis && (
