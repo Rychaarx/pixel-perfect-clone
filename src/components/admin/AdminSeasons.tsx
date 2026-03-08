@@ -228,7 +228,7 @@ const AdminSeasons = () => {
         // Timeout guard
         const timer = setTimeout(() => {
           timedOut = true;
-          upload.abort(true);
+          upload.abort();
           reject(new Error(`Timeout: ${task.file.name}`));
         }, UPLOAD_TIMEOUT);
 
