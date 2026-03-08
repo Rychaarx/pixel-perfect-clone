@@ -3,9 +3,9 @@ import { useNavigate, useLocation } from "react-router-dom";
 
 const tabs = [
   { icon: Home, label: "Início", path: "/" },
-  { icon: Search, label: "Buscar", path: "/search" },
-  { icon: Heart, label: "Lista", path: "/favorites" },
-  { icon: User, label: "Perfil", path: "/profile" },
+  { icon: Search, label: "Buscar", path: "/sugestoes" },
+  { icon: Heart, label: "Lista", path: "/agenda" },
+  { icon: User, label: "Perfil", path: "/perfis" },
 ];
 
 const BottomNav = () => {
