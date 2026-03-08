@@ -3,10 +3,11 @@ import { useRole } from "@/hooks/useRole";
 import { useAuth } from "@/contexts/AuthContext";
 import Navbar from "@/components/Navbar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Film, LayoutGrid, Tv } from "lucide-react";
+import { Film, LayoutGrid, Tv, MessageSquare } from "lucide-react";
 import AdminCatalog from "@/components/admin/AdminCatalog";
 import AdminSections from "@/components/admin/AdminSections";
 import AdminSeasons from "@/components/admin/AdminSeasons";
+import AdminFeedback from "@/components/admin/AdminFeedback";
 
 const Admin = () => {
   const { isAdmin, loading } = useRole();
@@ -35,7 +36,7 @@ const Admin = () => {
       <div className="pt-20 pb-12 px-4 sm:px-6 max-w-7xl mx-auto">
         <div className="mb-8">
           <h1 className="font-display text-2xl md:text-3xl font-bold text-foreground neon-text">Painel Admin</h1>
-          <p className="text-muted-foreground text-sm mt-1">Gerencie o catálogo, seções e episódios</p>
+          <p className="text-muted-foreground text-sm mt-1">Gerencie o catálogo, seções, episódios e feedbacks</p>
         </div>
 
         <Tabs defaultValue="catalog" className="w-full">
@@ -49,6 +50,9 @@ const Admin = () => {
             <TabsTrigger value="seasons" className="flex items-center gap-2 data-[state=active]:bg-primary/20 data-[state=active]:text-primary">
               <Tv className="w-4 h-4" /> Temporadas
             </TabsTrigger>
+            <TabsTrigger value="feedback" className="flex items-center gap-2 data-[state=active]:bg-primary/20 data-[state=active]:text-primary">
+              <MessageSquare className="w-4 h-4" /> Feedbacks
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="catalog">
@@ -59,6 +63,9 @@ const Admin = () => {
           </TabsContent>
           <TabsContent value="seasons">
             <AdminSeasons />
+          </TabsContent>
+          <TabsContent value="feedback">
+            <AdminFeedback />
           </TabsContent>
         </Tabs>
       </div>
