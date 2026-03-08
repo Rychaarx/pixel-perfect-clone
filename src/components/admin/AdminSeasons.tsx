@@ -23,6 +23,8 @@ const AdminSeasons = () => {
   const [uploadSeasonIdx, setUploadSeasonIdx] = useState<number | null>(null);
   const [dragState, setDragState] = useState<{ seasonIdx: number; epIdx: number } | null>(null);
   const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
+  const seasonsRef = useRef<Season[]>([]);
+  seasonsRef.current = seasons;
 
   const handleDragStart = (seasonIdx: number, epIdx: number) => {
     setDragState({ seasonIdx, epIdx });
@@ -136,13 +138,13 @@ const AdminSeasons = () => {
     toast.success("Temporadas salvas!");
   };
 
-  // Bulk file upload using TUS
+  // Bulk file upload using TUS — parallel with timeout
   const handleBulkFileUpload = async (seasonIdx: number, files: FileList) => {
     if (!files.length) return;
     setUploading(true);
     const sortedFiles = Array.from(files).sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
 
-    const baseEpisodes = seasons[seasonIdx]?.episodes ?? [];
+    const baseEpisodes = seasonsRef.current[seasonIdx]?.episodes ?? [];
     let workingEpisodes = [...baseEpisodes];
 
     // Ensure we have enough episodes
@@ -163,60 +165,110 @@ const AdminSeasons = () => {
     const { data: { session } } = await supabase.auth.getSession();
     const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
 
+    const UPLOAD_TIMEOUT = 5 * 60 * 1000; // 5 minutes
+    const CONCURRENCY = 3;
+
+    // Build upload tasks
+    const tasks: Array<{ file: File; epIdx: number; filePath: string; fileKey: string }> = [];
     for (let i = 0; i < sortedFiles.length && i < emptyUrlEps.length; i++) {
       const file = sortedFiles[i];
       const { idx } = emptyUrlEps[i];
-      const filePath = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
-      const fileKey = `${seasonIdx}-${idx}`;
+      const filePath = `${Date.now()}-${i}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
+      tasks.push({ file, epIdx: idx, filePath, fileKey: `${seasonIdx}-${idx}` });
+    }
 
-      try {
-        await new Promise<void>((resolve, reject) => {
-          const upload = new tus.Upload(file, {
-            endpoint: `https://${projectId}.supabase.co/storage/v1/upload/resumable`,
-            retryDelays: [0, 3000, 5000],
-            headers: {
-              authorization: `Bearer ${session?.access_token}`,
-              "x-upsert": "true",
-            },
-            uploadDataDuringCreation: true,
-            removeFingerprintOnSuccess: true,
-            metadata: {
-              bucketName: "videos",
-              objectName: filePath,
-              contentType: file.type || "application/octet-stream",
-              cacheControl: "3600",
-            },
-            chunkSize: 6 * 1024 * 1024,
-            onError: (error) => {
-              console.error(`Upload error for ${file.name}:`, error);
-              reject(error);
-            },
-            onProgress: (bytesUploaded, bytesTotal) => {
-              setUploadProgress((prev) => ({
-                ...prev,
-                [fileKey]: Math.round((bytesUploaded / bytesTotal) * 100),
-              }));
-            },
-            onSuccess: () => {
-              const publicUrl = `https://${projectId}.supabase.co/storage/v1/object/public/videos/${filePath}`;
-              updateEpisode(seasonIdx, idx, { redirect_url: publicUrl });
-              setUploadProgress((prev) => ({ ...prev, [fileKey]: 100 }));
-              resolve();
-            },
-          });
-          upload.findPreviousUploads().then((prev) => {
-            if (prev.length) (upload as any).resumeFrom(prev[0]);
-            upload.start();
-          });
+    const uploadOne = (task: typeof tasks[0]) => {
+      let timer: ReturnType<typeof setTimeout>;
+
+      const promise = new Promise<void>((resolve, reject) => {
+        let settled = false;
+        const settle = (fn: () => void) => { if (!settled) { settled = true; clearTimeout(timer); fn(); } };
+
+        const upload = new tus.Upload(task.file, {
+          endpoint: `https://${projectId}.supabase.co/storage/v1/upload/resumable`,
+          retryDelays: [0, 3000, 5000],
+          headers: {
+            authorization: `Bearer ${session?.access_token}`,
+            "x-upsert": "true",
+          },
+          uploadDataDuringCreation: true,
+          removeFingerprintOnSuccess: true,
+          metadata: {
+            bucketName: "videos",
+            objectName: task.filePath,
+            contentType: task.file.type || "application/octet-stream",
+            cacheControl: "3600",
+          },
+          chunkSize: 6 * 1024 * 1024,
+          onError: (error) => settle(() => reject(error)),
+          onProgress: (bytesUploaded, bytesTotal) => {
+            setUploadProgress((prev) => ({
+              ...prev,
+              [task.fileKey]: Math.round((bytesUploaded / bytesTotal) * 100),
+            }));
+          },
+          onSuccess: () => settle(() => {
+            const publicUrl = `https://${projectId}.supabase.co/storage/v1/object/public/videos/${task.filePath}`;
+            setSeasons((prev) =>
+              prev.map((season, i) => {
+                if (i !== seasonIdx) return season;
+                return {
+                  ...season,
+                  episodes: season.episodes.map((ep, j) =>
+                    j === task.epIdx ? { ...ep, redirect_url: publicUrl } : ep
+                  ),
+                };
+              })
+            );
+            setUploadProgress((prev) => ({ ...prev, [task.fileKey]: 100 }));
+            resolve();
+          }),
         });
-      } catch {
-        toast.error(`Erro ao enviar: ${file.name}`);
+
+        timer = setTimeout(() => {
+          upload.abort();
+          settle(() => reject(new Error(`Timeout: ${task.file.name}`)));
+        }, UPLOAD_TIMEOUT);
+
+        upload.start();
+      });
+
+      return promise;
+    };
+
+    // Process with concurrency pool
+    let completed = 0;
+    const pool: Promise<void>[] = [];
+    const errors: string[] = [];
+
+    for (const task of tasks) {
+      const p = uploadOne(task)
+        .catch((err) => {
+          console.error(`Upload error: ${task.file.name}`, err);
+          errors.push(task.file.name);
+        })
+        .finally(() => { completed++; });
+
+      pool.push(p);
+
+      if (pool.length >= CONCURRENCY) {
+        await Promise.race(pool);
+        // Remove settled promises
+        for (let i = pool.length - 1; i >= 0; i--) {
+          const settled = await Promise.race([pool[i].then(() => true), Promise.resolve(false)]);
+          if (settled) pool.splice(i, 1);
+        }
       }
     }
 
+    await Promise.allSettled(pool);
+
     setUploading(false);
     setUploadProgress({});
-    toast.success(`${sortedFiles.length} arquivo(s) enviado(s)!`);
+    if (errors.length > 0) {
+      toast.error(`Falha em ${errors.length} arquivo(s): ${errors.join(", ")}`);
+    }
+    toast.success(`${tasks.length - errors.length} de ${tasks.length} arquivo(s) enviado(s)!`);
   };
 
   const triggerFileUpload = (seasonIdx: number) => {
