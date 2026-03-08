@@ -94,7 +94,7 @@ const AdminCatalog = () => {
         authorization: `Bearer ${session.access_token}`,
         "x-upsert": "false",
       },
-      uploadDataDuringCreation: true,
+      uploadDataDuringCreation: false,
       removeFingerprintOnSuccess: true,
       metadata: {
         bucketName,
@@ -104,9 +104,19 @@ const AdminCatalog = () => {
       },
       onError: (error) => {
         console.error("TUS upload error:", error);
+        const msg = error?.message || String(error);
+        // Don't retry on permanent errors (413, 400, 403)
+        if (msg.includes("413") || msg.includes("Maximum size") || msg.includes("403") || msg.includes("400")) {
+          toast.error("Arquivo excede o tamanho máximo permitido pelo servidor.");
+          setUploading(false);
+          setUploadProgress(0);
+          setUploadSpeed("");
+          uploadRef.current = null;
+          if (fileInputRef.current) fileInputRef.current.value = "";
+          return;
+        }
         toast.error("Erro no upload. Tentando novamente...");
-        // Auto-retry once
-        setTimeout(() => upload.start(), 1000);
+        setTimeout(() => upload.start(), 2000);
       },
       onProgress: (bytesUploaded, bytesTotal) => {
         const percent = Math.round((bytesUploaded / bytesTotal) * 100);
