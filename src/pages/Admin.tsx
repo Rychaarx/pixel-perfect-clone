@@ -7,6 +7,7 @@ import { Film, LayoutGrid, Tv, MessageSquare } from "lucide-react";
 import AdminCatalog from "@/components/admin/AdminCatalog";
 import AdminSections from "@/components/admin/AdminSections";
 import AdminSeasons from "@/components/admin/AdminSeasons";
+import AdminFeedback from "@/components/admin/AdminFeedback";
 
 const Admin = () => {
   const { isAdmin, loading } = useRole();
