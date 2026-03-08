@@ -58,6 +58,9 @@ const Index = () => {
       {/* Recently Watched Movies */}
       <RecentlyWatchedSection items={watchedMovies} />
 
+      {/* Favorites */}
+      <FavoritesSection items={favorites} />
+
       {/* Catalog sections from DB */}
       {!sectionsLoading && sections.length > 0 && (
         <div>
