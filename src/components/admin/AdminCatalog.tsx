@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import * as tus from "tus-js-client";
 import { useCatalog, CatalogItem, CatalogStatus, statusConfig } from "@/hooks/useCatalog";
 import { useTmdbSearch, TmdbSearchResult } from "@/hooks/useTmdbSearch";
 import { supabase } from "@/integrations/supabase/client";
