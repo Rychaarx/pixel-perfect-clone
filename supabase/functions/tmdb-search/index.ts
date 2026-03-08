@@ -83,6 +83,7 @@ serve(async (req) => {
         genres: (d.genres || []).map((g: any) => g.name),
         synopsis: d.overview || "",
         posterUrl: d.poster_path ? `https://image.tmdb.org/t/p/w500${d.poster_path}` : null,
+        backdropUrl: d.backdrop_path ? `https://image.tmdb.org/t/p/original${d.backdrop_path}` : null,
         trailerUrl: trailer ? `https://www.youtube.com/embed/${trailer.key}` : null,
         mediaType: type,
       };

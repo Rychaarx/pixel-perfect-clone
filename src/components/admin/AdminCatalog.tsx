@@ -11,7 +11,7 @@ import { toast } from "sonner";
 
 const emptyForm = {
   title: "", type: "Filme" as CatalogItem["type"], status: "na_lista" as CatalogStatus,
-  imageUrl: "", videoUrl: "", redirectUrl: "", year: "", duration: "", genres: "", synopsis: "",
+  imageUrl: "", backdropUrl: "", videoUrl: "", redirectUrl: "", year: "", duration: "", genres: "", synopsis: "",
 };
 
 const AdminCatalog = () => {
@@ -59,10 +59,10 @@ const AdminCatalog = () => {
     setEditingId(item.id);
     setForm({
       title: item.title, type: item.type, status: item.status,
-      imageUrl: item.imageUrl || "", videoUrl: item.videoUrl || "",
-      redirectUrl: item.redirectUrl || "", year: item.year || "",
-      duration: item.duration || "", genres: item.genres?.join(", ") || "",
-      synopsis: item.synopsis || "",
+      imageUrl: item.imageUrl || "", backdropUrl: item.backdropUrl || "",
+      videoUrl: item.videoUrl || "", redirectUrl: item.redirectUrl || "",
+      year: item.year || "", duration: item.duration || "",
+      genres: item.genres?.join(", ") || "", synopsis: item.synopsis || "",
     });
     setTmdbQuery("");
     setTmdbResults([]);
@@ -92,6 +92,7 @@ const AdminCatalog = () => {
         synopsis: detail.synopsis || prev.synopsis,
         videoUrl: detail.trailerUrl || prev.videoUrl,
         imageUrl: detail.posterUrl || prev.imageUrl,
+        backdropUrl: (detail as any).backdropUrl || prev.backdropUrl,
         year: detail.year || prev.year,
       }));
     }
@@ -103,7 +104,8 @@ const AdminCatalog = () => {
     if (!form.title.trim()) { toast.error("Título obrigatório"); return; }
     const payload = {
       title: form.title, type: form.type, status: form.status,
-      imageUrl: form.imageUrl || undefined, videoUrl: form.videoUrl || undefined,
+      imageUrl: form.imageUrl || undefined, backdropUrl: form.backdropUrl || undefined,
+      videoUrl: form.videoUrl || undefined,
       redirectUrl: form.redirectUrl || undefined, year: form.year || undefined,
       duration: form.duration || undefined,
       genres: form.genres ? form.genres.split(",").map((g) => g.trim()).filter(Boolean) : undefined,
@@ -249,7 +251,14 @@ const AdminCatalog = () => {
                 <Input placeholder="Duração" value={form.duration} onChange={(e) => setForm({ ...form, duration: e.target.value })} className="bg-secondary/50 border-border/50" />
               </div>
               <Input placeholder="Gêneros (separados por vírgula)" value={form.genres} onChange={(e) => setForm({ ...form, genres: e.target.value })} className="bg-secondary/50 border-border/50" />
-              <Input placeholder="URL da Imagem (preenchido do TMDB)" value={form.imageUrl} onChange={(e) => setForm({ ...form, imageUrl: e.target.value })} className="bg-secondary/50 border-border/50" />
+              <div>
+                <label className="text-xs text-muted-foreground mb-1 block">Capa do filme (poster)</label>
+                <Input placeholder="URL da capa do filme" value={form.imageUrl} onChange={(e) => setForm({ ...form, imageUrl: e.target.value })} className="bg-secondary/50 border-border/50" />
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground mb-1 block">Imagem da Home (backdrop/banner)</label>
+                <Input placeholder="URL da imagem para a home" value={form.backdropUrl} onChange={(e) => setForm({ ...form, backdropUrl: e.target.value })} className="bg-secondary/50 border-border/50" />
+              </div>
               
               {/* Video URL - auto-filled from TMDB */}
               <div>

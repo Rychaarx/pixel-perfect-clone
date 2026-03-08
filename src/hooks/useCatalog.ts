@@ -16,6 +16,7 @@ export interface CatalogItem {
   type: "Filme" | "Série" | "Anime";
   status: CatalogStatus;
   imageUrl?: string;
+  backdropUrl?: string;
   videoUrl?: string;
   redirectUrl?: string;
   year?: string;
@@ -43,6 +44,7 @@ export function useCatalog() {
           type: d.type as CatalogItem["type"],
           status: d.status as CatalogItem["status"],
           imageUrl: d.image_url ?? undefined,
+          backdropUrl: d.backdrop_url ?? undefined,
           videoUrl: d.video_url ?? undefined,
           redirectUrl: d.redirect_url ?? undefined,
           year: d.year ?? undefined,
@@ -87,6 +89,7 @@ export function useCatalog() {
           type: item.type,
           status: item.status,
           image_url: item.imageUrl || null,
+          backdrop_url: (item as any).backdropUrl || null,
           video_url: item.videoUrl || null,
           redirect_url: item.redirectUrl || null,
           year: item.year || null,
@@ -121,6 +124,7 @@ export function useCatalog() {
       if (patch.type !== undefined) dbPatch.type = patch.type;
       if (patch.status !== undefined) dbPatch.status = patch.status;
       if (patch.imageUrl !== undefined) dbPatch.image_url = patch.imageUrl;
+      if (patch.backdropUrl !== undefined) dbPatch.backdrop_url = patch.backdropUrl;
       if (patch.videoUrl !== undefined) dbPatch.video_url = patch.videoUrl;
       if (patch.redirectUrl !== undefined) dbPatch.redirect_url = patch.redirectUrl;
       if (patch.year !== undefined) dbPatch.year = patch.year;
