@@ -213,10 +213,11 @@ const AdminCatalog = () => {
     setShowTmdbResults(false);
     setFillingFromTmdb(true);
     setPendingTmdbDetail(null);
+    const resolvedType = result.mediaType === "movie" ? "Filme" : result.isAnime ? "Anime" : "Série";
     setForm((prev) => ({
       ...prev,
       title: result.title,
-      type: result.mediaType === "movie" ? "Filme" : "Série",
+      type: resolvedType as CatalogItem["type"],
       imageUrl: result.posterUrl || "",
       synopsis: result.overview || prev.synopsis,
       year: result.year || prev.year,
