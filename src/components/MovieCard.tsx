@@ -35,16 +35,20 @@ const MovieCard = (props: MovieCardProps) => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: index * 0.05 }}
         onClick={handleClick}
-        className="cursor-pointer group"
+        className={`cursor-pointer group ${props.type === "Anime" ? "anime-card" : ""}`}
       >
-        <div className="relative aspect-[2/3] rounded-lg overflow-hidden bg-secondary" style={{ boxShadow: "var(--shadow-card)" }}>
+        <div className={`relative aspect-[2/3] rounded-lg overflow-hidden bg-secondary transition-shadow duration-300 ${props.type === "Anime" ? "group-hover:shadow-[0_0_20px_rgba(236,72,153,0.5),0_0_40px_rgba(236,72,153,0.2)]" : ""}`} style={{ boxShadow: "var(--shadow-card)" }}>
           <img
             src={props.poster || "/placeholder.svg"}
             alt={props.title}
-            className="h-full w-full object-contain group-hover:scale-105 transition-transform duration-500"
+            className={`h-full w-full object-contain transition-transform duration-500 ${props.type === "Anime" ? "group-hover:scale-110" : "group-hover:scale-105"}`}
             onError={(e) => { (e.target as HTMLImageElement).src = "/placeholder.svg"; }}
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+          <div className={`absolute inset-0 transition-opacity ${props.type === "Anime" ? "bg-gradient-to-t from-pink-900/80 via-pink-500/10 to-transparent opacity-0 group-hover:opacity-100" : "bg-gradient-to-t from-background/90 via-transparent to-transparent opacity-0 group-hover:opacity-100"}`} />
+          {/* Anime neon border glow */}
+          {props.type === "Anime" && (
+            <div className="absolute inset-0 rounded-lg border border-pink-500/0 group-hover:border-pink-500/60 transition-all duration-300 pointer-events-none" />
+          )}
           {/* Type badge */}
           {props.type && (
             <div className={`absolute top-1.5 left-1.5 flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-semibold backdrop-blur-sm ${
