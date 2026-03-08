@@ -41,21 +41,21 @@ const Admin = () => {
         </div>
 
         <Tabs defaultValue="catalog" className="w-full">
-          <TabsList className="glass border border-border/50 mb-6">
-            <TabsTrigger value="catalog" className="flex items-center gap-2 data-[state=active]:bg-primary/20 data-[state=active]:text-primary">
-              <Film className="w-4 h-4" /> Catálogo
+          <TabsList className="glass border border-border/50 mb-6 flex-wrap h-auto gap-1">
+            <TabsTrigger value="catalog" className="flex items-center gap-1 sm:gap-2 text-[11px] sm:text-sm data-[state=active]:bg-primary/20 data-[state=active]:text-primary px-2 sm:px-3 py-1.5">
+              <Film className="w-3 h-3 sm:w-4 sm:h-4" /> Catálogo
             </TabsTrigger>
-            <TabsTrigger value="sections" className="flex items-center gap-2 data-[state=active]:bg-primary/20 data-[state=active]:text-primary">
-              <LayoutGrid className="w-4 h-4" /> Seções
+            <TabsTrigger value="sections" className="flex items-center gap-1 sm:gap-2 text-[11px] sm:text-sm data-[state=active]:bg-primary/20 data-[state=active]:text-primary px-2 sm:px-3 py-1.5">
+              <LayoutGrid className="w-3 h-3 sm:w-4 sm:h-4" /> Seções
             </TabsTrigger>
-            <TabsTrigger value="seasons" className="flex items-center gap-2 data-[state=active]:bg-primary/20 data-[state=active]:text-primary">
-              <Tv className="w-4 h-4" /> Temporadas
+            <TabsTrigger value="seasons" className="flex items-center gap-1 sm:gap-2 text-[11px] sm:text-sm data-[state=active]:bg-primary/20 data-[state=active]:text-primary px-2 sm:px-3 py-1.5">
+              <Tv className="w-3 h-3 sm:w-4 sm:h-4" /> Temporadas
             </TabsTrigger>
-            <TabsTrigger value="feedback" className="flex items-center gap-2 data-[state=active]:bg-primary/20 data-[state=active]:text-primary">
-              <MessageSquare className="w-4 h-4" /> Feedbacks
+            <TabsTrigger value="feedback" className="flex items-center gap-1 sm:gap-2 text-[11px] sm:text-sm data-[state=active]:bg-primary/20 data-[state=active]:text-primary px-2 sm:px-3 py-1.5">
+              <MessageSquare className="w-3 h-3 sm:w-4 sm:h-4" /> Feedbacks
             </TabsTrigger>
-            <TabsTrigger value="suggestions" className="flex items-center gap-2 data-[state=active]:bg-primary/20 data-[state=active]:text-primary">
-              <Lightbulb className="w-4 h-4" /> Sugestões
+            <TabsTrigger value="suggestions" className="flex items-center gap-1 sm:gap-2 text-[11px] sm:text-sm data-[state=active]:bg-primary/20 data-[state=active]:text-primary px-2 sm:px-3 py-1.5">
+              <Lightbulb className="w-3 h-3 sm:w-4 sm:h-4" /> Sugestões
             </TabsTrigger>
           </TabsList>
 
