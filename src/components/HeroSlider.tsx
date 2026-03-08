@@ -59,7 +59,7 @@ const HeroSlider = ({ items = [] }: HeroSliderProps) => {
       </AnimatePresence>
 
       {/* Content overlay */}
-      <div className="absolute bottom-0 left-0 right-0 p-6 md:p-12">
+      <div className="absolute bottom-0 left-0 right-0 p-4 md:p-12">
         <AnimatePresence mode="wait">
           <motion.div
             key={item.id}
