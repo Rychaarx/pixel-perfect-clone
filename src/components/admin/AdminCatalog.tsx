@@ -11,7 +11,7 @@ import { toast } from "sonner";
 
 const emptyForm = {
   title: "", type: "Filme" as CatalogItem["type"], status: "na_lista" as CatalogStatus,
-  imageUrl: "", videoUrl: "", redirectUrl: "", year: "", duration: "", genres: "", synopsis: "",
+  imageUrl: "", backdropUrl: "", videoUrl: "", redirectUrl: "", year: "", duration: "", genres: "", synopsis: "",
 };
 
 const AdminCatalog = () => {
