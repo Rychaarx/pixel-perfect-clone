@@ -41,7 +41,7 @@ const MovieCard = (props: MovieCardProps) => {
           <img
             src={props.poster || "/placeholder.svg"}
             alt={props.title}
-            className="h-full w-full object-cover object-top group-hover:scale-105 transition-transform duration-500"
+            className="h-full w-full object-contain group-hover:scale-105 transition-transform duration-500"
             onError={(e) => { (e.target as HTMLImageElement).src = "/placeholder.svg"; }}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
