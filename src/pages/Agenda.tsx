@@ -76,8 +76,9 @@ const Agenda = () => {
 
   useEffect(() => {
     async function fetchAgenda() {
-      // Only show episodes that have a redirect_url (meaning the content was actually added)
-      // No catalog-level notifications
+      const agendaItems: AgendaItem[] = [];
+
+      // Only show episodes that have a redirect_url (content actually added)
 
       // Fetch episodes with season and catalog info
       const { data: episodesData } = await supabase
