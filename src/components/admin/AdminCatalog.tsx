@@ -59,10 +59,6 @@ const AdminCatalog = () => {
 
     const fileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
 
-    // Use XMLHttpRequest for real progress tracking on large files
-    const formData = new FormData();
-    formData.append('', file);
-
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
       toast.error("Você precisa estar logado para fazer upload.");
@@ -70,41 +66,53 @@ const AdminCatalog = () => {
       return;
     }
 
-    try {
-      // Use Supabase SDK for reliable upload
-      const { data, error } = await supabase.storage
-        .from("videos")
-        .upload(fileName, file, {
-          cacheControl: "3600",
-          upsert: false,
-          contentType: file.type || "application/octet-stream",
-        });
+    const url = `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/videos/${fileName}`;
 
-      if (error) {
-        console.error("Upload error:", error);
-        toast.error(`Erro no upload: ${error.message}`);
-        setUploadProgress(0);
-        setUploading(false);
-        if (fileInputRef.current) fileInputRef.current.value = "";
-        return;
+    const xhr = new XMLHttpRequest();
+
+    xhr.upload.addEventListener('progress', (event) => {
+      if (event.lengthComputable) {
+        const percent = Math.round((event.loaded / event.total) * 100);
+        setUploadProgress(percent);
       }
+    });
 
-      const { data: urlData } = supabase.storage.from("videos").getPublicUrl(fileName);
-      const publicUrl = urlData.publicUrl;
-      console.log("Upload success, public URL:", publicUrl);
-      setForm((prev) => ({ ...prev, redirectUrl: publicUrl }));
-      setUploadProgress(100);
-      toast.success("Vídeo enviado com sucesso!");
-    } catch (err: any) {
-      console.error("Upload catch error:", err);
-      toast.error(err.message || "Erro ao fazer upload");
-      setUploadProgress(0);
-    } finally {
+    xhr.addEventListener('load', () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        const { data: urlData } = supabase.storage.from("videos").getPublicUrl(fileName);
+        const publicUrl = urlData.publicUrl;
+        console.log("Upload success, public URL:", publicUrl);
+        setForm((prev) => ({ ...prev, redirectUrl: publicUrl }));
+        setUploadProgress(100);
+        toast.success("Vídeo enviado com sucesso!");
+      } else {
+        console.error("Upload failed:", xhr.status, xhr.responseText);
+        toast.error(`Erro no upload: ${xhr.statusText || xhr.status}`);
+        setUploadProgress(0);
+      }
       setUploading(false);
-    }
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    });
 
-    // Reset file input
-    if (fileInputRef.current) fileInputRef.current.value = "";
+    xhr.addEventListener('error', () => {
+      toast.error("Erro de rede durante o upload");
+      setUploadProgress(0);
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    });
+
+    xhr.addEventListener('abort', () => {
+      toast.error("Upload cancelado");
+      setUploadProgress(0);
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    });
+
+    xhr.open('POST', url);
+    xhr.setRequestHeader('Authorization', `Bearer ${session.access_token}`);
+    xhr.setRequestHeader('Content-Type', file.type || 'application/octet-stream');
+    xhr.setRequestHeader('x-upsert', 'false');
+    xhr.send(file);
   };
 
   // Debounced TMDB search
