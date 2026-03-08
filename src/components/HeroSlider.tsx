@@ -24,7 +24,7 @@ const HeroSlider = ({ items = [] }: HeroSliderProps) => {
     return (
       <div className="relative h-[50vh] min-h-[300px] md:h-[60vh] md:min-h-[400px] bg-secondary flex items-end p-4 md:p-12">
         <div>
-          <h1 className="font-display text-3xl md:text-5xl text-foreground mb-3 tracking-wide">CINE CLOUD</h1>
+          <h1 className="font-display text-xl md:text-5xl text-foreground mb-3 tracking-wide">CINE CLOUD</h1>
           <p className="text-muted-foreground">Nenhum título no catálogo ainda.</p>
         </div>
       </div>
