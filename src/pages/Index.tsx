@@ -60,7 +60,7 @@ const Index = () => {
               <button
                 key={genre}
                 onClick={() => setCatalogGenreFilter(genre)}
-                className={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium transition-all ${
+                className={`whitespace-nowrap rounded-full px-3 py-1.5 text-xs sm:text-sm font-medium transition-all ${
                   catalogGenreFilter === genre
                     ? "bg-primary text-primary-foreground"
                     : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
