@@ -15,9 +15,11 @@ const Navbar = () => {
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [visible, setVisible] = useState(false);
   const { user, signOut } = useAuth();
   const { isAdmin } = useRole();
   const menuRef = useRef<HTMLDivElement>(null);
+  const hideTimeout = useRef<ReturnType<typeof setTimeout>>();
 
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
@@ -29,8 +31,43 @@ const Navbar = () => {
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
+  const showNav = useCallback(() => {
+    setVisible(true);
+    if (hideTimeout.current) clearTimeout(hideTimeout.current);
+  }, []);
+
+  const scheduleHide = useCallback(() => {
+    if (mobileOpen || userMenuOpen) return;
+    hideTimeout.current = setTimeout(() => setVisible(false), 800);
+  }, [mobileOpen, userMenuOpen]);
+
+  // Show navbar when mouse is near the top of the screen
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (e.clientY <= 60) {
+        showNav();
+      }
+    };
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, [showNav]);
+
+  // Keep visible while mobile menu or user menu is open
+  useEffect(() => {
+    if (mobileOpen || userMenuOpen) {
+      setVisible(true);
+      if (hideTimeout.current) clearTimeout(hideTimeout.current);
+    }
+  }, [mobileOpen, userMenuOpen]);
+
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 glass border-b border-border/50">
+    <nav
+      className={`fixed top-0 left-0 right-0 z-50 glass border-b border-border/50 transition-all duration-300 ${
+        visible ? "translate-y-0 opacity-100" : "-translate-y-full opacity-0"
+      }`}
+      onMouseEnter={showNav}
+      onMouseLeave={scheduleHide}
+    >
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2">
           <div className="w-9 h-9 rounded-lg gradient-neon flex items-center justify-center">
