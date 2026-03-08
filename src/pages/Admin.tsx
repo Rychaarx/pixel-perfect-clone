@@ -50,6 +50,9 @@ const Admin = () => {
             <TabsTrigger value="seasons" className="flex items-center gap-2 data-[state=active]:bg-primary/20 data-[state=active]:text-primary">
               <Tv className="w-4 h-4" /> Temporadas
             </TabsTrigger>
+            <TabsTrigger value="feedback" className="flex items-center gap-2 data-[state=active]:bg-primary/20 data-[state=active]:text-primary">
+              <MessageSquare className="w-4 h-4" /> Feedbacks
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="catalog">
@@ -60,6 +63,9 @@ const Admin = () => {
           </TabsContent>
           <TabsContent value="seasons">
             <AdminSeasons />
+          </TabsContent>
+          <TabsContent value="feedback">
+            <AdminFeedback />
           </TabsContent>
         </Tabs>
       </div>
