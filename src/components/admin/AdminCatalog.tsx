@@ -266,6 +266,40 @@ const AdminCatalog = () => {
         toast.error(`"${form.title}" já existe no catálogo`);
         return;
       }
+      
+      // Auto-create seasons and episodes from TMDB data
+      if (result?.id && pendingTmdbDetail?.seasons && pendingTmdbDetail.seasons.length > 0) {
+        try {
+          for (const season of pendingTmdbDetail.seasons) {
+            const { data: seasonData } = await supabase
+              .from("seasons")
+              .insert({
+                catalog_item_id: result.id,
+                season_number: season.seasonNumber,
+                name: season.name,
+              })
+              .select()
+              .single();
+
+            if (seasonData && season.episodes.length > 0) {
+              const episodeRows = season.episodes.map((ep) => ({
+                season_id: seasonData.id,
+                episode_number: ep.episodeNumber,
+                title: ep.title,
+                duration: ep.duration,
+              }));
+              await supabase.from("episodes").insert(episodeRows);
+            }
+          }
+          const totalEps = pendingTmdbDetail.seasons.reduce((s, se) => s + se.episodes.length, 0);
+          toast.success(`${pendingTmdbDetail.seasons.length} temporada(s) e ${totalEps} episódio(s) criados!`);
+        } catch (err) {
+          console.error("Error creating seasons/episodes:", err);
+          toast.error("Erro ao criar temporadas/episódios");
+        }
+      }
+      
+      setPendingTmdbDetail(null);
       toast.success("Item adicionado!");
     }
     setDialogOpen(false);
