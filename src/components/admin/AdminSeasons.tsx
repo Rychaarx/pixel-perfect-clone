@@ -140,22 +140,23 @@ const AdminSeasons = () => {
   const handleBulkFileUpload = async (seasonIdx: number, files: FileList) => {
     if (!files.length) return;
     setUploading(true);
-    const season = seasons[seasonIdx];
     const sortedFiles = Array.from(files).sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
 
+    const baseEpisodes = seasons[seasonIdx]?.episodes ?? [];
+    let workingEpisodes = [...baseEpisodes];
+
     // Ensure we have enough episodes
-    const startEpCount = season.episodes.length;
-    if (sortedFiles.length > startEpCount) {
-      const startNum = startEpCount > 0 ? Math.max(...season.episodes.map((e) => e.episode_number)) + 1 : 1;
-      const extraEps = Array.from({ length: sortedFiles.length - startEpCount }, (_, i) =>
+    if (sortedFiles.length > workingEpisodes.length) {
+      const startNum = workingEpisodes.length > 0 ? Math.max(...workingEpisodes.map((e) => e.episode_number)) + 1 : 1;
+      const extraEps = Array.from({ length: sortedFiles.length - workingEpisodes.length }, (_, i) =>
         createEmptyEpisode(startNum + i)
       );
-      season.episodes = [...season.episodes, ...extraEps];
-      updateSeason(seasonIdx, { episodes: season.episodes });
+      workingEpisodes = [...workingEpisodes, ...extraEps];
+      updateSeason(seasonIdx, { episodes: workingEpisodes });
     }
 
     // Get episodes without URLs (in order)
-    const emptyUrlEps = season.episodes
+    const emptyUrlEps = workingEpisodes
       .map((ep, idx) => ({ ep, idx }))
       .filter(({ ep }) => !ep.redirect_url);
 
