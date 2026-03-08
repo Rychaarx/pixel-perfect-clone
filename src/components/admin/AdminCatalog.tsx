@@ -1,11 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useCatalog, CatalogItem, CatalogStatus, statusConfig } from "@/hooks/useCatalog";
+import { useTmdbSearch, TmdbSearchResult } from "@/hooks/useTmdbSearch";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Plus, Pencil, Trash2, Search, X, ExternalLink } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, X, ExternalLink, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 const emptyForm = {
@@ -15,11 +16,29 @@ const emptyForm = {
 
 const AdminCatalog = () => {
   const { items, loading, addItem, removeItem, updateItem } = useCatalog();
+  const { results: tmdbResults, loading: tmdbLoading, search: tmdbSearch, getDetails, setResults: setTmdbResults } = useTmdbSearch();
   const [search, setSearch] = useState("");
   const [filterType, setFilterType] = useState<string>("all");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
+  const [tmdbQuery, setTmdbQuery] = useState("");
+  const [showTmdbResults, setShowTmdbResults] = useState(false);
+  const [fillingFromTmdb, setFillingFromTmdb] = useState(false);
+
+  // Debounced TMDB search
+  useEffect(() => {
+    if (!tmdbQuery.trim() || editingId) {
+      setTmdbResults([]);
+      setShowTmdbResults(false);
+      return;
+    }
+    const timer = setTimeout(() => {
+      tmdbSearch(tmdbQuery);
+      setShowTmdbResults(true);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [tmdbQuery]);
 
   const filtered = items.filter((i) => {
     const matchSearch = i.title.toLowerCase().includes(search.toLowerCase());
@@ -30,6 +49,9 @@ const AdminCatalog = () => {
   const openNew = () => {
     setEditingId(null);
     setForm(emptyForm);
+    setTmdbQuery("");
+    setTmdbResults([]);
+    setShowTmdbResults(false);
     setDialogOpen(true);
   };
 
@@ -42,7 +64,39 @@ const AdminCatalog = () => {
       duration: item.duration || "", genres: item.genres?.join(", ") || "",
       synopsis: item.synopsis || "",
     });
+    setTmdbQuery("");
+    setTmdbResults([]);
+    setShowTmdbResults(false);
     setDialogOpen(true);
+  };
+
+  const selectTmdbResult = async (result: TmdbSearchResult) => {
+    setShowTmdbResults(false);
+    setFillingFromTmdb(true);
+    setForm((prev) => ({
+      ...prev,
+      title: result.title,
+      type: result.mediaType === "movie" ? "Filme" : "Série",
+      imageUrl: result.posterUrl || "",
+      synopsis: result.overview || prev.synopsis,
+      year: result.year || prev.year,
+    }));
+
+    // Fetch full details including trailer
+    const detail = await getDetails(result.id, result.mediaType);
+    if (detail) {
+      setForm((prev) => ({
+        ...prev,
+        duration: detail.duration || prev.duration,
+        genres: detail.genres?.join(", ") || prev.genres,
+        synopsis: detail.synopsis || prev.synopsis,
+        videoUrl: detail.trailerUrl || prev.videoUrl,
+        imageUrl: detail.posterUrl || prev.imageUrl,
+        year: detail.year || prev.year,
+      }));
+    }
+    setFillingFromTmdb(false);
+    toast.success("Dados preenchidos do TMDB!");
   };
 
   const handleSave = async () => {
@@ -123,6 +177,54 @@ const AdminCatalog = () => {
               </DialogTitle>
             </DialogHeader>
             <div className="space-y-4 mt-4">
+              {/* TMDB Search - only for new items */}
+              {!editingId && (
+                <div className="relative">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      placeholder="🔍 Buscar no TMDB para preencher automaticamente..."
+                      value={tmdbQuery}
+                      onChange={(e) => setTmdbQuery(e.target.value)}
+                      className="pl-9 bg-primary/5 border-primary/30 placeholder:text-muted-foreground/60"
+                    />
+                    {tmdbLoading && (
+                      <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-primary animate-spin" />
+                    )}
+                  </div>
+                  {showTmdbResults && tmdbResults.length > 0 && (
+                    <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-background border border-border rounded-lg shadow-xl max-h-60 overflow-y-auto">
+                      {tmdbResults.map((r) => (
+                        <button
+                          key={`${r.mediaType}-${r.id}`}
+                          onClick={() => selectTmdbResult(r)}
+                          className="w-full flex items-center gap-3 px-3 py-2 hover:bg-secondary/50 transition-colors text-left"
+                        >
+                          {r.posterUrl ? (
+                            <img src={r.posterUrl} alt="" className="w-8 h-12 rounded object-cover flex-shrink-0" />
+                          ) : (
+                            <div className="w-8 h-12 rounded bg-secondary flex-shrink-0" />
+                          )}
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium text-foreground truncate">{r.title}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {r.mediaType === "movie" ? "Filme" : "Série"} · {r.year}
+                            </p>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {fillingFromTmdb && (
+                <div className="flex items-center gap-2 text-sm text-primary">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Buscando detalhes do TMDB...
+                </div>
+              )}
+
               <Input placeholder="Título *" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} className="bg-secondary/50 border-border/50" />
               <div className="grid grid-cols-2 gap-3">
                 <Select value={form.type} onValueChange={(v) => setForm({ ...form, type: v as CatalogItem["type"] })}>
@@ -147,10 +249,45 @@ const AdminCatalog = () => {
                 <Input placeholder="Duração" value={form.duration} onChange={(e) => setForm({ ...form, duration: e.target.value })} className="bg-secondary/50 border-border/50" />
               </div>
               <Input placeholder="Gêneros (separados por vírgula)" value={form.genres} onChange={(e) => setForm({ ...form, genres: e.target.value })} className="bg-secondary/50 border-border/50" />
-              <Input placeholder="URL da Imagem" value={form.imageUrl} onChange={(e) => setForm({ ...form, imageUrl: e.target.value })} className="bg-secondary/50 border-border/50" />
-              <Input placeholder="URL de Redirecionamento" value={form.redirectUrl} onChange={(e) => setForm({ ...form, redirectUrl: e.target.value })} className="bg-secondary/50 border-border/50" />
-              <Input placeholder="URL do Vídeo" value={form.videoUrl} onChange={(e) => setForm({ ...form, videoUrl: e.target.value })} className="bg-secondary/50 border-border/50" />
+              <Input placeholder="URL da Imagem (preenchido do TMDB)" value={form.imageUrl} onChange={(e) => setForm({ ...form, imageUrl: e.target.value })} className="bg-secondary/50 border-border/50" />
+              
+              {/* Video URL - auto-filled from TMDB */}
+              <div>
+                <label className="text-xs text-muted-foreground mb-1 block">URL do Vídeo (trailer - preenchido automaticamente do TMDB)</label>
+                <Input
+                  placeholder="Preenchido automaticamente do TMDB"
+                  value={form.videoUrl}
+                  onChange={(e) => setForm({ ...form, videoUrl: e.target.value })}
+                  className="bg-secondary/50 border-border/50"
+                />
+              </div>
+
+              {/* Redirect URL - manual */}
+              <div>
+                <label className="text-xs text-muted-foreground mb-1 block">URL de Redirecionamento (manual - link para assistir o filme)</label>
+                <Input
+                  placeholder="Cole aqui o link para assistir o filme..."
+                  value={form.redirectUrl}
+                  onChange={(e) => setForm({ ...form, redirectUrl: e.target.value })}
+                  className="bg-secondary/50 border-border/50 border-primary/30"
+                />
+              </div>
+
               <Textarea placeholder="Sinopse" value={form.synopsis} onChange={(e) => setForm({ ...form, synopsis: e.target.value })} rows={3} className="bg-secondary/50 border-border/50" />
+              
+              {/* Preview */}
+              {form.imageUrl && (
+                <div className="flex gap-3 items-start p-3 rounded-lg bg-secondary/30 border border-border/30">
+                  <img src={form.imageUrl} alt="Preview" className="w-16 h-24 rounded object-cover" />
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-foreground">{form.title || "Sem título"}</p>
+                    <p className="text-xs text-muted-foreground">{form.type} · {form.year}</p>
+                    {form.videoUrl && <p className="text-xs text-primary mt-1">🎬 Trailer disponível</p>}
+                    {form.redirectUrl && <p className="text-xs text-accent mt-1">🔗 Link para assistir</p>}
+                  </div>
+                </div>
+              )}
+
               <div className="flex gap-3 justify-end">
                 <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancelar</Button>
                 <Button onClick={handleSave} className="gradient-neon text-primary-foreground">Salvar</Button>
