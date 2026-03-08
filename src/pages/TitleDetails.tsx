@@ -19,6 +19,7 @@ const TitleDetails = () => {
   const [watching, setWatching] = useState(false);
   const { fetchSeasons } = useSeasons();
   const { markEpisodeWatched, unmarkEpisodeWatched, isEpisodeWatched } = useWatchProgress();
+  const { markMovieWatched, unmarkMovieWatched, isMovieWatched } = useWatchedMovies();
   const [seasons, setSeasons] = useState<Season[]>([]);
   const [openSeason, setOpenSeason] = useState<number | null>(null);
 
