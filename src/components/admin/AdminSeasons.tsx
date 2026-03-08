@@ -21,6 +21,39 @@ const AdminSeasons = () => {
   const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadSeasonIdx, setUploadSeasonIdx] = useState<number | null>(null);
+  const [dragState, setDragState] = useState<{ seasonIdx: number; epIdx: number } | null>(null);
+  const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
+
+  const handleDragStart = (seasonIdx: number, epIdx: number) => {
+    setDragState({ seasonIdx, epIdx });
+  };
+
+  const handleDragOver = (e: React.DragEvent, epIdx: number) => {
+    e.preventDefault();
+    setDragOverIdx(epIdx);
+  };
+
+  const handleDrop = (seasonIdx: number, targetEpIdx: number) => {
+    if (!dragState || dragState.seasonIdx !== seasonIdx || dragState.epIdx === targetEpIdx) {
+      setDragState(null);
+      setDragOverIdx(null);
+      return;
+    }
+    const season = seasons[seasonIdx];
+    const eps = [...season.episodes];
+    const [moved] = eps.splice(dragState.epIdx, 1);
+    eps.splice(targetEpIdx, 0, moved);
+    // Re-number episodes after reorder
+    const renumbered = eps.map((ep, i) => ({ ...ep, episode_number: i + 1 }));
+    updateSeason(seasonIdx, { episodes: renumbered });
+    setDragState(null);
+    setDragOverIdx(null);
+  };
+
+  const handleDragEnd = () => {
+    setDragState(null);
+    setDragOverIdx(null);
+  };
 
   // Only show series/anime
   const seriesItems = items.filter((i) => i.type === "Série" || i.type === "Anime");
