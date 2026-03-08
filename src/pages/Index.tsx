@@ -2,8 +2,10 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { useCatalog } from "@/hooks/useCatalog";
 import { useSections } from "@/hooks/useSections";
+import { useWatchProgress } from "@/hooks/useWatchProgress";
 import MovieCard from "@/components/MovieCard";
 import HomeSection from "@/components/HomeSection";
+import ContinueWatchingSection from "@/components/ContinueWatchingSection";
 import HeroSlider from "@/components/HeroSlider";
 import Navbar from "@/components/Navbar";
 
