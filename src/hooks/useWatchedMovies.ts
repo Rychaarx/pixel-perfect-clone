@@ -6,6 +6,7 @@ export interface WatchedMovie {
   id: string;
   catalog_item_id: string;
   watched_at: string;
+  progress: number;
   title: string;
   imageUrl?: string;
   type: string;
@@ -36,6 +37,7 @@ export function useWatchedMovies() {
           id: row.id,
           catalog_item_id: row.catalog_item_id,
           watched_at: row.watched_at,
+          progress: row.progress ?? 0,
           title: row.catalog_items?.title || "",
           imageUrl: row.catalog_items?.image_url || undefined,
           type: row.catalog_items?.type || "",
@@ -50,13 +52,14 @@ export function useWatchedMovies() {
     fetchWatchedMovies();
   }, [fetchWatchedMovies]);
 
-  const markMovieWatched = useCallback(
-    async (catalogItemId: string) => {
+  const setMovieProgress = useCallback(
+    async (catalogItemId: string, progress: number) => {
       if (!user) return;
       await supabase.from("watched_movies").upsert(
         {
           user_id: user.id,
           catalog_item_id: catalogItemId,
+          progress: Math.min(100, Math.max(0, progress)),
           watched_at: new Date().toISOString(),
         },
         { onConflict: "user_id,catalog_item_id" }
@@ -64,6 +67,11 @@ export function useWatchedMovies() {
       await fetchWatchedMovies();
     },
     [user, fetchWatchedMovies]
+  );
+
+  const markMovieWatched = useCallback(
+    async (catalogItemId: string) => setMovieProgress(catalogItemId, 100),
+    [setMovieProgress]
   );
 
   const unmarkMovieWatched = useCallback(
@@ -80,9 +88,12 @@ export function useWatchedMovies() {
   );
 
   const isMovieWatched = useCallback(
-    (catalogItemId: string) => {
-      return watchedMovies.some((m) => m.catalog_item_id === catalogItemId);
-    },
+    (catalogItemId: string) => watchedMovies.some((m) => m.catalog_item_id === catalogItemId),
+    [watchedMovies]
+  );
+
+  const getMovieProgress = useCallback(
+    (catalogItemId: string) => watchedMovies.find((m) => m.catalog_item_id === catalogItemId)?.progress ?? 0,
     [watchedMovies]
   );
 
@@ -92,6 +103,8 @@ export function useWatchedMovies() {
     markMovieWatched,
     unmarkMovieWatched,
     isMovieWatched,
+    getMovieProgress,
+    setMovieProgress,
     refetch: fetchWatchedMovies,
   };
 }
