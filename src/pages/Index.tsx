@@ -15,6 +15,7 @@ import Navbar from "@/components/Navbar";
 const Index = () => {
   const { items: catalogItems, loading: catalogLoading } = useCatalog();
   const { continueWatching } = useWatchProgress();
+  const { watchedMovies } = useWatchedMovies();
   const { sections, loading: sectionsLoading } = useSections();
 
   // Unique genres from catalog
