@@ -75,7 +75,7 @@ serve(async (req) => {
         (v: any) => v.type === "Trailer" && v.site === "YouTube"
       );
 
-      const detail = {
+      const detail: any = {
         id: d.id,
         title: type === "movie" ? d.title : d.name,
         year: (type === "movie" ? d.release_date : d.first_air_date)?.substring(0, 4) || "",
@@ -87,6 +87,37 @@ serve(async (req) => {
         trailerUrl: trailer ? `https://www.youtube.com/embed/${trailer.key}` : null,
         mediaType: type,
       };
+
+      // For TV shows, fetch all seasons with episodes
+      if (type === "tv" && d.number_of_seasons > 0) {
+        const seasons: any[] = [];
+        const seasonNumbers = Array.from({ length: d.number_of_seasons }, (_, i) => i + 1);
+
+        // Fetch all seasons in parallel
+        const seasonPromises = seasonNumbers.map(async (num) => {
+          const sRes = await fetch(
+            `${TMDB_BASE}/tv/${id}/season/${num}?api_key=${TMDB_API_KEY}&language=pt-BR`
+          );
+          if (!sRes.ok) return null;
+          const sData = await sRes.json();
+          return {
+            seasonNumber: sData.season_number ?? num,
+            name: sData.name || `Temporada ${num}`,
+            episodes: (sData.episodes || []).map((ep: any) => ({
+              episodeNumber: ep.episode_number,
+              title: ep.name || `Episódio ${ep.episode_number}`,
+              duration: ep.runtime ? `${ep.runtime}min` : null,
+            })),
+          };
+        });
+
+        const seasonResults = await Promise.all(seasonPromises);
+        for (const s of seasonResults) {
+          if (s) seasons.push(s);
+        }
+
+        detail.seasons = seasons;
+      }
 
       return new Response(JSON.stringify({ detail }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },

@@ -10,6 +10,18 @@ export interface TmdbSearchResult {
   overview: string;
 }
 
+export interface TmdbEpisode {
+  episodeNumber: number;
+  title: string;
+  duration: string | null;
+}
+
+export interface TmdbSeason {
+  seasonNumber: number;
+  name: string;
+  episodes: TmdbEpisode[];
+}
+
 export interface TmdbDetail {
   id: number;
   title: string;
@@ -18,8 +30,10 @@ export interface TmdbDetail {
   genres: string[];
   synopsis: string;
   posterUrl: string | null;
+  backdropUrl: string | null;
   trailerUrl: string | null;
   mediaType: "movie" | "tv";
+  seasons?: TmdbSeason[];
 }
 
 export function useTmdbSearch() {

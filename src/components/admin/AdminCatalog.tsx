@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import * as tus from "tus-js-client";
 import { useCatalog, CatalogItem, CatalogStatus, statusConfig } from "@/hooks/useCatalog";
-import { useTmdbSearch, TmdbSearchResult } from "@/hooks/useTmdbSearch";
+import { useTmdbSearch, TmdbSearchResult, TmdbDetail } from "@/hooks/useTmdbSearch";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -33,6 +33,7 @@ const AdminCatalog = () => {
   const [uploadSpeed, setUploadSpeed] = useState("");
   const uploadRef = useRef<tus.Upload | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [pendingTmdbDetail, setPendingTmdbDetail] = useState<TmdbDetail | null>(null);
 
   const formatFileSize = (bytes: number) => {
     if (bytes >= 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`;
@@ -189,6 +190,7 @@ const AdminCatalog = () => {
     setTmdbQuery("");
     setTmdbResults([]);
     setShowTmdbResults(false);
+    setPendingTmdbDetail(null);
     setDialogOpen(true);
   };
 
@@ -210,6 +212,7 @@ const AdminCatalog = () => {
   const selectTmdbResult = async (result: TmdbSearchResult) => {
     setShowTmdbResults(false);
     setFillingFromTmdb(true);
+    setPendingTmdbDetail(null);
     setForm((prev) => ({
       ...prev,
       title: result.title,
@@ -219,7 +222,6 @@ const AdminCatalog = () => {
       year: result.year || prev.year,
     }));
 
-    // Fetch full details including trailer
     const detail = await getDetails(result.id, result.mediaType);
     if (detail) {
       setForm((prev) => ({
@@ -229,12 +231,18 @@ const AdminCatalog = () => {
         synopsis: detail.synopsis || prev.synopsis,
         videoUrl: detail.trailerUrl || prev.videoUrl,
         imageUrl: detail.posterUrl || prev.imageUrl,
-        backdropUrl: (detail as any).backdropUrl || prev.backdropUrl,
+        backdropUrl: detail.backdropUrl || prev.backdropUrl,
         year: detail.year || prev.year,
       }));
+      if (detail.seasons && detail.seasons.length > 0) {
+        setPendingTmdbDetail(detail);
+      }
     }
     setFillingFromTmdb(false);
-    toast.success("Dados preenchidos do TMDB!");
+    const seasonCount = detail?.seasons?.length || 0;
+    const episodeCount = detail?.seasons?.reduce((sum, s) => sum + s.episodes.length, 0) || 0;
+    const extra = seasonCount > 0 ? ` (${seasonCount} temporada(s), ${episodeCount} episódio(s))` : "";
+    toast.success(`Dados preenchidos do TMDB!${extra}`);
   };
 
   const handleSave = async () => {
@@ -258,6 +266,40 @@ const AdminCatalog = () => {
         toast.error(`"${form.title}" já existe no catálogo`);
         return;
       }
+      
+      // Auto-create seasons and episodes from TMDB data
+      if (result?.id && pendingTmdbDetail?.seasons && pendingTmdbDetail.seasons.length > 0) {
+        try {
+          for (const season of pendingTmdbDetail.seasons) {
+            const { data: seasonData } = await supabase
+              .from("seasons")
+              .insert({
+                catalog_item_id: result.id,
+                season_number: season.seasonNumber,
+                name: season.name,
+              })
+              .select()
+              .single();
+
+            if (seasonData && season.episodes.length > 0) {
+              const episodeRows = season.episodes.map((ep) => ({
+                season_id: seasonData.id,
+                episode_number: ep.episodeNumber,
+                title: ep.title,
+                duration: ep.duration,
+              }));
+              await supabase.from("episodes").insert(episodeRows);
+            }
+          }
+          const totalEps = pendingTmdbDetail.seasons.reduce((s, se) => s + se.episodes.length, 0);
+          toast.success(`${pendingTmdbDetail.seasons.length} temporada(s) e ${totalEps} episódio(s) criados!`);
+        } catch (err) {
+          console.error("Error creating seasons/episodes:", err);
+          toast.error("Erro ao criar temporadas/episódios");
+        }
+      }
+      
+      setPendingTmdbDetail(null);
       toast.success("Item adicionado!");
     }
     setDialogOpen(false);
