@@ -190,6 +190,7 @@ const AdminCatalog = () => {
     setTmdbQuery("");
     setTmdbResults([]);
     setShowTmdbResults(false);
+    setPendingTmdbDetail(null);
     setDialogOpen(true);
   };
 
