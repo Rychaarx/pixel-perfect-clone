@@ -4,8 +4,8 @@ import { useCatalog } from "@/hooks/useCatalog";
 
 const TitleDetails = () => {
   const { id } = useParams<{ id: string }>();
-  const { catalogItems, loading } = useCatalog();
-  const item = catalogItems.find((c) => c.id === id);
+  const { items, loading } = useCatalog();
+  const item = items.find((c) => c.id === id);
 
   return (
     <div className="min-h-screen bg-background">

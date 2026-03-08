@@ -3,8 +3,7 @@ import { useProfiles } from "@/hooks/useProfiles";
 import { useNavigate } from "react-router-dom";
 
 const ProfileSelect = () => {
-  const { user } = useAuth();
-  const { profiles } = useProfiles(user?.id);
+  const { profiles } = useProfiles();
   const navigate = useNavigate();
 
   return (
