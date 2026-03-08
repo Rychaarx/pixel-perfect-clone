@@ -7,12 +7,8 @@ import HomeSection from "@/components/HomeSection";
 import HeroSlider from "@/components/HeroSlider";
 import Navbar from "@/components/Navbar";
 import BottomNav from "@/components/BottomNav";
-import { movies, genres, getMoviesByGenre, getFeaturedMovies } from "@/data/movies";
 
 const Index = () => {
-  const [selectedGenre, setSelectedGenre] = useState("All");
-  const filteredMovies = getMoviesByGenre(selectedGenre);
-  const featured = getFeaturedMovies();
   const { items: catalogItems, loading: catalogLoading } = useCatalog();
   const { sections, loading: sectionsLoading } = useSections();
 
@@ -25,6 +21,17 @@ const Index = () => {
     ? catalogItems
     : catalogItems.filter((i) => i.genres?.includes(catalogGenreFilter));
 
+  // Items with images for the hero slider
+  const heroItems = catalogItems.filter((i) => i.imageUrl);
+
+  if (catalogLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -34,10 +41,10 @@ const Index = () => {
       </div>
 
       {/* Hero */}
-      <HeroSlider movies={featured} />
+      <HeroSlider items={heroItems.length > 0 ? heroItems : catalogItems.slice(0, 5)} />
 
       {/* Catalog sections from DB */}
-      {!sectionsLoading && !catalogLoading && sections.length > 0 && (
+      {!sectionsLoading && sections.length > 0 && (
         <div>
           {sections.map((section) => (
             <HomeSection key={section.id} section={section} catalogItems={catalogItems} />
@@ -45,60 +52,50 @@ const Index = () => {
         </div>
       )}
 
-      {/* Catálogo do banco */}
-      {!catalogLoading && catalogItems.length > 0 && (
-        <>
-          {/* Genre Filter for catalog */}
-          {catalogGenres.length > 0 && (
-            <div className="px-4 py-4">
-              <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2">
-                {allGenres.map((genre) => (
-                  <button
-                    key={genre}
-                    onClick={() => setCatalogGenreFilter(genre)}
-                    className={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium transition-all ${
-                      catalogGenreFilter === genre
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
-                    }`}
-                  >
-                    {genre}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          <section className="px-4 mb-8">
-            <h2 className="font-display text-2xl text-foreground mb-4 tracking-wider">CATÁLOGO</h2>
-            <motion.div
-              layout
-              className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4"
-            >
-              {filteredCatalog.map((item, idx) => (
-                <MovieCard
-                  key={item.id}
-                  id={item.id}
-                  title={item.title}
-                  poster={item.imageUrl || ""}
-                  status={item.status}
-                  type={item.type}
-                  index={idx}
-                />
-              ))}
-            </motion.div>
-          </section>
-        </>
+      {/* Genre Filter */}
+      {catalogGenres.length > 0 && (
+        <div className="px-4 py-6">
+          <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2">
+            {allGenres.map((genre) => (
+              <button
+                key={genre}
+                onClick={() => setCatalogGenreFilter(genre)}
+                className={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium transition-all ${
+                  catalogGenreFilter === genre
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                }`}
+              >
+                {genre}
+              </button>
+            ))}
+          </div>
+        </div>
       )}
 
-      {/* Static data sections */}
+      {/* Catálogo */}
       <section className="px-4 mb-8">
-        <h2 className="font-display text-2xl text-foreground mb-4 tracking-wider">EM ALTA</h2>
-        <div className="flex gap-4 overflow-x-auto no-scrollbar pb-2">
-          {movies.slice(0, 5).map((movie, i) => (
-            <MovieCard key={movie.id} movie={movie} variant="trending" index={i} />
-          ))}
-        </div>
+        <h2 className="font-display text-2xl text-foreground mb-4 tracking-wider">CATÁLOGO</h2>
+        {filteredCatalog.length === 0 ? (
+          <p className="text-muted-foreground text-sm">Nenhum título no catálogo ainda. Adicione pelo painel Admin.</p>
+        ) : (
+          <motion.div
+            layout
+            className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4"
+          >
+            {filteredCatalog.map((item, idx) => (
+              <MovieCard
+                key={item.id}
+                id={item.id}
+                title={item.title}
+                poster={item.imageUrl || ""}
+                status={item.status}
+                type={item.type}
+                index={idx}
+              />
+            ))}
+          </motion.div>
+        )}
       </section>
 
       <BottomNav />
