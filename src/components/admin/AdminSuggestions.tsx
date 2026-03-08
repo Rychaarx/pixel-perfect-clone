@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Trash2, Lightbulb, Check, X } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { Trash2 } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 
@@ -38,8 +39,31 @@ const AdminSuggestions = () => {
   const updateStatus = async (id: string, status: string) => {
     const { error } = await supabase.from("suggestions").update({ status }).eq("id", id);
     if (error) { toast.error("Erro ao atualizar"); return; }
+
+    // When marked as "adicionado", add to catalog
+    if (status === "adicionado") {
+      const suggestion = items.find((i) => i.id === id);
+      if (suggestion) {
+        const { data: sessionData } = await supabase.auth.getSession();
+        const userId = sessionData?.session?.user?.id;
+        if (userId) {
+          const { error: catalogError } = await supabase.from("catalog_items").insert({
+            user_id: userId,
+            title: suggestion.title,
+            type: suggestion.type,
+            status: "na_lista",
+          });
+          if (catalogError) {
+            toast.error("Erro ao adicionar ao catálogo");
+          } else {
+            toast.success("Título adicionado ao catálogo!");
+          }
+        }
+      }
+    }
+
     setItems((prev) => prev.map((i) => (i.id === id ? { ...i, status } : i)));
-    toast.success("Status atualizado!");
+    if (status !== "adicionado") toast.success("Status atualizado!");
   };
 
   const handleDelete = async (id: string) => {
