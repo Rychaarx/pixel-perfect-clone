@@ -25,11 +25,7 @@ const MovieCard = (props: MovieCardProps) => {
   // Catalog-based card
   if (!movie && props.id) {
     const handleClick = () => {
-      if (props.redirectUrl) {
-        window.open(props.redirectUrl, "_blank");
-      } else {
-        navigate(`/titulo/${props.id}`);
-      }
+      navigate(`/titulo/${props.id}`);
     };
 
     return (
