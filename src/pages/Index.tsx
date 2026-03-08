@@ -37,7 +37,7 @@ const Index = () => {
       <Navbar />
       {/* Logo Header */}
       <div className="absolute top-0 left-0 right-0 z-20 px-4 py-4">
-        <h2 className="font-display text-2xl text-primary tracking-widest">CINE CLOUD</h2>
+        <h2 className="font-display text-lg sm:text-2xl text-primary tracking-widest">CINE CLOUD</h2>
       </div>
 
       {/* Hero */}
@@ -60,7 +60,7 @@ const Index = () => {
               <button
                 key={genre}
                 onClick={() => setCatalogGenreFilter(genre)}
-                className={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium transition-all ${
+                className={`whitespace-nowrap rounded-full px-3 py-1.5 text-xs sm:text-sm font-medium transition-all ${
                   catalogGenreFilter === genre
                     ? "bg-primary text-primary-foreground"
                     : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
@@ -75,7 +75,7 @@ const Index = () => {
 
       {/* Catálogo */}
       <section className="px-4 mb-8">
-        <h2 className="font-display text-2xl text-foreground mb-4 tracking-wider">CATÁLOGO</h2>
+        <h2 className="font-display text-lg sm:text-2xl text-foreground mb-4 tracking-wider">CATÁLOGO</h2>
         {filteredCatalog.length === 0 ? (
           <p className="text-muted-foreground text-sm">Nenhum título no catálogo ainda. Adicione pelo painel Admin.</p>
         ) : (

@@ -47,7 +47,7 @@ const MovieCard = (props: MovieCardProps) => {
           <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
         </div>
         <div className="mt-2">
-          <h3 className="text-sm font-medium text-foreground truncate">{props.title}</h3>
+          <h3 className="text-xs sm:text-sm font-medium text-foreground truncate">{props.title}</h3>
         </div>
       </motion.div>
     );
