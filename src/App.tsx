@@ -12,6 +12,8 @@ import Feedback from "./pages/Feedback";
 import ProfileSelect from "./pages/ProfileSelect";
 import TitleDetails from "./pages/TitleDetails";
 import Admin from "./pages/Admin";
+import BuscaPage from "./pages/BuscaPage";
+import ListaPage from "./pages/ListaPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -32,6 +34,8 @@ const App = () => (
             <Route path="/titulo/:id" element={<TitleDetails />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="/feedback" element={<Feedback />} />
+            <Route path="/buscar" element={<BuscaPage />} />
+            <Route path="/lista" element={<ListaPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
