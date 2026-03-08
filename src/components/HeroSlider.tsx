@@ -68,8 +68,8 @@ const HeroSlider = ({ items = [] }: HeroSliderProps) => {
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.5, delay: 0.2 }}
           >
-            <div className="flex items-center gap-3 mb-3">
-              <span className="text-muted-foreground text-sm">{item.type}</span>
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-muted-foreground text-xs">{item.type}</span>
               {item.year && (
                 <span className="flex items-center gap-1 text-muted-foreground text-sm">
                   <Calendar className="h-3.5 w-3.5" />
