@@ -3,7 +3,7 @@ import { Search as SearchIcon, X, Filter } from "lucide-react";
 import { useCatalog, CatalogItem, statusConfig } from "@/hooks/useCatalog";
 import MovieCard from "@/components/MovieCard";
 import Navbar from "@/components/Navbar";
-import BottomNav from "@/components/BottomNav";
+
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const BuscaPage = () => {
