@@ -83,6 +83,7 @@ const Agenda = () => {
       const { data: episodesData } = await supabase
         .from("episodes")
         .select("*, seasons(season_number, name, catalog_item_id, catalog_items(title, type, image_url))")
+        .not("redirect_url", "is", null)
         .order("created_at", { ascending: false })
         .limit(100);
 
