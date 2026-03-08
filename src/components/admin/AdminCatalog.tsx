@@ -212,6 +212,7 @@ const AdminCatalog = () => {
   const selectTmdbResult = async (result: TmdbSearchResult) => {
     setShowTmdbResults(false);
     setFillingFromTmdb(true);
+    setPendingTmdbDetail(null);
     setForm((prev) => ({
       ...prev,
       title: result.title,
@@ -221,7 +222,6 @@ const AdminCatalog = () => {
       year: result.year || prev.year,
     }));
 
-    // Fetch full details including trailer
     const detail = await getDetails(result.id, result.mediaType);
     if (detail) {
       setForm((prev) => ({
@@ -231,12 +231,18 @@ const AdminCatalog = () => {
         synopsis: detail.synopsis || prev.synopsis,
         videoUrl: detail.trailerUrl || prev.videoUrl,
         imageUrl: detail.posterUrl || prev.imageUrl,
-        backdropUrl: (detail as any).backdropUrl || prev.backdropUrl,
+        backdropUrl: detail.backdropUrl || prev.backdropUrl,
         year: detail.year || prev.year,
       }));
+      if (detail.seasons && detail.seasons.length > 0) {
+        setPendingTmdbDetail(detail);
+      }
     }
     setFillingFromTmdb(false);
-    toast.success("Dados preenchidos do TMDB!");
+    const seasonCount = detail?.seasons?.length || 0;
+    const episodeCount = detail?.seasons?.reduce((sum, s) => sum + s.episodes.length, 0) || 0;
+    const extra = seasonCount > 0 ? ` (${seasonCount} temporada(s), ${episodeCount} episódio(s))` : "";
+    toast.success(`Dados preenchidos do TMDB!${extra}`);
   };
 
   const handleSave = async () => {
