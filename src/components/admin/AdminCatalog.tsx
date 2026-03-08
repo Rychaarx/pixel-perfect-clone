@@ -358,9 +358,20 @@ const AdminCatalog = () => {
                 <Input placeholder="URL da imagem para a home" value={form.backdropUrl} onChange={(e) => setForm({ ...form, backdropUrl: e.target.value })} className="bg-secondary/50 border-border/50" />
               </div>
               
-              {/* Video Upload */}
+              {/* Video/Trailer URL */}
+              <div>
+                <label className="text-xs text-muted-foreground mb-1 block">URL do Vídeo/Trailer</label>
+                <Input
+                  placeholder="Cole a URL do vídeo/trailer"
+                  value={form.videoUrl}
+                  onChange={(e) => setForm({ ...form, videoUrl: e.target.value })}
+                  className="bg-secondary/50 border-border/50 text-xs"
+                />
+              </div>
+
+              {/* Redirect URL with Upload */}
               <div className="space-y-2">
-                <label className="text-xs text-muted-foreground block">Vídeo do Filme</label>
+                <label className="text-xs text-muted-foreground block">URL de Redirecionamento (link para assistir)</label>
                 <div className="flex gap-2">
                   <input
                     ref={fileInputRef}
@@ -387,31 +398,20 @@ const AdminCatalog = () => {
                 {uploading && (
                   <Progress value={uploadProgress} className="h-2" />
                 )}
-                {form.videoUrl && (
+                {form.redirectUrl && (
                   <div className="flex items-center gap-2 p-2 rounded-lg bg-secondary/30 border border-border/30">
                     <Film className="w-4 h-4 text-primary flex-shrink-0" />
-                    <p className="text-xs text-muted-foreground truncate flex-1">{form.videoUrl}</p>
-                    <button onClick={() => setForm({ ...form, videoUrl: "" })} className="text-muted-foreground hover:text-destructive">
+                    <p className="text-xs text-muted-foreground truncate flex-1">{form.redirectUrl}</p>
+                    <button onClick={() => setForm({ ...form, redirectUrl: "" })} className="text-muted-foreground hover:text-destructive">
                       <X className="w-3 h-3" />
                     </button>
                   </div>
                 )}
                 <Input
-                  placeholder="Ou cole a URL do vídeo/trailer manualmente"
-                  value={form.videoUrl}
-                  onChange={(e) => setForm({ ...form, videoUrl: e.target.value })}
-                  className="bg-secondary/50 border-border/50 text-xs"
-                />
-              </div>
-
-              {/* Redirect URL - manual */}
-              <div>
-                <label className="text-xs text-muted-foreground mb-1 block">URL de Redirecionamento (manual - link para assistir o filme)</label>
-                <Input
-                  placeholder="Cole aqui o link para assistir o filme..."
+                  placeholder="Ou cole o link para assistir o filme..."
                   value={form.redirectUrl}
                   onChange={(e) => setForm({ ...form, redirectUrl: e.target.value })}
-                  className="bg-secondary/50 border-border/50 border-primary/30"
+                  className="bg-secondary/50 border-border/50 border-primary/30 text-xs"
                 />
               </div>
 
