@@ -1,5 +1,5 @@
 import { User, Settings, LogOut, Heart, ChevronRight } from "lucide-react";
-import BottomNav from "@/components/BottomNav";
+
 
 const Profile = () => {
   const menuItems = [
@@ -38,7 +38,7 @@ const Profile = () => {
           ))}
         </div>
       </div>
-      <BottomNav />
+      
     </div>
   );
 };

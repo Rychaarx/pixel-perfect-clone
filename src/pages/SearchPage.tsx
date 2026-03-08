@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Search as SearchIcon } from "lucide-react";
 import { movies } from "@/data/movies";
 import MovieCard from "@/components/MovieCard";
-import BottomNav from "@/components/BottomNav";
+
 
 const SearchPage = () => {
   const [query, setQuery] = useState("");
@@ -53,7 +53,7 @@ const SearchPage = () => {
         )}
       </div>
 
-      <BottomNav />
+      
     </div>
   );
 };

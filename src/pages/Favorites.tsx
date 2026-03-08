@@ -1,5 +1,5 @@
 import { Heart } from "lucide-react";
-import BottomNav from "@/components/BottomNav";
+
 
 const Favorites = () => {
   return (
@@ -12,7 +12,7 @@ const Favorites = () => {
         <p className="text-muted-foreground text-sm">Seus filmes favoritos aparecerão aqui</p>
         <p className="text-muted-foreground/60 text-xs mt-1">Toque no ícone de coração em qualquer filme para salvá-lo</p>
       </div>
-      <BottomNav />
+      
     </div>
   );
 };

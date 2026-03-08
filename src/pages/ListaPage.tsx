@@ -3,7 +3,7 @@ import { Heart, Filter } from "lucide-react";
 import { useCatalog, CatalogItem, CatalogStatus, statusConfig } from "@/hooks/useCatalog";
 import MovieCard from "@/components/MovieCard";
 import Navbar from "@/components/Navbar";
-import BottomNav from "@/components/BottomNav";
+
 
 const ListaPage = () => {
   const { items, loading } = useCatalog();
@@ -98,7 +98,7 @@ const ListaPage = () => {
           </div>
         )}
       </div>
-      <BottomNav />
+      
     </div>
   );
 };

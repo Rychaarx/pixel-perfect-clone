@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, Play, Clock, Calendar, Tag, Film, X } from "lucide-react";
 import Navbar from "@/components/Navbar";
-import BottomNav from "@/components/BottomNav";
+
 import { useCatalog, statusConfig } from "@/hooks/useCatalog";
 import { Button } from "@/components/ui/button";
 
@@ -180,7 +180,7 @@ const TitleDetails = () => {
         </div>
       </div>
 
-      <BottomNav />
+      
     </div>
   );
 };

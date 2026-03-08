@@ -3,7 +3,7 @@ import { Send, MessageSquare, CheckCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import Navbar from "@/components/Navbar";
-import BottomNav from "@/components/BottomNav";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -133,7 +133,7 @@ const Feedback = () => {
           </form>
         )}
       </div>
-      <BottomNav />
+      
     </div>
   );
 };
