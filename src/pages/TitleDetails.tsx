@@ -5,6 +5,7 @@ import { ArrowLeft, Play, Clock, Calendar, Tag, Film, X, ChevronDown, Eye, EyeOf
 import Navbar from "@/components/Navbar";
 import { useWatchProgress } from "@/hooks/useWatchProgress";
 import { useWatchedMovies } from "@/hooks/useWatchedMovies";
+import { useFavorites } from "@/hooks/useFavorites";
 
 import { useCatalog, statusConfig } from "@/hooks/useCatalog";
 import { useSeasons, Season } from "@/hooks/useSeasons";
