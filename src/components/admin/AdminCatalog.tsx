@@ -56,9 +56,9 @@ const AdminCatalog = () => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const maxSize = 3 * 1024 * 1024 * 1024;
+    const maxSize = 500 * 1024 * 1024; // 500MB
     if (file.size > maxSize) {
-      toast.error(`Arquivo muito grande (${formatFileSize(file.size)}). Máximo: 3 GB.`);
+      toast.error(`Arquivo muito grande (${formatFileSize(file.size)}). Máximo: 500 MB.`);
       if (fileInputRef.current) fileInputRef.current.value = "";
       return;
     }
