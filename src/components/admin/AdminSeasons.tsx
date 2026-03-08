@@ -23,6 +23,8 @@ const AdminSeasons = () => {
   const [uploadSeasonIdx, setUploadSeasonIdx] = useState<number | null>(null);
   const [dragState, setDragState] = useState<{ seasonIdx: number; epIdx: number } | null>(null);
   const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
+  const seasonsRef = useRef<Season[]>([]);
+  seasonsRef.current = seasons;
 
   const handleDragStart = (seasonIdx: number, epIdx: number) => {
     setDragState({ seasonIdx, epIdx });
