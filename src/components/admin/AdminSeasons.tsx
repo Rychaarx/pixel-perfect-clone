@@ -358,10 +358,10 @@ const AdminSeasons = () => {
                           {season.episodes.map((ep, eIdx) => (
                             <div
                               key={eIdx}
-                              draggable
-                              onDragStart={() => handleDragStart(sIdx, eIdx)}
-                              onDragOver={(e) => handleDragOver(e, eIdx)}
-                              onDrop={() => handleDrop(sIdx, eIdx)}
+                              draggable={!uploading}
+                              onDragStart={() => !uploading && handleDragStart(sIdx, eIdx)}
+                              onDragOver={(e) => !uploading && handleDragOver(e, eIdx)}
+                              onDrop={() => !uploading && handleDrop(sIdx, eIdx)}
                               onDragEnd={handleDragEnd}
                               className={`flex items-center gap-2 bg-secondary/20 rounded-lg p-2 transition-all ${
                                 dragState?.seasonIdx === sIdx && dragState?.epIdx === eIdx
@@ -371,7 +371,7 @@ const AdminSeasons = () => {
                                 dragOverIdx === eIdx && dragState?.seasonIdx === sIdx && dragState?.epIdx !== eIdx
                                   ? "border-t-2 border-primary"
                                   : "border-t-2 border-transparent"
-                              }`}
+                              } ${uploading ? "opacity-70" : ""}`}
                             >
                               <div className="cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground shrink-0">
                                 <GripVertical className="w-4 h-4" />
@@ -380,18 +380,21 @@ const AdminSeasons = () => {
                               <Input
                                 placeholder="Título"
                                 value={ep.title}
+                                disabled={uploading}
                                 onChange={(e) => updateEpisode(sIdx, eIdx, { title: e.target.value })}
                                 className="bg-secondary/50 border-border/50 text-sm h-8 flex-1"
                               />
                               <Input
                                 placeholder="Duração"
                                 value={ep.duration}
+                                disabled={uploading}
                                 onChange={(e) => updateEpisode(sIdx, eIdx, { duration: e.target.value })}
                                 className="bg-secondary/50 border-border/50 text-sm h-8 w-20"
                               />
                               <Input
                                 placeholder="URL"
                                 value={ep.redirect_url}
+                                disabled={uploading}
                                 onChange={(e) => updateEpisode(sIdx, eIdx, { redirect_url: e.target.value })}
                                 className={`bg-secondary/50 border-border/50 text-sm h-8 flex-1 ${ep.redirect_url ? "border-primary/30" : ""}`}
                               />
@@ -400,7 +403,8 @@ const AdminSeasons = () => {
                               )}
                               <button
                                 onClick={() => removeEpisode(sIdx, eIdx)}
-                                className="p-1 rounded hover:bg-destructive/20 text-muted-foreground hover:text-destructive transition-colors shrink-0"
+                                disabled={uploading}
+                                className="p-1 rounded hover:bg-destructive/20 text-muted-foreground hover:text-destructive transition-colors shrink-0 disabled:opacity-40"
                               >
                                 <Trash2 className="w-3 h-3" />
                               </button>
