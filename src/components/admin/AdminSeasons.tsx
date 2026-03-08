@@ -333,9 +333,28 @@ const AdminSeasons = () => {
                         )}
 
                         {/* Episodes */}
-                        <div className="space-y-2">
+                        <div className="space-y-1">
                           {season.episodes.map((ep, eIdx) => (
-                            <div key={eIdx} className="flex items-center gap-2 bg-secondary/20 rounded-lg p-2">
+                            <div
+                              key={eIdx}
+                              draggable
+                              onDragStart={() => handleDragStart(sIdx, eIdx)}
+                              onDragOver={(e) => handleDragOver(e, eIdx)}
+                              onDrop={() => handleDrop(sIdx, eIdx)}
+                              onDragEnd={handleDragEnd}
+                              className={`flex items-center gap-2 bg-secondary/20 rounded-lg p-2 transition-all ${
+                                dragState?.seasonIdx === sIdx && dragState?.epIdx === eIdx
+                                  ? "opacity-40 scale-[0.98]"
+                                  : ""
+                              } ${
+                                dragOverIdx === eIdx && dragState?.seasonIdx === sIdx && dragState?.epIdx !== eIdx
+                                  ? "border-t-2 border-primary"
+                                  : "border-t-2 border-transparent"
+                              }`}
+                            >
+                              <div className="cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground shrink-0">
+                                <GripVertical className="w-4 h-4" />
+                              </div>
                               <span className="text-xs text-muted-foreground w-8 shrink-0 text-center">E{ep.episode_number}</span>
                               <Input
                                 placeholder="Título"
