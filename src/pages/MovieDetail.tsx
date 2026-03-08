@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { ArrowLeft, Star, Clock, Play, Heart, Share2 } from "lucide-react";
 import { getMovieById, movies } from "@/data/movies";
 import MovieCard from "@/components/MovieCard";
-import BottomNav from "@/components/BottomNav";
+
 
 const MovieDetail = () => {
   const { id } = useParams();
