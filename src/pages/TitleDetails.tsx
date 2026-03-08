@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Play, Clock, Calendar, Tag, Film, X, ChevronDown, Eye, EyeOff, CheckCircle } from "lucide-react";
+import { ArrowLeft, Play, Clock, Calendar, Tag, Film, X, ChevronDown, Eye, EyeOff, CheckCircle, Heart } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import { useWatchProgress } from "@/hooks/useWatchProgress";
 import { useWatchedMovies } from "@/hooks/useWatchedMovies";
+import { useFavorites } from "@/hooks/useFavorites";
 
 import { useCatalog, statusConfig } from "@/hooks/useCatalog";
 import { useSeasons, Season } from "@/hooks/useSeasons";
@@ -20,6 +21,7 @@ const TitleDetails = () => {
   const { fetchSeasons } = useSeasons();
   const { markEpisodeWatched, unmarkEpisodeWatched, isEpisodeWatched } = useWatchProgress();
   const { markMovieWatched, unmarkMovieWatched, isMovieWatched } = useWatchedMovies();
+  const { toggleFavorite, isFavorite } = useFavorites();
   const [seasons, setSeasons] = useState<Season[]>([]);
   const [openSeason, setOpenSeason] = useState<number | null>(null);
 
@@ -218,6 +220,17 @@ const TitleDetails = () => {
                 >
                   <CheckCircle className={`h-4 w-4 ${isMovieWatched(id) ? "text-primary" : ""}`} />
                   {isMovieWatched(id) ? "Assistido" : "Marcar como Assistido"}
+                </Button>
+              )}
+              {id && (
+                <Button
+                  variant={isFavorite(id) ? "secondary" : "outline"}
+                  onClick={() => toggleFavorite(id)}
+                  className="gap-2 rounded-full px-5"
+                  size="lg"
+                >
+                  <Heart className={`h-4 w-4 ${isFavorite(id) ? "text-destructive fill-destructive" : ""}`} />
+                  {isFavorite(id) ? "Favoritado" : "Favoritar"}
                 </Button>
               )}
             </div>
