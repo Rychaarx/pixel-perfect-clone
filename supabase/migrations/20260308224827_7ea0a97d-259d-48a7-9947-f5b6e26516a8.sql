@@ -1,0 +1,1 @@
+DELETE FROM catalog_items WHERE id = 'e565f063-b272-461f-baa2-7e582ec766aa';
