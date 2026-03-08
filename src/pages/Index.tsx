@@ -4,10 +4,12 @@ import { useCatalog } from "@/hooks/useCatalog";
 import { useSections } from "@/hooks/useSections";
 import { useWatchProgress } from "@/hooks/useWatchProgress";
 import { useWatchedMovies } from "@/hooks/useWatchedMovies";
+import { useFavorites } from "@/hooks/useFavorites";
 import MovieCard from "@/components/MovieCard";
 import HomeSection from "@/components/HomeSection";
 import ContinueWatchingSection from "@/components/ContinueWatchingSection";
 import RecentlyWatchedSection from "@/components/RecentlyWatchedSection";
+import FavoritesSection from "@/components/FavoritesSection";
 import HeroSlider from "@/components/HeroSlider";
 import Navbar from "@/components/Navbar";
 
