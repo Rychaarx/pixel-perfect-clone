@@ -1,10 +1,10 @@
-import { useState, useEffect, useRef, useCallback } from "react";
-import { useCatalog, CatalogItem } from "@/hooks/useCatalog";
+import { useState, useEffect, useRef } from "react";
+import { useCatalog } from "@/hooks/useCatalog";
 import { useSeasons, Season, createEmptySeason, createEmptyEpisode } from "@/hooks/useSeasons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Trash2, Save, ChevronDown, ChevronUp, Upload, FolderUp, GripVertical } from "lucide-react";
+import { Plus, Trash2, Save, ChevronDown, ChevronUp, FolderUp, GripVertical } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import * as tus from "tus-js-client";
