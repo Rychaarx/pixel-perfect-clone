@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       catalog_items: {
         Row: {
+          backdrop_url: string | null
           created_at: string
           duration: string | null
           genres: string[] | null
@@ -32,6 +33,7 @@ export type Database = {
           year: string | null
         }
         Insert: {
+          backdrop_url?: string | null
           created_at?: string
           duration?: string | null
           genres?: string[] | null
@@ -48,6 +50,7 @@ export type Database = {
           year?: string | null
         }
         Update: {
+          backdrop_url?: string | null
           created_at?: string
           duration?: string | null
           genres?: string[] | null
