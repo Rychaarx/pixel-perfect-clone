@@ -5,6 +5,7 @@ export interface TmdbSearchResult {
   id: number;
   title: string;
   mediaType: "movie" | "tv";
+  isAnime?: boolean;
   year: string;
   posterUrl: string | null;
   overview: string;
