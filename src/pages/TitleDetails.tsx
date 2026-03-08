@@ -26,7 +26,7 @@ const TitleDetails = () => {
   const [openSeason, setOpenSeason] = useState<number | null>(null);
 
   useEffect(() => {
-    if (id && item?.type?.toLowerCase() === "série") {
+    if (id && (item?.type?.toLowerCase() === "série" || item?.type?.toLowerCase() === "anime")) {
       fetchSeasons(id).then((s) => {
         setSeasons(s);
         if (s.length > 0) setOpenSeason(s[0].season_number);
