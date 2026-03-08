@@ -39,15 +39,15 @@ const MovieCard = (props: MovieCardProps) => {
       >
         <div className={`relative aspect-[2/3] rounded-lg overflow-hidden bg-secondary transition-shadow duration-300 ${
           props.type === "Anime"
-            ? "group-hover:shadow-[0_0_20px_rgba(236,72,153,0.5),0_0_40px_rgba(236,72,153,0.2)]"
+            ? "group-hover:shadow-[0_0_12px_rgba(236,72,153,0.4)] sm:group-hover:shadow-[0_0_20px_rgba(236,72,153,0.5),0_0_40px_rgba(236,72,153,0.2)]"
             : props.type === "Série"
-            ? "group-hover:shadow-[0_0_20px_rgba(59,130,246,0.5),0_0_40px_rgba(59,130,246,0.2)]"
-            : "group-hover:shadow-[0_0_20px_rgba(245,158,11,0.5),0_0_40px_rgba(245,158,11,0.2)]"
+            ? "group-hover:shadow-[0_0_12px_rgba(59,130,246,0.4)] sm:group-hover:shadow-[0_0_20px_rgba(59,130,246,0.5),0_0_40px_rgba(59,130,246,0.2)]"
+            : "group-hover:shadow-[0_0_12px_rgba(245,158,11,0.4)] sm:group-hover:shadow-[0_0_20px_rgba(245,158,11,0.5),0_0_40px_rgba(245,158,11,0.2)]"
         }`} style={{ boxShadow: "var(--shadow-card)" }}>
           <img
             src={props.poster || "/placeholder.svg"}
             alt={props.title}
-            className="h-full w-full object-contain transition-transform duration-500 group-hover:scale-110"
+            className="h-full w-full object-contain transition-transform duration-500 group-hover:scale-105 sm:group-hover:scale-110"
             onError={(e) => { (e.target as HTMLImageElement).src = "/placeholder.svg"; }}
           />
           <div className={`absolute inset-0 transition-opacity opacity-0 group-hover:opacity-100 ${
@@ -60,27 +60,27 @@ const MovieCard = (props: MovieCardProps) => {
           {/* Neon border glow */}
           <div className={`absolute inset-0 rounded-lg border transition-all duration-300 pointer-events-none ${
             props.type === "Anime"
-              ? "border-pink-500/0 group-hover:border-pink-500/60"
+              ? "border-pink-500/0 group-hover:border-pink-500/40 sm:group-hover:border-pink-500/60"
               : props.type === "Série"
-              ? "border-blue-500/0 group-hover:border-blue-500/60"
-              : "border-amber-500/0 group-hover:border-amber-500/60"
+              ? "border-blue-500/0 group-hover:border-blue-500/40 sm:group-hover:border-blue-500/60"
+              : "border-amber-500/0 group-hover:border-amber-500/40 sm:group-hover:border-amber-500/60"
           }`} />
           {/* Type badge */}
           {props.type && (
-            <div className={`absolute top-1.5 left-1.5 flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-semibold backdrop-blur-sm ${
+            <div className={`absolute top-1 left-1 sm:top-1.5 sm:left-1.5 flex items-center gap-0.5 sm:gap-1 px-1 sm:px-1.5 py-0.5 rounded text-[8px] sm:text-[10px] font-semibold backdrop-blur-sm ${
               props.type === "Anime"
                 ? "bg-pink-500/80 text-white"
                 : props.type === "Série"
                 ? "bg-blue-500/80 text-white"
                 : "bg-amber-500/80 text-white"
             }`}>
-              {props.type === "Anime" ? <Sparkles className="h-2.5 w-2.5" /> : props.type === "Série" ? <Tv className="h-2.5 w-2.5" /> : <Film className="h-2.5 w-2.5" />}
+              {props.type === "Anime" ? <Sparkles className="h-2 w-2 sm:h-2.5 sm:w-2.5" /> : props.type === "Série" ? <Tv className="h-2 w-2 sm:h-2.5 sm:w-2.5" /> : <Film className="h-2 w-2 sm:h-2.5 sm:w-2.5" />}
               {props.type}
             </div>
           )}
         </div>
-        <div className="mt-2">
-          <h3 className="text-xs sm:text-sm font-medium text-foreground truncate">{props.title}</h3>
+        <div className="mt-1.5 sm:mt-2">
+          <h3 className="text-[11px] sm:text-sm font-medium text-foreground truncate">{props.title}</h3>
         </div>
       </motion.div>
     );
