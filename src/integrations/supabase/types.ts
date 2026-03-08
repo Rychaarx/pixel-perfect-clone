@@ -339,6 +339,35 @@ export type Database = {
           },
         ]
       }
+      watched_movies: {
+        Row: {
+          catalog_item_id: string
+          id: string
+          user_id: string
+          watched_at: string
+        }
+        Insert: {
+          catalog_item_id: string
+          id?: string
+          user_id: string
+          watched_at?: string
+        }
+        Update: {
+          catalog_item_id?: string
+          id?: string
+          user_id?: string
+          watched_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "watched_movies_catalog_item_id_fkey"
+            columns: ["catalog_item_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
