@@ -37,7 +37,7 @@ const AdminCatalog = () => {
     return `${(bytes / 1024).toFixed(0)} KB`;
   };
 
-  const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -50,14 +50,6 @@ const AdminCatalog = () => {
 
     if (file.size === 0) {
       toast.error("O arquivo selecionado está vazio.");
-      if (fileInputRef.current) fileInputRef.current.value = "";
-      return;
-    }
-
-    const allowedTypes = ["video/mp4", "video/webm", "video/ogg", "video/quicktime"];
-    if (!allowedTypes.includes(file.type)) {
-      const ext = file.name.split('.').pop()?.toUpperCase() || "desconhecido";
-      toast.error(`Formato "${ext}" não suportado. Use MP4, WebM, OGG ou MOV.`);
       if (fileInputRef.current) fileInputRef.current.value = "";
       return;
     }
