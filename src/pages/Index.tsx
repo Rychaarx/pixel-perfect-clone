@@ -46,6 +46,9 @@ const Index = () => {
       {/* Hero */}
       <HeroSlider items={heroItems.length > 0 ? heroItems : catalogItems.slice(0, 5)} />
 
+      {/* Continue Watching */}
+      <ContinueWatchingSection items={continueWatching} />
+
       {/* Catalog sections from DB */}
       {!sectionsLoading && sections.length > 0 && (
         <div>
