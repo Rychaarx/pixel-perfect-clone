@@ -6,6 +6,7 @@ const corsHeaders = {
 };
 
 const TMDB_BASE = "https://api.themoviedb.org/3";
+const ANIMATION_GENRE_ID = 16;
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -41,14 +42,20 @@ serve(async (req) => {
       const results = (data.results || [])
         .filter((r: any) => r.media_type === "movie" || r.media_type === "tv")
         .slice(0, 10)
-        .map((r: any) => ({
-          id: r.id,
-          title: r.media_type === "movie" ? r.title : r.name,
-          mediaType: r.media_type === "movie" ? "movie" : "tv",
-          year: (r.media_type === "movie" ? r.release_date : r.first_air_date)?.substring(0, 4) || "",
-          posterUrl: r.poster_path ? `https://image.tmdb.org/t/p/w500${r.poster_path}` : null,
-          overview: r.overview || "",
-        }));
+        .map((r: any) => {
+          const isTV = r.media_type === "tv";
+          const genreIds: number[] = r.genre_ids || [];
+          const isAnime = isTV && genreIds.includes(ANIMATION_GENRE_ID);
+          return {
+            id: r.id,
+            title: r.media_type === "movie" ? r.title : r.name,
+            mediaType: r.media_type === "movie" ? "movie" : "tv",
+            isAnime,
+            year: (r.media_type === "movie" ? r.release_date : r.first_air_date)?.substring(0, 4) || "",
+            posterUrl: r.poster_path ? `https://image.tmdb.org/t/p/w500${r.poster_path}` : null,
+            overview: r.overview || "",
+          };
+        });
 
       return new Response(JSON.stringify({ results }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -75,17 +82,21 @@ serve(async (req) => {
         (v: any) => v.type === "Trailer" && v.site === "YouTube"
       );
 
+      const genres: string[] = (d.genres || []).map((g: any) => g.name);
+      const isAnime = type === "tv" && genres.some((g: string) => g.toLowerCase() === "animação" || g.toLowerCase() === "animation");
+
       const detail: any = {
         id: d.id,
         title: type === "movie" ? d.title : d.name,
         year: (type === "movie" ? d.release_date : d.first_air_date)?.substring(0, 4) || "",
         duration: type === "movie" ? `${d.runtime}min` : `${d.number_of_seasons} temporada(s)`,
-        genres: (d.genres || []).map((g: any) => g.name),
+        genres,
         synopsis: d.overview || "",
         posterUrl: d.poster_path ? `https://image.tmdb.org/t/p/w500${d.poster_path}` : null,
         backdropUrl: d.backdrop_path ? `https://image.tmdb.org/t/p/original${d.backdrop_path}` : null,
         trailerUrl: trailer ? `https://www.youtube.com/embed/${trailer.key}` : null,
         mediaType: type,
+        isAnime,
       };
 
       // For TV shows, fetch all seasons with episodes
@@ -93,7 +104,6 @@ serve(async (req) => {
         const seasons: any[] = [];
         const seasonNumbers = Array.from({ length: d.number_of_seasons }, (_, i) => i + 1);
 
-        // Fetch all seasons in parallel
         const seasonPromises = seasonNumbers.map(async (num) => {
           const sRes = await fetch(
             `${TMDB_BASE}/tv/${id}/season/${num}?api_key=${TMDB_API_KEY}&language=pt-BR`

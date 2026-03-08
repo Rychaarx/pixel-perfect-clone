@@ -213,10 +213,11 @@ const AdminCatalog = () => {
     setShowTmdbResults(false);
     setFillingFromTmdb(true);
     setPendingTmdbDetail(null);
+    const resolvedType = result.mediaType === "movie" ? "Filme" : result.isAnime ? "Anime" : "Série";
     setForm((prev) => ({
       ...prev,
       title: result.title,
-      type: result.mediaType === "movie" ? "Filme" : "Série",
+      type: resolvedType as CatalogItem["type"],
       imageUrl: result.posterUrl || "",
       synopsis: result.overview || prev.synopsis,
       year: result.year || prev.year,
@@ -224,8 +225,10 @@ const AdminCatalog = () => {
 
     const detail = await getDetails(result.id, result.mediaType);
     if (detail) {
+      const detailType = detail.mediaType === "movie" ? "Filme" : detail.isAnime ? "Anime" : "Série";
       setForm((prev) => ({
         ...prev,
+        type: detailType as CatalogItem["type"],
         duration: detail.duration || prev.duration,
         genres: detail.genres?.join(", ") || prev.genres,
         synopsis: detail.synopsis || prev.synopsis,
@@ -389,7 +392,7 @@ const AdminCatalog = () => {
                           <div className="min-w-0">
                             <p className="text-sm font-medium text-foreground truncate">{r.title}</p>
                             <p className="text-xs text-muted-foreground">
-                              {r.mediaType === "movie" ? "Filme" : "Série"} · {r.year}
+                              {r.mediaType === "movie" ? "Filme" : r.isAnime ? "Anime" : "Série"} · {r.year}
                             </p>
                           </div>
                         </button>
