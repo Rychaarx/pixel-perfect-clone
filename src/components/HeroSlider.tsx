@@ -102,7 +102,7 @@ const HeroSlider = ({ items = [] }: HeroSliderProps) => {
               </button>
               <button
                 onClick={() => navigate(`/titulo/${item.id}`)}
-                className="flex items-center gap-2 rounded-full border border-border bg-secondary/50 px-6 py-3 text-sm font-semibold text-foreground backdrop-blur-sm hover:bg-secondary transition-all"
+                className="flex items-center gap-2 rounded-full border border-border bg-secondary/50 px-4 py-2 md:px-6 md:py-3 text-xs md:text-sm font-semibold text-foreground backdrop-blur-sm hover:bg-secondary transition-all"
               >
                 Mais Info
               </button>
