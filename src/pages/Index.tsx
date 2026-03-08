@@ -11,7 +11,8 @@ const Index = () => {
   const featured = getFeaturedMovies();
 
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <div className="min-h-screen bg-background">
+      <Navbar />
       {/* Logo Header */}
       <div className="absolute top-0 left-0 right-0 z-20 px-4 py-4">
         <h2 className="font-display text-2xl text-primary tracking-widest">CINE CLOUD</h2>
