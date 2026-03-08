@@ -77,8 +77,8 @@ const HeroSlider = ({ items = [] }: HeroSliderProps) => {
                 </span>
               )}
               {item.duration && (
-                <span className="flex items-center gap-1 text-muted-foreground text-sm">
-                  <Clock className="h-3.5 w-3.5" />
+                <span className="flex items-center gap-1 text-muted-foreground text-xs">
+                  <Clock className="h-3 w-3" />
                   {item.duration}
                 </span>
               )}
