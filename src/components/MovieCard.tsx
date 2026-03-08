@@ -37,11 +37,11 @@ const MovieCard = (props: MovieCardProps) => {
         onClick={handleClick}
         className="cursor-pointer group"
       >
-        <div className="relative aspect-[2/3] rounded-lg overflow-hidden" style={{ boxShadow: "var(--shadow-card)" }}>
+        <div className="relative aspect-[2/3] rounded-lg overflow-hidden bg-secondary" style={{ boxShadow: "var(--shadow-card)" }}>
           <img
             src={props.poster || "/placeholder.svg"}
             alt={props.title}
-            className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
+            className="h-full w-full object-cover object-top group-hover:scale-105 transition-transform duration-500"
             onError={(e) => { (e.target as HTMLImageElement).src = "/placeholder.svg"; }}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
