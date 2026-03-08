@@ -167,7 +167,7 @@ const ProfileSelect = () => {
           </div>
         )}
       </div>
-      <BottomNav />
+      
     </div>
   );
 };

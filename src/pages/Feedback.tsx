@@ -133,7 +133,7 @@ const Feedback = () => {
           </form>
         )}
       </div>
-      <BottomNav />
+      
     </div>
   );
 };

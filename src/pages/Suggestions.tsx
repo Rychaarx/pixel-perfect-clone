@@ -175,7 +175,7 @@ const Suggestions = () => {
           )}
         </div>
       </div>
-      <BottomNav />
+      
     </div>
   );
 };

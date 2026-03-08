@@ -98,7 +98,7 @@ const Index = () => {
         )}
       </section>
 
-      <BottomNav />
+      
     </div>
   );
 };

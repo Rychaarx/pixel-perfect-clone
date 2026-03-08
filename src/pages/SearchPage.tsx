@@ -53,7 +53,7 @@ const SearchPage = () => {
         )}
       </div>
 
-      <BottomNav />
+      
     </div>
   );
 };

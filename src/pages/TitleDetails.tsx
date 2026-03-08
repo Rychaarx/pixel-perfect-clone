@@ -180,7 +180,7 @@ const TitleDetails = () => {
         </div>
       </div>
 
-      <BottomNav />
+      
     </div>
   );
 };

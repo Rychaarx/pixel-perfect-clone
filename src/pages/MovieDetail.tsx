@@ -143,7 +143,7 @@ const MovieDetail = () => {
         </section>
       )}
 
-      <BottomNav />
+      
     </div>
   );
 };

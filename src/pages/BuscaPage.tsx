@@ -106,7 +106,7 @@ const BuscaPage = () => {
           </>
         )}
       </div>
-      <BottomNav />
+      
     </div>
   );
 };

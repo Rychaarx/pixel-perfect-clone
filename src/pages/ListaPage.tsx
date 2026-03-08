@@ -98,7 +98,7 @@ const ListaPage = () => {
           </div>
         )}
       </div>
-      <BottomNav />
+      
     </div>
   );
 };
