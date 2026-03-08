@@ -71,8 +71,8 @@ const HeroSlider = ({ items = [] }: HeroSliderProps) => {
             <div className="flex items-center gap-2 mb-2">
               <span className="text-muted-foreground text-xs">{item.type}</span>
               {item.year && (
-                <span className="flex items-center gap-1 text-muted-foreground text-sm">
-                  <Calendar className="h-3.5 w-3.5" />
+                <span className="flex items-center gap-1 text-muted-foreground text-xs">
+                  <Calendar className="h-3 w-3" />
                   {item.year}
                 </span>
               )}
