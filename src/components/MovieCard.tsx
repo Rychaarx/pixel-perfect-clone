@@ -2,15 +2,63 @@ import { motion } from "framer-motion";
 import { Star } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import type { Movie } from "@/data/movies";
+import type { CatalogStatus } from "@/hooks/useCatalog";
 
-interface MovieCardProps {
-  movie: Movie;
+export interface MovieCardProps {
+  // Legacy Movie-based usage
+  movie?: Movie;
   variant?: "grid" | "trending" | "rated";
+  // Catalog-based usage
+  id?: string;
+  title?: string;
+  poster?: string;
+  status?: CatalogStatus;
+  type?: "Filme" | "Série" | "Anime";
+  redirectUrl?: string;
   index?: number;
 }
 
-const MovieCard = ({ movie, variant = "grid", index = 0 }: MovieCardProps) => {
+const MovieCard = (props: MovieCardProps) => {
   const navigate = useNavigate();
+  const { movie, variant = "grid", index = 0 } = props;
+
+  // Catalog-based card
+  if (!movie && props.id) {
+    const handleClick = () => {
+      if (props.redirectUrl) {
+        window.open(props.redirectUrl, "_blank");
+      } else {
+        navigate(`/titulo/${props.id}`);
+      }
+    };
+
+    return (
+      <motion.div
+        layout
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: index * 0.05 }}
+        onClick={handleClick}
+        className="cursor-pointer group"
+      >
+        <div className="relative aspect-[2/3] rounded-lg overflow-hidden" style={{ boxShadow: "var(--shadow-card)" }}>
+          <img
+            src={props.poster || "/placeholder.svg"}
+            alt={props.title}
+            className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
+            onError={(e) => { (e.target as HTMLImageElement).src = "/placeholder.svg"; }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+        </div>
+        <div className="mt-2">
+          <h3 className="text-sm font-medium text-foreground truncate">{props.title}</h3>
+        </div>
+      </motion.div>
+    );
+  }
+
+  // Legacy Movie-based cards
+  if (!movie) return null;
 
   if (variant === "trending") {
     return (
@@ -22,24 +70,14 @@ const MovieCard = ({ movie, variant = "grid", index = 0 }: MovieCardProps) => {
         className="relative flex-shrink-0 w-[280px] cursor-pointer group"
       >
         <div className="relative h-[160px] rounded-lg overflow-hidden">
-          <img
-            src={movie.backdrop}
-            alt={movie.title}
-            className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500"
-            onError={(e) => { (e.target as HTMLImageElement).src = "/placeholder.svg"; }}
-          />
+          <img src={movie.backdrop} alt={movie.title} className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500" onError={(e) => { (e.target as HTMLImageElement).src = "/placeholder.svg"; }} />
           <div className="absolute inset-0 bg-gradient-to-t from-background/90 to-transparent" />
-          <div className="absolute top-3 left-3 font-display text-5xl text-foreground/20">
-            {index + 1}
-          </div>
+          <div className="absolute top-3 left-3 font-display text-5xl text-foreground/20">{index + 1}</div>
         </div>
         <div className="mt-2">
           <h3 className="text-sm font-semibold text-foreground truncate">{movie.title}</h3>
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <span className="flex items-center gap-0.5 text-accent">
-              <Star className="h-3 w-3 fill-current" />
-              {movie.rating}
-            </span>
+            <span className="flex items-center gap-0.5 text-accent"><Star className="h-3 w-3 fill-current" />{movie.rating}</span>
             <span>{movie.year}</span>
           </div>
         </div>
@@ -49,23 +87,12 @@ const MovieCard = ({ movie, variant = "grid", index = 0 }: MovieCardProps) => {
 
   if (variant === "rated") {
     return (
-      <div
-        onClick={() => navigate(`/movie/${movie.id}`)}
-        className="relative flex-shrink-0 w-[200px] cursor-pointer group"
-      >
+      <div onClick={() => navigate(`/movie/${movie.id}`)} className="relative flex-shrink-0 w-[200px] cursor-pointer group">
         <div className="relative h-[300px] rounded-lg overflow-hidden" style={{ boxShadow: "var(--shadow-card)" }}>
-          <img
-            src={movie.poster}
-            alt={movie.title}
-            className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
-            onError={(e) => { (e.target as HTMLImageElement).src = "/placeholder.svg"; }}
-          />
+          <img src={movie.poster} alt={movie.title} className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500" onError={(e) => { (e.target as HTMLImageElement).src = "/placeholder.svg"; }} />
           <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
           <div className="absolute bottom-0 left-0 right-0 p-3 translate-y-full group-hover:translate-y-0 transition-transform">
-            <div className="flex items-center gap-1 text-accent mb-1">
-              <Star className="h-3 w-3 fill-current" />
-              <span className="text-xs font-bold">{movie.rating}</span>
-            </div>
+            <div className="flex items-center gap-1 text-accent mb-1"><Star className="h-3 w-3 fill-current" /><span className="text-xs font-bold">{movie.rating}</span></div>
             <p className="text-xs text-foreground font-medium">{movie.title}</p>
           </div>
         </div>
@@ -75,27 +102,12 @@ const MovieCard = ({ movie, variant = "grid", index = 0 }: MovieCardProps) => {
 
   // Grid variant
   return (
-    <motion.div
-      layout
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      onClick={() => navigate(`/movie/${movie.id}`)}
-      className="cursor-pointer group"
-    >
+    <motion.div layout initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => navigate(`/movie/${movie.id}`)} className="cursor-pointer group">
       <div className="relative aspect-[2/3] rounded-lg overflow-hidden" style={{ boxShadow: "var(--shadow-card)" }}>
-        <img
-          src={movie.poster}
-          alt={movie.title}
-          className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
-          onError={(e) => { (e.target as HTMLImageElement).src = "/placeholder.svg"; }}
-        />
+        <img src={movie.poster} alt={movie.title} className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500" onError={(e) => { (e.target as HTMLImageElement).src = "/placeholder.svg"; }} />
         <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
         <div className="absolute bottom-0 left-0 right-0 p-3 translate-y-2 group-hover:translate-y-0 opacity-0 group-hover:opacity-100 transition-all">
-          <div className="flex items-center gap-1 text-accent mb-1">
-            <Star className="h-3 w-3 fill-current" />
-            <span className="text-xs font-bold">{movie.rating}</span>
-          </div>
+          <div className="flex items-center gap-1 text-accent mb-1"><Star className="h-3 w-3 fill-current" /><span className="text-xs font-bold">{movie.rating}</span></div>
         </div>
       </div>
       <div className="mt-2">
