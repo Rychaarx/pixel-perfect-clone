@@ -37,19 +37,24 @@ const TitleDetails = () => {
   const sc = statusConfig[item.status];
   const hasVideo = !!(item.redirectUrl || item.videoUrl);
 
-  // Determine if redirectUrl is a direct file (video) or an external link
+  // Determine if a URL is a direct video file (playable via <video> tag)
   const isDirectVideo = (url: string) => {
     return /\.(mp4|webm|ogg|mov|mkv|avi)(\?.*)?$/i.test(url) || url.includes('/storage/v1/object/');
+  };
+
+  // Determine if a URL is an embeddable source (YouTube, Vimeo, etc.)
+  const isEmbeddable = (url: string) => {
+    return /youtube\.com|youtu\.be|vimeo\.com|dailymotion\.com/i.test(url);
   };
 
   // Full-screen video player
   if (watching) {
     // Priority: redirectUrl (link to watch) > videoUrl (trailer)
-    const videoSrc = item.redirectUrl || item.videoUrl;
+    const src = item.redirectUrl || item.videoUrl || '';
 
-    if (item.redirectUrl && !isDirectVideo(item.redirectUrl)) {
-      // External link - open in new tab and stop watching state
-      window.open(item.redirectUrl, '_blank');
+    // If it's a non-embeddable external link, open in new tab
+    if (src && !isDirectVideo(src) && !isEmbeddable(src)) {
+      window.open(src, '_blank');
       setWatching(false);
       return null;
     }
@@ -62,12 +67,21 @@ const TitleDetails = () => {
         >
           <X className="h-5 w-5" />
         </button>
-        <video
-          src={videoSrc}
-          controls
-          autoPlay
-          className="w-full h-full object-contain"
-        />
+        {isDirectVideo(src) ? (
+          <video
+            src={src}
+            controls
+            autoPlay
+            className="w-full h-full object-contain"
+          />
+        ) : (
+          <iframe
+            src={src}
+            className="w-full h-full"
+            allow="autoplay; fullscreen; encrypted-media"
+            allowFullScreen
+          />
+        )}
       </div>
     );
   }
