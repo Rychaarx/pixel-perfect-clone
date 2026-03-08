@@ -45,6 +45,19 @@ const MovieCard = (props: MovieCardProps) => {
             onError={(e) => { (e.target as HTMLImageElement).src = "/placeholder.svg"; }}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+          {/* Type badge */}
+          {props.type && (
+            <div className={`absolute top-1.5 left-1.5 flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-semibold backdrop-blur-sm ${
+              props.type === "Anime"
+                ? "bg-pink-500/80 text-white"
+                : props.type === "Série"
+                ? "bg-blue-500/80 text-white"
+                : "bg-amber-500/80 text-white"
+            }`}>
+              {props.type === "Anime" ? <Sparkles className="h-2.5 w-2.5" /> : props.type === "Série" ? <Tv className="h-2.5 w-2.5" /> : <Film className="h-2.5 w-2.5" />}
+              {props.type}
+            </div>
+          )}
         </div>
         <div className="mt-2">
           <h3 className="text-xs sm:text-sm font-medium text-foreground truncate">{props.title}</h3>
