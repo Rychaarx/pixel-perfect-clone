@@ -401,9 +401,27 @@ const AdminSeasons = () => {
                 <Button variant="outline" onClick={addSeason} className="gap-2">
                   <Plus className="w-4 h-4" /> Temporada
                 </Button>
-                <Button onClick={handleSave} disabled={saving || uploading} className="gradient-neon text-primary-foreground gap-2">
-                  <Save className="w-4 h-4" /> {saving ? "Salvando..." : "Salvar Tudo"}
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    variant="ghost"
+                    onClick={() => {
+                      if (!confirm("Descartar alterações?")) return;
+                      setLoadingSeasons(true);
+                      fetchSeasons(selectedItemId).then((s) => {
+                        setSeasons(s);
+                        setLoadingSeasons(false);
+                        toast.info("Alterações descartadas");
+                      });
+                    }}
+                    disabled={saving || uploading}
+                    className="gap-2 text-muted-foreground"
+                  >
+                    Cancelar
+                  </Button>
+                  <Button onClick={handleSave} disabled={saving || uploading} className="gradient-neon text-primary-foreground gap-2">
+                    <Save className="w-4 h-4" /> {saving ? "Salvando..." : "Salvar Tudo"}
+                  </Button>
+                </div>
               </div>
             </>
           )}
