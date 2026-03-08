@@ -34,7 +34,7 @@ const HeroSlider = ({ items = [] }: HeroSliderProps) => {
   const item = items[current];
 
   return (
-    <div className="relative h-[70vh] min-h-[500px] overflow-hidden">
+    <div className="relative h-[50vh] min-h-[300px] md:h-[60vh] md:min-h-[400px] overflow-hidden">
       <AnimatePresence mode="wait">
         <motion.div
           key={item.id}
