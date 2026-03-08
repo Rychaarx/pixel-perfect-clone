@@ -1,7 +1,8 @@
 import { useRef } from "react";
-import { ChevronLeft, ChevronRight, CheckCircle } from "lucide-react";
+import { ChevronLeft, ChevronRight, CheckCircle, Play } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { WatchedMovie } from "@/hooks/useWatchedMovies";
+import { Progress } from "@/components/ui/progress";
 
 interface RecentlyWatchedSectionProps {
   items: WatchedMovie[];
