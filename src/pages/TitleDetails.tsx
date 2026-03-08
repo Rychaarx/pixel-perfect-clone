@@ -15,6 +15,18 @@ const TitleDetails = () => {
   const { items, loading } = useCatalog();
   const item = items.find((c) => c.id === id);
   const [watching, setWatching] = useState(false);
+  const { fetchSeasons } = useSeasons();
+  const [seasons, setSeasons] = useState<Season[]>([]);
+  const [openSeason, setOpenSeason] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (id && item?.type?.toLowerCase() === "série") {
+      fetchSeasons(id).then((s) => {
+        setSeasons(s);
+        if (s.length > 0) setOpenSeason(s[0].season_number);
+      });
+    }
+  }, [id, item?.type, fetchSeasons]);
 
   if (loading) {
     return (
