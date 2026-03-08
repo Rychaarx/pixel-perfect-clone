@@ -37,7 +37,7 @@ const Navbar = () => {
       {/* Hamburger button - always visible */}
       <button
         onClick={() => setMenuOpen(!menuOpen)}
-        className="fixed top-4 left-4 z-[60] w-10 h-10 rounded-lg glass border border-border/50 flex items-center justify-center text-foreground hover:bg-secondary/80 transition-all"
+        className="fixed top-4 right-4 z-[60] w-10 h-10 rounded-lg glass border border-border/50 flex items-center justify-center text-foreground hover:bg-secondary/80 transition-all"
       >
         {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
       </button>
