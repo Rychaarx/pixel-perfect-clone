@@ -35,9 +35,9 @@ const MovieCard = (props: MovieCardProps) => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: index * 0.05 }}
         onClick={handleClick}
-        className="cursor-pointer group"
+        className={`cursor-pointer group ${props.type === "Anime" ? "anime-card" : ""}`}
       >
-        <div className="relative aspect-[2/3] rounded-lg overflow-hidden bg-secondary" style={{ boxShadow: "var(--shadow-card)" }}>
+        <div className={`relative aspect-[2/3] rounded-lg overflow-hidden bg-secondary transition-shadow duration-300 ${props.type === "Anime" ? "group-hover:shadow-[0_0_20px_rgba(236,72,153,0.5),0_0_40px_rgba(236,72,153,0.2)]" : ""}`} style={{ boxShadow: "var(--shadow-card)" }}>
           <img
             src={props.poster || "/placeholder.svg"}
             alt={props.title}
