@@ -3,11 +3,12 @@ import { useRole } from "@/hooks/useRole";
 import { useAuth } from "@/contexts/AuthContext";
 import Navbar from "@/components/Navbar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Film, LayoutGrid, Tv, MessageSquare } from "lucide-react";
+import { Film, LayoutGrid, Tv, MessageSquare, Lightbulb } from "lucide-react";
 import AdminCatalog from "@/components/admin/AdminCatalog";
 import AdminSections from "@/components/admin/AdminSections";
 import AdminSeasons from "@/components/admin/AdminSeasons";
 import AdminFeedback from "@/components/admin/AdminFeedback";
+import AdminSuggestions from "@/components/admin/AdminSuggestions";
 
 const Admin = () => {
   const { isAdmin, loading } = useRole();
