@@ -94,7 +94,7 @@ const HeroSlider = ({ items = [] }: HeroSliderProps) => {
             <div className="flex gap-3">
               <button
                 onClick={() => navigate(`/titulo/${item.id}`)}
-                className="flex items-center gap-2 rounded-full px-6 py-3 font-semibold text-sm transition-all"
+                className="flex items-center gap-2 rounded-full px-4 py-2 md:px-6 md:py-3 font-semibold text-xs md:text-sm transition-all"
                 style={{ background: "var(--gradient-primary)" }}
               >
                 <Play className="h-4 w-4 fill-current text-primary-foreground" />
