@@ -124,6 +124,7 @@ export function useCatalog() {
       if (patch.type !== undefined) dbPatch.type = patch.type;
       if (patch.status !== undefined) dbPatch.status = patch.status;
       if (patch.imageUrl !== undefined) dbPatch.image_url = patch.imageUrl;
+      if (patch.backdropUrl !== undefined) dbPatch.backdrop_url = patch.backdropUrl;
       if (patch.videoUrl !== undefined) dbPatch.video_url = patch.videoUrl;
       if (patch.redirectUrl !== undefined) dbPatch.redirect_url = patch.redirectUrl;
       if (patch.year !== undefined) dbPatch.year = patch.year;
