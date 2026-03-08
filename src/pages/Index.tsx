@@ -6,7 +6,7 @@ import MovieCard from "@/components/MovieCard";
 import HomeSection from "@/components/HomeSection";
 import HeroSlider from "@/components/HeroSlider";
 import Navbar from "@/components/Navbar";
-import BottomNav from "@/components/BottomNav";
+
 
 const Index = () => {
   const { items: catalogItems, loading: catalogLoading } = useCatalog();
