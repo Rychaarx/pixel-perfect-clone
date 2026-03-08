@@ -110,7 +110,7 @@ const AdminCatalog = () => {
     try {
       await uploadPromise;
       const { data: urlData } = supabase.storage.from("videos").getPublicUrl(fileName);
-      setForm((prev) => ({ ...prev, videoUrl: urlData.publicUrl }));
+      setForm((prev) => ({ ...prev, redirectUrl: urlData.publicUrl }));
       setUploadProgress(100);
       toast.success("Vídeo enviado com sucesso!");
     } catch (err: any) {
