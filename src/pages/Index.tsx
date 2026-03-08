@@ -3,9 +3,11 @@ import { motion } from "framer-motion";
 import { useCatalog } from "@/hooks/useCatalog";
 import { useSections } from "@/hooks/useSections";
 import { useWatchProgress } from "@/hooks/useWatchProgress";
+import { useWatchedMovies } from "@/hooks/useWatchedMovies";
 import MovieCard from "@/components/MovieCard";
 import HomeSection from "@/components/HomeSection";
 import ContinueWatchingSection from "@/components/ContinueWatchingSection";
+import RecentlyWatchedSection from "@/components/RecentlyWatchedSection";
 import HeroSlider from "@/components/HeroSlider";
 import Navbar from "@/components/Navbar";
 
@@ -13,6 +15,7 @@ import Navbar from "@/components/Navbar";
 const Index = () => {
   const { items: catalogItems, loading: catalogLoading } = useCatalog();
   const { continueWatching } = useWatchProgress();
+  const { watchedMovies } = useWatchedMovies();
   const { sections, loading: sectionsLoading } = useSections();
 
   // Unique genres from catalog
@@ -48,6 +51,9 @@ const Index = () => {
 
       {/* Continue Watching */}
       <ContinueWatchingSection items={continueWatching} />
+
+      {/* Recently Watched Movies */}
+      <RecentlyWatchedSection items={watchedMovies} />
 
       {/* Catalog sections from DB */}
       {!sectionsLoading && sections.length > 0 && (

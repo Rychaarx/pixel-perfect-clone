@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Play, Clock, Calendar, Tag, Film, X, ChevronDown, Eye, EyeOff } from "lucide-react";
+import { ArrowLeft, Play, Clock, Calendar, Tag, Film, X, ChevronDown, Eye, EyeOff, CheckCircle } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import { useWatchProgress } from "@/hooks/useWatchProgress";
+import { useWatchedMovies } from "@/hooks/useWatchedMovies";
 
 import { useCatalog, statusConfig } from "@/hooks/useCatalog";
 import { useSeasons, Season } from "@/hooks/useSeasons";
@@ -18,6 +19,7 @@ const TitleDetails = () => {
   const [watching, setWatching] = useState(false);
   const { fetchSeasons } = useSeasons();
   const { markEpisodeWatched, unmarkEpisodeWatched, isEpisodeWatched } = useWatchProgress();
+  const { markMovieWatched, unmarkMovieWatched, isMovieWatched } = useWatchedMovies();
   const [seasons, setSeasons] = useState<Season[]>([]);
   const [openSeason, setOpenSeason] = useState<number | null>(null);
 
@@ -196,12 +198,26 @@ const TitleDetails = () => {
             <div className="flex gap-3 mb-6">
               {hasVideo && (
                 <Button
-                  onClick={() => setWatching(true)}
+                  onClick={() => {
+                    if (id && item.type?.toLowerCase() === "filme") markMovieWatched(id);
+                    setWatching(true);
+                  }}
                   className="gap-2 rounded-full px-6 py-3 gradient-neon text-primary-foreground neon-glow"
                   size="lg"
                 >
                   <Play className="h-4 w-4 fill-current" />
                   Assistir Agora
+                </Button>
+              )}
+              {id && item.type?.toLowerCase() === "filme" && (
+                <Button
+                  variant={isMovieWatched(id) ? "secondary" : "outline"}
+                  onClick={() => isMovieWatched(id) ? unmarkMovieWatched(id) : markMovieWatched(id)}
+                  className="gap-2 rounded-full px-5"
+                  size="lg"
+                >
+                  <CheckCircle className={`h-4 w-4 ${isMovieWatched(id) ? "text-primary" : ""}`} />
+                  {isMovieWatched(id) ? "Assistido" : "Marcar como Assistido"}
                 </Button>
               )}
             </div>
