@@ -30,6 +30,8 @@ const AdminCatalog = () => {
   const [fillingFromTmdb, setFillingFromTmdb] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadSpeed, setUploadSpeed] = useState("");
+  const uploadRef = useRef<tus.Upload | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const formatFileSize = (bytes: number) => {
