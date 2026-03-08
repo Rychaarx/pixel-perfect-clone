@@ -37,7 +37,7 @@ const Index = () => {
       <Navbar />
       {/* Logo Header */}
       <div className="absolute top-0 left-0 right-0 z-20 px-4 py-4">
-        <h2 className="font-display text-2xl text-primary tracking-widest">CINE CLOUD</h2>
+        <h2 className="font-display text-lg sm:text-2xl text-primary tracking-widest">CINE CLOUD</h2>
       </div>
 
       {/* Hero */}
