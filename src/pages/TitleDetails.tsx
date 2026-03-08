@@ -1,11 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Play, Clock, Calendar, Tag, Film, X } from "lucide-react";
+import { ArrowLeft, Play, Clock, Calendar, Tag, Film, X, ChevronDown } from "lucide-react";
 import Navbar from "@/components/Navbar";
 
 import { useCatalog, statusConfig } from "@/hooks/useCatalog";
+import { useSeasons, Season } from "@/hooks/useSeasons";
 import { Button } from "@/components/ui/button";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 const TitleDetails = () => {
   const { id } = useParams<{ id: string }>();
