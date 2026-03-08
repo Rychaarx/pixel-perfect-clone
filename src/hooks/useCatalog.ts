@@ -44,6 +44,7 @@ export function useCatalog() {
           type: d.type as CatalogItem["type"],
           status: d.status as CatalogItem["status"],
           imageUrl: d.image_url ?? undefined,
+          backdropUrl: d.backdrop_url ?? undefined,
           videoUrl: d.video_url ?? undefined,
           redirectUrl: d.redirect_url ?? undefined,
           year: d.year ?? undefined,
