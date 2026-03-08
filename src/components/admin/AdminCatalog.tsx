@@ -104,7 +104,8 @@ const AdminCatalog = () => {
     if (!form.title.trim()) { toast.error("Título obrigatório"); return; }
     const payload = {
       title: form.title, type: form.type, status: form.status,
-      imageUrl: form.imageUrl || undefined, videoUrl: form.videoUrl || undefined,
+      imageUrl: form.imageUrl || undefined, backdropUrl: form.backdropUrl || undefined,
+      videoUrl: form.videoUrl || undefined,
       redirectUrl: form.redirectUrl || undefined, year: form.year || undefined,
       duration: form.duration || undefined,
       genres: form.genres ? form.genres.split(",").map((g) => g.trim()).filter(Boolean) : undefined,
