@@ -8,12 +8,12 @@ interface HeroSliderProps {
   items: CatalogItem[];
 }
 
-const HeroSlider = ({ items }: HeroSliderProps) => {
+const HeroSlider = ({ items = [] }: HeroSliderProps) => {
   const [current, setCurrent] = useState(0);
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (items.length === 0) return;
+    if (!items || items.length === 0) return;
     const timer = setInterval(() => {
       setCurrent((prev) => (prev + 1) % items.length);
     }, 6000);
