@@ -45,12 +45,21 @@ const HeroSlider = ({ items = [] }: HeroSliderProps) => {
           className="absolute inset-0"
         >
           {item.imageUrl ? (
-            <img
-              src={item.imageUrl}
-              alt={item.title}
-              className="h-full w-full object-cover"
-              onError={(e) => { (e.target as HTMLImageElement).src = "/placeholder.svg"; }}
-            />
+            <>
+              {/* Blurred background fill */}
+              <img
+                src={item.imageUrl}
+                alt=""
+                className="absolute inset-0 h-full w-full object-cover scale-110 blur-2xl opacity-60"
+              />
+              {/* Main image - centered, not cropped */}
+              <img
+                src={item.imageUrl}
+                alt={item.title}
+                className="relative h-full w-full object-contain z-[1]"
+                onError={(e) => { (e.target as HTMLImageElement).src = "/placeholder.svg"; }}
+              />
+            </>
           ) : (
             <div className="h-full w-full bg-secondary" />
           )}
