@@ -3,7 +3,7 @@ import { useRole } from "@/hooks/useRole";
 import { useAuth } from "@/contexts/AuthContext";
 import Navbar from "@/components/Navbar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Film, LayoutGrid, Tv } from "lucide-react";
+import { Film, LayoutGrid, Tv, MessageSquare } from "lucide-react";
 import AdminCatalog from "@/components/admin/AdminCatalog";
 import AdminSections from "@/components/admin/AdminSections";
 import AdminSeasons from "@/components/admin/AdminSeasons";
