@@ -98,10 +98,18 @@ function WatchedMovieCard({
           </div>
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent" />
-        <div className="absolute top-2 right-2">
-          <CheckCircle className="w-5 h-5 text-primary fill-primary/20" />
-        </div>
+        {item.progress >= 100 ? (
+          <div className="absolute top-2 right-2">
+            <CheckCircle className="w-5 h-5 text-primary fill-primary/20" />
+          </div>
+        ) : (
+          <div className="absolute top-2 right-2 bg-background/70 backdrop-blur-sm rounded-full px-1.5 py-0.5 text-[10px] font-medium text-foreground">
+            {item.progress}%
+          </div>
+        )}
       </div>
+      {/* Progress bar */}
+      <Progress value={item.progress} className="h-1 rounded-none" />
       <div className="p-2.5">
         <h3 className="text-foreground text-xs sm:text-sm font-semibold truncate">{item.title}</h3>
         <p className="text-muted-foreground/60 text-[10px] mt-0.5">{timeAgo}</p>
