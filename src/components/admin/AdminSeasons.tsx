@@ -219,9 +219,11 @@ const AdminSeasons = () => {
                 {seasons.map((season, sIdx) => (
                   <div key={sIdx} className="glass rounded-xl border border-border/30 overflow-hidden">
                     {/* Season header */}
-                    <button
+                    <div
                       onClick={() => setExpandedSeason(expandedSeason === sIdx ? null : sIdx)}
-                      className="w-full flex items-center justify-between px-4 py-3 hover:bg-secondary/30 transition-colors"
+                      className="w-full flex items-center justify-between px-4 py-3 hover:bg-secondary/30 transition-colors cursor-pointer"
+                      role="button"
+                      tabIndex={0}
                     >
                       <div className="flex items-center gap-3">
                         {expandedSeason === sIdx ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
@@ -236,7 +238,7 @@ const AdminSeasons = () => {
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
-                    </button>
+                    </div>
 
                     {/* Season content */}
                     {expandedSeason === sIdx && (
