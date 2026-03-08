@@ -35,9 +35,9 @@ const AdminCatalog = () => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const maxSize = 500 * 1024 * 1024; // 500MB
+    const maxSize = 3 * 1024 * 1024 * 1024; // 3GB
     if (file.size > maxSize) {
-      toast.error("Arquivo muito grande. Máximo: 500MB");
+      toast.error("Arquivo muito grande. Máximo: 3GB");
       return;
     }
 
@@ -52,33 +52,62 @@ const AdminCatalog = () => {
 
     const fileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
 
-    // Simulate progress since supabase doesn't provide upload progress natively
-    const progressInterval = setInterval(() => {
-      setUploadProgress((prev) => Math.min(prev + 10, 90));
-    }, 300);
+    // Use XMLHttpRequest for real progress tracking on large files
+    const formData = new FormData();
+    formData.append('', file);
 
-    const { data, error } = await supabase.storage
-      .from("videos")
-      .upload(fileName, file, { cacheControl: "3600", upsert: false });
-
-    clearInterval(progressInterval);
-
-    if (error) {
-      toast.error("Erro ao fazer upload: " + error.message);
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      toast.error("Você precisa estar logado para fazer upload.");
       setUploading(false);
-      setUploadProgress(0);
       return;
     }
 
-    const { data: urlData } = supabase.storage.from("videos").getPublicUrl(data.path);
-    
-    setForm((prev) => ({ ...prev, videoUrl: urlData.publicUrl }));
-    setUploadProgress(100);
-    setUploading(false);
-    toast.success("Vídeo enviado com sucesso!");
+    const url = `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/videos/${fileName}`;
+
+    const xhr = new XMLHttpRequest();
+
+    const uploadPromise = new Promise<string>((resolve, reject) => {
+      xhr.upload.addEventListener('progress', (event) => {
+        if (event.lengthComputable) {
+          const percent = Math.round((event.loaded / event.total) * 100);
+          setUploadProgress(percent);
+        }
+      });
+
+      xhr.addEventListener('load', () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          resolve(fileName);
+        } else {
+          reject(new Error(`Upload falhou: ${xhr.statusText || xhr.status}`));
+        }
+      });
+
+      xhr.addEventListener('error', () => reject(new Error('Erro de rede durante o upload')));
+      xhr.addEventListener('abort', () => reject(new Error('Upload cancelado')));
+
+      xhr.open('POST', url);
+      xhr.setRequestHeader('Authorization', `Bearer ${session.access_token}`);
+      xhr.setRequestHeader('x-upsert', 'false');
+      xhr.send(file);
+    });
+
+    try {
+      await uploadPromise;
+      const { data: urlData } = supabase.storage.from("videos").getPublicUrl(fileName);
+      setForm((prev) => ({ ...prev, videoUrl: urlData.publicUrl }));
+      setUploadProgress(100);
+      toast.success("Vídeo enviado com sucesso!");
+    } catch (err: any) {
+      toast.error(err.message || "Erro ao fazer upload");
+      setUploadProgress(0);
+    } finally {
+      setUploading(false);
+    }
 
     // Reset file input
     if (fileInputRef.current) fileInputRef.current.value = "";
+  };
   };
 
   // Debounced TMDB search
