@@ -35,19 +35,35 @@ const MovieCard = (props: MovieCardProps) => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: index * 0.05 }}
         onClick={handleClick}
-        className={`cursor-pointer group ${props.type === "Anime" ? "anime-card" : ""}`}
+        className={`cursor-pointer group ${props.type === "Anime" ? "anime-card" : props.type === "Série" ? "serie-card" : ""}`}
       >
-        <div className={`relative aspect-[2/3] rounded-lg overflow-hidden bg-secondary transition-shadow duration-300 ${props.type === "Anime" ? "group-hover:shadow-[0_0_20px_rgba(236,72,153,0.5),0_0_40px_rgba(236,72,153,0.2)]" : ""}`} style={{ boxShadow: "var(--shadow-card)" }}>
+        <div className={`relative aspect-[2/3] rounded-lg overflow-hidden bg-secondary transition-shadow duration-300 ${
+          props.type === "Anime"
+            ? "group-hover:shadow-[0_0_20px_rgba(236,72,153,0.5),0_0_40px_rgba(236,72,153,0.2)]"
+            : props.type === "Série"
+            ? "group-hover:shadow-[0_0_20px_rgba(59,130,246,0.5),0_0_40px_rgba(59,130,246,0.2)]"
+            : ""
+        }`} style={{ boxShadow: "var(--shadow-card)" }}>
           <img
             src={props.poster || "/placeholder.svg"}
             alt={props.title}
-            className={`h-full w-full object-contain transition-transform duration-500 ${props.type === "Anime" ? "group-hover:scale-110" : "group-hover:scale-105"}`}
+            className={`h-full w-full object-contain transition-transform duration-500 ${props.type === "Anime" || props.type === "Série" ? "group-hover:scale-110" : "group-hover:scale-105"}`}
             onError={(e) => { (e.target as HTMLImageElement).src = "/placeholder.svg"; }}
           />
-          <div className={`absolute inset-0 transition-opacity ${props.type === "Anime" ? "bg-gradient-to-t from-pink-900/80 via-pink-500/10 to-transparent opacity-0 group-hover:opacity-100" : "bg-gradient-to-t from-background/90 via-transparent to-transparent opacity-0 group-hover:opacity-100"}`} />
-          {/* Anime neon border glow */}
-          {props.type === "Anime" && (
-            <div className="absolute inset-0 rounded-lg border border-pink-500/0 group-hover:border-pink-500/60 transition-all duration-300 pointer-events-none" />
+          <div className={`absolute inset-0 transition-opacity opacity-0 group-hover:opacity-100 ${
+            props.type === "Anime"
+              ? "bg-gradient-to-t from-pink-900/80 via-pink-500/10 to-transparent"
+              : props.type === "Série"
+              ? "bg-gradient-to-t from-blue-900/80 via-blue-500/10 to-transparent"
+              : "bg-gradient-to-t from-background/90 via-transparent to-transparent"
+          }`} />
+          {/* Neon border glow */}
+          {(props.type === "Anime" || props.type === "Série") && (
+            <div className={`absolute inset-0 rounded-lg border transition-all duration-300 pointer-events-none ${
+              props.type === "Anime"
+                ? "border-pink-500/0 group-hover:border-pink-500/60"
+                : "border-blue-500/0 group-hover:border-blue-500/60"
+            }`} />
           )}
           {/* Type badge */}
           {props.type && (
