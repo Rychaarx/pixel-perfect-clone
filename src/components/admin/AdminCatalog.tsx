@@ -70,42 +70,33 @@ const AdminCatalog = () => {
       return;
     }
 
-    const url = `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/videos/${fileName}`;
-
-    const xhr = new XMLHttpRequest();
-
-    const uploadPromise = new Promise<string>((resolve, reject) => {
-      xhr.upload.addEventListener('progress', (event) => {
-        if (event.lengthComputable) {
-          const percent = Math.round((event.loaded / event.total) * 100);
-          setUploadProgress(percent);
-        }
-      });
-
-      xhr.addEventListener('load', () => {
-        if (xhr.status >= 200 && xhr.status < 300) {
-          resolve(fileName);
-        } else {
-          reject(new Error(`Upload falhou: ${xhr.statusText || xhr.status}`));
-        }
-      });
-
-      xhr.addEventListener('error', () => reject(new Error('Erro de rede durante o upload')));
-      xhr.addEventListener('abort', () => reject(new Error('Upload cancelado')));
-
-      xhr.open('POST', url);
-      xhr.setRequestHeader('Authorization', `Bearer ${session.access_token}`);
-      xhr.setRequestHeader('x-upsert', 'false');
-      xhr.send(file);
-    });
-
     try {
-      await uploadPromise;
+      // Use Supabase SDK for reliable upload
+      const { data, error } = await supabase.storage
+        .from("videos")
+        .upload(fileName, file, {
+          cacheControl: "3600",
+          upsert: false,
+          contentType: file.type || "application/octet-stream",
+        });
+
+      if (error) {
+        console.error("Upload error:", error);
+        toast.error(`Erro no upload: ${error.message}`);
+        setUploadProgress(0);
+        setUploading(false);
+        if (fileInputRef.current) fileInputRef.current.value = "";
+        return;
+      }
+
       const { data: urlData } = supabase.storage.from("videos").getPublicUrl(fileName);
-      setForm((prev) => ({ ...prev, redirectUrl: urlData.publicUrl }));
+      const publicUrl = urlData.publicUrl;
+      console.log("Upload success, public URL:", publicUrl);
+      setForm((prev) => ({ ...prev, redirectUrl: publicUrl }));
       setUploadProgress(100);
       toast.success("Vídeo enviado com sucesso!");
     } catch (err: any) {
+      console.error("Upload catch error:", err);
       toast.error(err.message || "Erro ao fazer upload");
       setUploadProgress(0);
     } finally {
