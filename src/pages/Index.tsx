@@ -4,6 +4,7 @@ import { movies, genres, getMoviesByGenre, getFeaturedMovies } from "@/data/movi
 import MovieCard from "@/components/MovieCard";
 import HeroSlider from "@/components/HeroSlider";
 import Navbar from "@/components/Navbar";
+import BottomNav from "@/components/BottomNav";
 
 const Index = () => {
   const [selectedGenre, setSelectedGenre] = useState("All");
@@ -75,7 +76,7 @@ const Index = () => {
         </div>
       </section>
 
-      
+      <BottomNav />
     </div>
   );
 };

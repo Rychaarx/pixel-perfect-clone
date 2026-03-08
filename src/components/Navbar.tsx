@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Film, Calendar, Lightbulb, MessageSquare, LogIn, Menu, X, User, LogOut, Users, Shield, Search, Heart } from "lucide-react";
+import { Film, Calendar, Lightbulb, MessageSquare, LogIn, Menu, X, User, LogOut, Users, Shield } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRole } from "@/hooks/useRole";
@@ -9,8 +9,6 @@ const navItems = [
   { label: "Agenda", path: "/agenda", icon: Calendar },
   { label: "Sugestões", path: "/sugestoes", icon: Lightbulb },
   { label: "Feedback", path: "/feedback", icon: MessageSquare },
-  { label: "Buscar", path: "/buscar", icon: Search },
-  { label: "Lista", path: "/lista", icon: Heart },
 ];
 
 const Navbar = () => {
