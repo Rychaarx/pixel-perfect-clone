@@ -59,10 +59,10 @@ const AdminCatalog = () => {
     setEditingId(item.id);
     setForm({
       title: item.title, type: item.type, status: item.status,
-      imageUrl: item.imageUrl || "", videoUrl: item.videoUrl || "",
-      redirectUrl: item.redirectUrl || "", year: item.year || "",
-      duration: item.duration || "", genres: item.genres?.join(", ") || "",
-      synopsis: item.synopsis || "",
+      imageUrl: item.imageUrl || "", backdropUrl: item.backdropUrl || "",
+      videoUrl: item.videoUrl || "", redirectUrl: item.redirectUrl || "",
+      year: item.year || "", duration: item.duration || "",
+      genres: item.genres?.join(", ") || "", synopsis: item.synopsis || "",
     });
     setTmdbQuery("");
     setTmdbResults([]);
