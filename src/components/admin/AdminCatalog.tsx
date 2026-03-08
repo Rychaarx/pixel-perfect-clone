@@ -92,6 +92,7 @@ const AdminCatalog = () => {
         synopsis: detail.synopsis || prev.synopsis,
         videoUrl: detail.trailerUrl || prev.videoUrl,
         imageUrl: detail.posterUrl || prev.imageUrl,
+        backdropUrl: (detail as any).backdropUrl || prev.backdropUrl,
         year: detail.year || prev.year,
       }));
     }
