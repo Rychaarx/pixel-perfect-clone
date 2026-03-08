@@ -213,7 +213,68 @@ const TitleDetails = () => {
         </div>
       </div>
 
-      
+      {/* Seasons & Episodes */}
+      {seasons.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="px-4 md:px-12 mt-8"
+        >
+          <h2 className="text-xl font-semibold text-foreground mb-4">Temporadas & Episódios</h2>
+          <div className="space-y-3">
+            {seasons.map((season) => (
+              <Collapsible
+                key={season.season_number}
+                open={openSeason === season.season_number}
+                onOpenChange={(open) => setOpenSeason(open ? season.season_number : null)}
+              >
+                <CollapsibleTrigger className="flex w-full items-center justify-between rounded-lg bg-secondary/50 px-4 py-3 text-left hover:bg-secondary/80 transition-colors">
+                  <span className="font-medium text-foreground">
+                    {season.name || `Temporada ${season.season_number}`}
+                  </span>
+                  <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                    <span>{season.episodes.length} ep.</span>
+                    <ChevronDown className={`h-4 w-4 transition-transform ${openSeason === season.season_number ? "rotate-180" : ""}`} />
+                  </div>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <div className="mt-1 space-y-1 pl-2">
+                    {season.episodes.map((ep) => (
+                      <div
+                        key={ep.episode_number}
+                        className="flex items-center justify-between rounded-md px-4 py-3 hover:bg-secondary/30 transition-colors group"
+                      >
+                        <div className="flex items-center gap-3">
+                          <span className="text-muted-foreground text-sm w-6 text-center">{ep.episode_number}</span>
+                          <span className="text-foreground text-sm">{ep.title || `Episódio ${ep.episode_number}`}</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          {ep.duration && (
+                            <span className="text-muted-foreground text-xs flex items-center gap-1">
+                              <Clock className="h-3 w-3" /> {ep.duration}
+                            </span>
+                          )}
+                          {ep.redirect_url && (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="opacity-0 group-hover:opacity-100 transition-opacity"
+                              onClick={() => window.open(ep.redirect_url, "_blank")}
+                            >
+                              <Play className="h-3.5 w-3.5" />
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
+            ))}
+          </div>
+        </motion.div>
+      )}
     </div>
   );
 };
