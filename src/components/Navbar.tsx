@@ -13,79 +13,66 @@ const navItems = [
 
 const Navbar = () => {
   const location = useLocation();
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
-  const [visible, setVisible] = useState(false);
   const { user, signOut } = useAuth();
   const { isAdmin } = useRole();
   const menuRef = useRef<HTMLDivElement>(null);
-  const hideTimeout = useRef<ReturnType<typeof setTimeout>>();
+  const navRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node) &&
+          navRef.current && !navRef.current.contains(e.target as Node)) {
         setUserMenuOpen(false);
+        setMenuOpen(false);
       }
     };
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
-  const showNav = useCallback(() => {
-    setVisible(true);
-    if (hideTimeout.current) clearTimeout(hideTimeout.current);
-  }, []);
-
-  const scheduleHide = useCallback(() => {
-    if (mobileOpen || userMenuOpen) return;
-    hideTimeout.current = setTimeout(() => setVisible(false), 800);
-  }, [mobileOpen, userMenuOpen]);
-
-  // Show navbar when mouse is near the top of the screen
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      if (e.clientY <= 60) {
-        showNav();
-      }
-    };
-    window.addEventListener("mousemove", handleMouseMove);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
-  }, [showNav]);
-
-  // Keep visible while mobile menu or user menu is open
-  useEffect(() => {
-    if (mobileOpen || userMenuOpen) {
-      setVisible(true);
-      if (hideTimeout.current) clearTimeout(hideTimeout.current);
-    }
-  }, [mobileOpen, userMenuOpen]);
-
   return (
-    <nav
-      className={`fixed top-0 left-0 right-0 z-50 glass border-b border-border/50 transition-all duration-300 ${
-        visible ? "translate-y-0 opacity-100" : "-translate-y-full opacity-0"
-      }`}
-      onMouseEnter={showNav}
-      onMouseLeave={scheduleHide}
-    >
-      <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-2">
-          <div className="w-9 h-9 rounded-lg gradient-neon flex items-center justify-center">
-            <Film className="w-5 h-5 text-primary-foreground" />
-          </div>
-          <span className="font-display text-xl font-bold text-primary neon-text">
-            CineCloud
-          </span>
-        </Link>
+    <>
+      {/* Hamburger button - always visible */}
+      <button
+        onClick={() => setMenuOpen(!menuOpen)}
+        className="fixed top-4 left-4 z-[60] w-10 h-10 rounded-lg glass border border-border/50 flex items-center justify-center text-foreground hover:bg-secondary/80 transition-all"
+      >
+        {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+      </button>
 
-        <div className="hidden md:flex items-center gap-1">
+      {/* Overlay */}
+      {menuOpen && (
+        <div
+          className="fixed inset-0 z-[55] bg-background/60 backdrop-blur-sm"
+          onClick={() => setMenuOpen(false)}
+        />
+      )}
+
+      {/* Slide-in menu */}
+      <nav
+        ref={navRef}
+        className={`fixed top-0 left-0 z-[58] h-full w-64 glass border-r border-border/50 transition-transform duration-300 ${
+          menuOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        <div className="pt-20 px-4 space-y-2">
+          <Link to="/" onClick={() => setMenuOpen(false)} className="flex items-center gap-2 px-3 pb-4 mb-2 border-b border-border/50">
+            <div className="w-9 h-9 rounded-lg gradient-neon flex items-center justify-center">
+              <Film className="w-5 h-5 text-primary-foreground" />
+            </div>
+            <span className="font-display text-xl font-bold text-primary neon-text">CineCloud</span>
+          </Link>
+
           {navItems.map((item) => {
             const isActive = location.pathname === item.path;
             return (
               <Link
                 key={item.path}
                 to={item.path}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                onClick={() => setMenuOpen(false)}
+                className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all ${
                   isActive
                     ? "gradient-neon text-primary-foreground neon-glow"
                     : "text-muted-foreground hover:text-foreground hover:bg-secondary"
@@ -97,78 +84,31 @@ const Navbar = () => {
             );
           })}
 
-          {user ? (
-            <div className="relative ml-2" ref={menuRef}>
-              <button
-                onClick={() => setUserMenuOpen(!userMenuOpen)}
-                className="w-9 h-9 rounded-full gradient-neon-cyan flex items-center justify-center neon-glow-cyan transition-transform hover:scale-110"
-              >
-                <User className="w-5 h-5 text-primary-foreground" />
-              </button>
-
-              {userMenuOpen && (
-                <div className="absolute right-0 top-12 w-52 glass rounded-xl border-glow p-2 space-y-1 animate-scale-in">
-                  <p className="px-3 py-2 text-xs text-muted-foreground truncate border-b border-border/50 mb-1">
-                    {user.email}
-                  </p>
-                  <Link to="/perfis" onClick={() => setUserMenuOpen(false)} className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-foreground hover:bg-secondary transition-colors">
-                    <Users className="w-4 h-4" /> Perfis
-                  </Link>
-                  {isAdmin && (
-                    <Link to="/admin" onClick={() => setUserMenuOpen(false)} className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-primary hover:bg-secondary transition-colors">
-                      <Shield className="w-4 h-4" /> Administração
-                    </Link>
-                  )}
-                  <button onClick={() => { signOut(); setUserMenuOpen(false); }} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-destructive hover:bg-secondary transition-colors">
-                    <LogOut className="w-4 h-4" /> Sair
-                  </button>
-                </div>
-              )}
-            </div>
-          ) : (
-            <Link to="/login" className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${location.pathname === "/login" ? "gradient-neon text-primary-foreground neon-glow" : "text-muted-foreground hover:text-foreground hover:bg-secondary"}`}>
-              <LogIn className="w-4 h-4" /> Entrar
-            </Link>
-          )}
-        </div>
-
-        <button className="md:hidden text-foreground" onClick={() => setMobileOpen(!mobileOpen)}>
-          {mobileOpen ? <X /> : <Menu />}
-        </button>
-      </div>
-
-      {mobileOpen && (
-        <div className="md:hidden glass border-t border-border/50 px-6 py-4 space-y-2">
-          {navItems.map((item) => {
-            const isActive = location.pathname === item.path;
-            return (
-              <Link key={item.path} to={item.path} onClick={() => setMobileOpen(false)} className={`flex items-center gap-2 px-4 py-3 rounded-lg text-sm font-medium transition-all ${isActive ? "gradient-neon text-primary-foreground" : "text-muted-foreground hover:text-foreground hover:bg-secondary"}`}>
-                <item.icon className="w-4 h-4" /> {item.label}
-              </Link>
-            );
-          })}
-          {user ? (
-            <>
-              <Link to="/perfis" onClick={() => setMobileOpen(false)} className="flex items-center gap-2 px-4 py-3 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary">
-                <Users className="w-4 h-4" /> Perfis
-              </Link>
-              {isAdmin && (
-                <Link to="/admin" onClick={() => setMobileOpen(false)} className="flex items-center gap-2 px-4 py-3 rounded-lg text-sm font-medium text-primary hover:bg-secondary">
-                  <Shield className="w-4 h-4" /> Administração
+          <div className="border-t border-border/50 pt-2 mt-2">
+            {user ? (
+              <>
+                <p className="px-4 py-2 text-xs text-muted-foreground truncate">{user.email}</p>
+                <Link to="/perfis" onClick={() => setMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary">
+                  <Users className="w-4 h-4" /> Perfis
                 </Link>
-              )}
-              <button onClick={() => { signOut(); setMobileOpen(false); }} className="w-full flex items-center gap-2 px-4 py-3 rounded-lg text-sm font-medium text-destructive hover:bg-secondary">
-                <LogOut className="w-4 h-4" /> Sair
-              </button>
-            </>
-          ) : (
-            <Link to="/login" onClick={() => setMobileOpen(false)} className="flex items-center gap-2 px-4 py-3 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary">
-              <LogIn className="w-4 h-4" /> Entrar
-            </Link>
-          )}
+                {isAdmin && (
+                  <Link to="/admin" onClick={() => setMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-primary hover:bg-secondary">
+                    <Shield className="w-4 h-4" /> Administração
+                  </Link>
+                )}
+                <button onClick={() => { signOut(); setMenuOpen(false); }} className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-destructive hover:bg-secondary">
+                  <LogOut className="w-4 h-4" /> Sair
+                </button>
+              </>
+            ) : (
+              <Link to="/login" onClick={() => setMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary">
+                <LogIn className="w-4 h-4" /> Entrar
+              </Link>
+            )}
+          </div>
         </div>
-      )}
-    </nav>
+      </nav>
+    </>
   );
 };
 
