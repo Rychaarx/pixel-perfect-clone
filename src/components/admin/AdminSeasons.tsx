@@ -1,10 +1,10 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useCatalog, CatalogItem } from "@/hooks/useCatalog";
 import { useSeasons, Season, createEmptySeason, createEmptyEpisode } from "@/hooks/useSeasons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Trash2, Save, ChevronDown, ChevronUp, Upload, FolderUp } from "lucide-react";
+import { Plus, Trash2, Save, ChevronDown, ChevronUp, Upload, FolderUp, GripVertical } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import * as tus from "tus-js-client";
@@ -21,6 +21,39 @@ const AdminSeasons = () => {
   const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadSeasonIdx, setUploadSeasonIdx] = useState<number | null>(null);
+  const [dragState, setDragState] = useState<{ seasonIdx: number; epIdx: number } | null>(null);
+  const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
+
+  const handleDragStart = (seasonIdx: number, epIdx: number) => {
+    setDragState({ seasonIdx, epIdx });
+  };
+
+  const handleDragOver = (e: React.DragEvent, epIdx: number) => {
+    e.preventDefault();
+    setDragOverIdx(epIdx);
+  };
+
+  const handleDrop = (seasonIdx: number, targetEpIdx: number) => {
+    if (!dragState || dragState.seasonIdx !== seasonIdx || dragState.epIdx === targetEpIdx) {
+      setDragState(null);
+      setDragOverIdx(null);
+      return;
+    }
+    const season = seasons[seasonIdx];
+    const eps = [...season.episodes];
+    const [moved] = eps.splice(dragState.epIdx, 1);
+    eps.splice(targetEpIdx, 0, moved);
+    // Re-number episodes after reorder
+    const renumbered = eps.map((ep, i) => ({ ...ep, episode_number: i + 1 }));
+    updateSeason(seasonIdx, { episodes: renumbered });
+    setDragState(null);
+    setDragOverIdx(null);
+  };
+
+  const handleDragEnd = () => {
+    setDragState(null);
+    setDragOverIdx(null);
+  };
 
   // Only show series/anime
   const seriesItems = items.filter((i) => i.type === "Série" || i.type === "Anime");
@@ -300,9 +333,28 @@ const AdminSeasons = () => {
                         )}
 
                         {/* Episodes */}
-                        <div className="space-y-2">
+                        <div className="space-y-1">
                           {season.episodes.map((ep, eIdx) => (
-                            <div key={eIdx} className="flex items-center gap-2 bg-secondary/20 rounded-lg p-2">
+                            <div
+                              key={eIdx}
+                              draggable
+                              onDragStart={() => handleDragStart(sIdx, eIdx)}
+                              onDragOver={(e) => handleDragOver(e, eIdx)}
+                              onDrop={() => handleDrop(sIdx, eIdx)}
+                              onDragEnd={handleDragEnd}
+                              className={`flex items-center gap-2 bg-secondary/20 rounded-lg p-2 transition-all ${
+                                dragState?.seasonIdx === sIdx && dragState?.epIdx === eIdx
+                                  ? "opacity-40 scale-[0.98]"
+                                  : ""
+                              } ${
+                                dragOverIdx === eIdx && dragState?.seasonIdx === sIdx && dragState?.epIdx !== eIdx
+                                  ? "border-t-2 border-primary"
+                                  : "border-t-2 border-transparent"
+                              }`}
+                            >
+                              <div className="cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground shrink-0">
+                                <GripVertical className="w-4 h-4" />
+                              </div>
                               <span className="text-xs text-muted-foreground w-8 shrink-0 text-center">E{ep.episode_number}</span>
                               <Input
                                 placeholder="Título"
