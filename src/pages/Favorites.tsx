@@ -1,5 +1,5 @@
 import { Heart } from "lucide-react";
-import BottomNav from "@/components/BottomNav";
+
 
 const Favorites = () => {
   return (
