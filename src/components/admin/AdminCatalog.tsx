@@ -368,10 +368,10 @@ const AdminCatalog = () => {
                   <input
                     ref={fileInputRef}
                     type="file"
-                    accept="video/mp4,video/webm,video/ogg,video/quicktime"
-                    onChange={handleVideoUpload}
+                    accept="*/*"
+                    onChange={handleFileUpload}
                     className="hidden"
-                    id="video-upload"
+                    id="file-upload"
                   />
                   <Button
                     type="button"
