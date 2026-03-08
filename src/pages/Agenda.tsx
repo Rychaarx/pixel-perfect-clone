@@ -78,32 +78,13 @@ const Agenda = () => {
     async function fetchAgenda() {
       const agendaItems: AgendaItem[] = [];
 
-      // Fetch catalog items (new titles added)
-      const { data: catalogData } = await supabase
-        .from("catalog_items")
-        .select("*")
-        .order("created_at", { ascending: false })
-        .limit(50);
-
-      if (catalogData) {
-        for (const item of catalogData) {
-          agendaItems.push({
-            id: `catalog-${item.id}`,
-            type: "catalog",
-            title: item.title,
-            catalogTitle: item.title,
-            catalogItemId: item.id,
-            catalogType: item.type,
-            imageUrl: item.image_url || undefined,
-            createdAt: item.created_at,
-          });
-        }
-      }
+      // Only show episodes that have a redirect_url (content actually added)
 
       // Fetch episodes with season and catalog info
       const { data: episodesData } = await supabase
         .from("episodes")
         .select("*, seasons(season_number, name, catalog_item_id, catalog_items(title, type, image_url))")
+        .not("redirect_url", "is", null)
         .order("created_at", { ascending: false })
         .limit(100);
 
