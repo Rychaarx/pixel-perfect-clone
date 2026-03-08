@@ -108,7 +108,6 @@ const AdminCatalog = () => {
     // Reset file input
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
-  };
 
   // Debounced TMDB search
   useEffect(() => {
