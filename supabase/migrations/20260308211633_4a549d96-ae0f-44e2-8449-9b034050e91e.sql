@@ -1,0 +1,1 @@
+ALTER TABLE public.watched_movies ADD COLUMN progress integer NOT NULL DEFAULT 0 CHECK (progress >= 0 AND progress <= 100);
