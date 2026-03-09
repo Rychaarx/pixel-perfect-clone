@@ -165,8 +165,8 @@ const AdminSeasons = () => {
     const { data: { session } } = await supabase.auth.getSession();
     const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
 
-    const UPLOAD_TIMEOUT = 5 * 60 * 1000; // 5 minutes
-    const CONCURRENCY = 3;
+    const UPLOAD_TIMEOUT = 30 * 60 * 1000; // 30 minutes for large files
+    const CONCURRENCY = 2;
 
     // Build upload tasks
     const tasks: Array<{ file: File; epIdx: number; filePath: string; fileKey: string }> = [];
@@ -199,7 +199,7 @@ const AdminSeasons = () => {
             contentType: task.file.type || "application/octet-stream",
             cacheControl: "3600",
           },
-          chunkSize: 6 * 1024 * 1024,
+          chunkSize: 50 * 1024 * 1024, // 50MB chunks for large files
           onError: (error) => settle(() => reject(error)),
           onProgress: (bytesUploaded, bytesTotal) => {
             setUploadProgress((prev) => ({
