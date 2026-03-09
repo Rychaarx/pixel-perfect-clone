@@ -186,7 +186,7 @@ const ProfileSelect = () => {
               onClick={() => navigate("/")}
               className="flex flex-col items-center gap-3 group/btn"
             >
-              <div className="w-[100px] h-[100px] sm:w-[130px] sm:h-[130px] rounded-md bg-muted overflow-hidden border-2 border-transparent group-hover/btn:border-foreground transition-all duration-200">
+              <div className="w-[100px] h-[100px] sm:w-[130px] sm:h-[130px] rounded-full bg-muted overflow-hidden border-2 border-transparent group-hover/btn:border-foreground transition-all duration-200">
                 {p.avatar_url ? (
                   <img src={p.avatar_url} alt={p.name} className="w-full h-full object-cover" />
                 ) : (
@@ -221,7 +221,7 @@ const ProfileSelect = () => {
             onClick={startCreate}
             className="flex flex-col items-center gap-3 group/add"
           >
-            <div className="w-[100px] h-[100px] sm:w-[130px] sm:h-[130px] rounded-md border-2 border-muted-foreground/30 hover:border-foreground flex items-center justify-center transition-colors group-hover/add:border-foreground">
+            <div className="w-[100px] h-[100px] sm:w-[130px] sm:h-[130px] rounded-full border-2 border-muted-foreground/30 hover:border-foreground flex items-center justify-center transition-colors group-hover/add:border-foreground">
               <Plus className="w-10 h-10 text-muted-foreground/50 group-hover/add:text-foreground transition-colors" />
             </div>
             <span className="text-sm text-muted-foreground group-hover/add:text-foreground transition-colors">Adicionar</span>
@@ -253,7 +253,7 @@ const ProfileSelect = () => {
           <div className="flex flex-col items-center gap-3">
             <button
               onClick={() => openAvatarPicker(isEdit ? "edit" : "create")}
-              className="w-[120px] h-[120px] sm:w-[150px] sm:h-[150px] rounded-md bg-muted overflow-hidden relative group/avatar border-2 border-border hover:border-foreground transition-colors"
+              className="w-[120px] h-[120px] sm:w-[150px] sm:h-[150px] rounded-full bg-muted overflow-hidden relative group/avatar border-2 border-border hover:border-foreground transition-colors"
             >
               {currentAvatarSrc ? (
                 <img src={currentAvatarSrc} alt="Avatar" className="w-full h-full object-cover" />
@@ -321,7 +321,7 @@ const ProfileSelect = () => {
       <p className="text-muted-foreground text-sm mb-8">Selecione um avatar ou envie sua foto</p>
 
       {/* Current selection preview */}
-      <div className="w-[100px] h-[100px] rounded-md bg-muted overflow-hidden mb-8 border-2 border-primary">
+      <div className="w-[100px] h-[100px] rounded-full bg-muted overflow-hidden mb-8 border-2 border-primary">
         {currentAvatarSrc ? (
           <img src={currentAvatarSrc} alt="Selected" className="w-full h-full object-cover" />
         ) : (
@@ -356,7 +356,7 @@ const ProfileSelect = () => {
           <button
             key={av.id}
             onClick={() => selectPresetAvatar(av.src)}
-            className={`aspect-square rounded-md overflow-hidden border-2 transition-all duration-200 hover:scale-105 ${
+            className={`aspect-square rounded-full overflow-hidden border-2 transition-all duration-200 hover:scale-105 ${
               selectedAvatar === av.src && !customAvatarPreview
                 ? "border-primary ring-2 ring-primary/40 scale-105"
                 : "border-transparent hover:border-muted-foreground/40"
