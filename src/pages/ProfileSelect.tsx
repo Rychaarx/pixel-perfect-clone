@@ -186,7 +186,7 @@ const ProfileSelect = () => {
               onClick={() => navigate("/")}
               className="flex flex-col items-center gap-3 group/btn"
             >
-              <div className="w-[100px] h-[100px] sm:w-[130px] sm:h-[130px] rounded-md bg-muted overflow-hidden border-2 border-transparent group-hover/btn:border-foreground transition-all duration-200">
+              <div className="w-[100px] h-[100px] sm:w-[130px] sm:h-[130px] rounded-full bg-muted overflow-hidden border-2 border-transparent group-hover/btn:border-foreground transition-all duration-200">
                 {p.avatar_url ? (
                   <img src={p.avatar_url} alt={p.name} className="w-full h-full object-cover" />
                 ) : (
