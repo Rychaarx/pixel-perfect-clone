@@ -356,7 +356,7 @@ const ProfileSelect = () => {
           <button
             key={av.id}
             onClick={() => selectPresetAvatar(av.src)}
-            className={`aspect-square rounded-md overflow-hidden border-2 transition-all duration-200 hover:scale-105 ${
+            className={`aspect-square rounded-full overflow-hidden border-2 transition-all duration-200 hover:scale-105 ${
               selectedAvatar === av.src && !customAvatarPreview
                 ? "border-primary ring-2 ring-primary/40 scale-105"
                 : "border-transparent hover:border-muted-foreground/40"
