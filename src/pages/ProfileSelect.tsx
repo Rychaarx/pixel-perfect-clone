@@ -221,7 +221,7 @@ const ProfileSelect = () => {
             onClick={startCreate}
             className="flex flex-col items-center gap-3 group/add"
           >
-            <div className="w-[100px] h-[100px] sm:w-[130px] sm:h-[130px] rounded-md border-2 border-muted-foreground/30 hover:border-foreground flex items-center justify-center transition-colors group-hover/add:border-foreground">
+            <div className="w-[100px] h-[100px] sm:w-[130px] sm:h-[130px] rounded-full border-2 border-muted-foreground/30 hover:border-foreground flex items-center justify-center transition-colors group-hover/add:border-foreground">
               <Plus className="w-10 h-10 text-muted-foreground/50 group-hover/add:text-foreground transition-colors" />
             </div>
             <span className="text-sm text-muted-foreground group-hover/add:text-foreground transition-colors">Adicionar</span>
