@@ -321,7 +321,7 @@ const ProfileSelect = () => {
       <p className="text-muted-foreground text-sm mb-8">Selecione um avatar ou envie sua foto</p>
 
       {/* Current selection preview */}
-      <div className="w-[100px] h-[100px] rounded-md bg-muted overflow-hidden mb-8 border-2 border-primary">
+      <div className="w-[100px] h-[100px] rounded-full bg-muted overflow-hidden mb-8 border-2 border-primary">
         {currentAvatarSrc ? (
           <img src={currentAvatarSrc} alt="Selected" className="w-full h-full object-cover" />
         ) : (
