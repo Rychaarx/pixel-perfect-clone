@@ -253,7 +253,7 @@ const ProfileSelect = () => {
           <div className="flex flex-col items-center gap-3">
             <button
               onClick={() => openAvatarPicker(isEdit ? "edit" : "create")}
-              className="w-[120px] h-[120px] sm:w-[150px] sm:h-[150px] rounded-md bg-muted overflow-hidden relative group/avatar border-2 border-border hover:border-foreground transition-colors"
+              className="w-[120px] h-[120px] sm:w-[150px] sm:h-[150px] rounded-full bg-muted overflow-hidden relative group/avatar border-2 border-border hover:border-foreground transition-colors"
             >
               {currentAvatarSrc ? (
                 <img src={currentAvatarSrc} alt="Avatar" className="w-full h-full object-cover" />
