@@ -1,5 +1,5 @@
-import { User, Settings, LogOut, Heart, ChevronRight } from "lucide-react";
-
+import { Settings, LogOut, Heart, ChevronRight } from "lucide-react";
+import profileAvatar from "@/assets/profile-avatar.png";
 
 const Profile = () => {
   const menuItems = [
@@ -15,8 +15,8 @@ const Profile = () => {
 
         {/* Avatar */}
         <div className="flex flex-col items-center gap-3 mb-8">
-          <div className="h-24 w-24 rounded-full bg-primary flex items-center justify-center">
-            <User className="h-10 w-10 text-primary-foreground" />
+          <div className="h-24 w-24 rounded-full bg-primary flex items-center justify-center overflow-hidden">
+            <img src={profileAvatar} alt="Avatar" className="h-full w-full object-cover" />
           </div>
           <div className="text-center">
             <p className="text-xl font-bold text-foreground">Usuário</p>
