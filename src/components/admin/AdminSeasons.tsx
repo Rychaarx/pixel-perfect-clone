@@ -199,7 +199,7 @@ const AdminSeasons = () => {
             contentType: task.file.type || "application/octet-stream",
             cacheControl: "3600",
           },
-          chunkSize: 6 * 1024 * 1024,
+          chunkSize: 50 * 1024 * 1024, // 50MB chunks for large files
           onError: (error) => settle(() => reject(error)),
           onProgress: (bytesUploaded, bytesTotal) => {
             setUploadProgress((prev) => ({
