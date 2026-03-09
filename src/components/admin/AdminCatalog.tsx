@@ -75,7 +75,7 @@ const AdminCatalog = () => {
 
     const fileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
 
-    const { data: { session } } = await supabase.auth.getSession();
+    const { data: { session } } = await supabase.auth.refreshSession();
     if (!session) {
       toast.error("Você precisa estar logado para fazer upload.");
       setUploading(false);
@@ -87,15 +87,20 @@ const AdminCatalog = () => {
     let lastLoaded = 0;
     let lastTime = Date.now();
 
+    const getFreshToken = async () => {
+      const { data: { session: currentSession } } = await supabase.auth.getSession();
+      return currentSession?.access_token || session.access_token;
+    };
+
     const upload = new tus.Upload(file, {
       endpoint: `${supabaseUrl}/storage/v1/upload/resumable`,
-      retryDelays: [0, 1000, 3000, 5000],
-      chunkSize: 6 * 1024 * 1024, // 6MB chunks
+      retryDelays: [0, 3000, 5000, 10000, 20000],
+      chunkSize: 20 * 1024 * 1024, // 20MB chunks for more stable long uploads
       headers: {
         authorization: `Bearer ${session.access_token}`,
         "x-upsert": "false",
       },
-      uploadDataDuringCreation: false,
+      uploadDataDuringCreation: true,
       removeFingerprintOnSuccess: true,
       metadata: {
         bucketName,
@@ -103,21 +108,28 @@ const AdminCatalog = () => {
         contentType: file.type || "application/octet-stream",
         cacheControl: "3600",
       },
+      onBeforeRequest: async (req) => {
+        const freshToken = await getFreshToken();
+        req.setHeader("Authorization", `Bearer ${freshToken}`);
+      },
       onError: (error) => {
         console.error("TUS upload error:", error);
         const msg = error?.message || String(error);
-        // Don't retry on permanent errors (413, 400, 403)
-        if (msg.includes("413") || msg.includes("Maximum size") || msg.includes("403") || msg.includes("400")) {
+        const status = (error as any)?.originalResponse?.getStatus?.();
+
+        if (status === 413 || msg.includes("Maximum size") || msg.includes("413")) {
           toast.error("Arquivo excede o tamanho máximo permitido pelo servidor.");
-          setUploading(false);
-          setUploadProgress(0);
-          setUploadSpeed("");
-          uploadRef.current = null;
-          if (fileInputRef.current) fileInputRef.current.value = "";
-          return;
+        } else if (status === 401 || status === 403) {
+          toast.error("Sessão expirada durante o upload. Tente novamente.");
+        } else {
+          toast.error("Falha no upload por instabilidade de rede. Tente novamente.");
         }
-        toast.error("Erro no upload. Tentando novamente...");
-        setTimeout(() => upload.start(), 2000);
+
+        setUploading(false);
+        setUploadProgress(0);
+        setUploadSpeed("");
+        uploadRef.current = null;
+        if (fileInputRef.current) fileInputRef.current.value = "";
       },
       onProgress: (bytesUploaded, bytesTotal) => {
         const percent = Math.round((bytesUploaded / bytesTotal) * 100);
