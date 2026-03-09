@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 
-// Predefined avatars
+// Predefined avatars - Clássicos
 import avatarRobot from "@/assets/avatars/avatar-robot.png";
 import avatarCat from "@/assets/avatars/avatar-cat.png";
 import avatarFox from "@/assets/avatars/avatar-fox.png";
@@ -18,18 +18,64 @@ import avatarPanda from "@/assets/avatars/avatar-panda.png";
 import avatarEagle from "@/assets/avatars/avatar-eagle.png";
 import avatarUnicorn from "@/assets/avatars/avatar-unicorn.png";
 import avatarNinja from "@/assets/avatars/avatar-ninja.png";
+// Filmes
+import avatarSpaceExplorer from "@/assets/avatars/avatar-space-explorer.png";
+import avatarDetective from "@/assets/avatars/avatar-detective.png";
+import avatarSuperhero from "@/assets/avatars/avatar-superhero.png";
+import avatarPirate from "@/assets/avatars/avatar-pirate.png";
+import avatarWizard from "@/assets/avatars/avatar-wizard.png";
+import avatarRacer from "@/assets/avatars/avatar-racer.png";
+import avatarZombie from "@/assets/avatars/avatar-zombie.png";
+import avatarPrincess from "@/assets/avatars/avatar-princess.png";
+// Anime
+import avatarAnimeWarrior from "@/assets/avatars/avatar-anime-warrior.png";
+import avatarAnimeGirl from "@/assets/avatars/avatar-anime-girl.png";
+import avatarSamurai from "@/assets/avatars/avatar-samurai.png";
+import avatarVampire from "@/assets/avatars/avatar-vampire.png";
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
-const PRESET_AVATARS = [
-  { id: "robot", src: avatarRobot, label: "Robô" },
-  { id: "cat", src: avatarCat, label: "Gato" },
-  { id: "fox", src: avatarFox, label: "Raposa" },
-  { id: "astronaut", src: avatarAstronaut, label: "Astronauta" },
-  { id: "panda", src: avatarPanda, label: "Panda" },
-  { id: "eagle", src: avatarEagle, label: "Águia" },
-  { id: "unicorn", src: avatarUnicorn, label: "Unicórnio" },
-  { id: "ninja", src: avatarNinja, label: "Ninja" },
+interface AvatarCategory {
+  label: string;
+  avatars: { id: string; src: string; label: string }[];
+}
+
+const AVATAR_CATEGORIES: AvatarCategory[] = [
+  {
+    label: "🎬 Filmes",
+    avatars: [
+      { id: "space-explorer", src: avatarSpaceExplorer, label: "Explorador" },
+      { id: "detective", src: avatarDetective, label: "Detetive" },
+      { id: "superhero", src: avatarSuperhero, label: "Herói" },
+      { id: "pirate", src: avatarPirate, label: "Pirata" },
+      { id: "wizard", src: avatarWizard, label: "Mago" },
+      { id: "racer", src: avatarRacer, label: "Piloto" },
+      { id: "zombie", src: avatarZombie, label: "Zumbi" },
+      { id: "princess", src: avatarPrincess, label: "Princesa" },
+    ],
+  },
+  {
+    label: "🎌 Anime",
+    avatars: [
+      { id: "anime-warrior", src: avatarAnimeWarrior, label: "Guerreiro" },
+      { id: "anime-girl", src: avatarAnimeGirl, label: "Kawaii" },
+      { id: "samurai", src: avatarSamurai, label: "Samurai" },
+      { id: "vampire", src: avatarVampire, label: "Vampiro" },
+      { id: "ninja", src: avatarNinja, label: "Ninja" },
+    ],
+  },
+  {
+    label: "🐾 Clássicos",
+    avatars: [
+      { id: "robot", src: avatarRobot, label: "Robô" },
+      { id: "cat", src: avatarCat, label: "Gato" },
+      { id: "fox", src: avatarFox, label: "Raposa" },
+      { id: "astronaut", src: avatarAstronaut, label: "Astronauta" },
+      { id: "panda", src: avatarPanda, label: "Panda" },
+      { id: "eagle", src: avatarEagle, label: "Águia" },
+      { id: "unicorn", src: avatarUnicorn, label: "Unicórnio" },
+    ],
+  },
 ];
 
 const getAvatarPublicUrl = (path: string) =>
