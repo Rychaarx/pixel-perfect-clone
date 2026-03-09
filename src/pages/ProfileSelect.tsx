@@ -396,20 +396,27 @@ const ProfileSelect = () => {
         }}
       />
 
-      {/* Preset grid */}
-      <div className="grid grid-cols-4 gap-3 sm:gap-4 max-w-md w-full mb-10">
-        {PRESET_AVATARS.map((av) => (
-          <button
-            key={av.id}
-            onClick={() => selectPresetAvatar(av.src)}
-            className={`aspect-square rounded-full overflow-hidden border-2 transition-all duration-200 hover:scale-105 ${
-              selectedAvatar === av.src && !customAvatarPreview
-                ? "border-primary ring-2 ring-primary/40 scale-105"
-                : "border-transparent hover:border-muted-foreground/40"
-            }`}
-          >
-            <img src={av.src} alt={av.label} className="w-full h-full object-cover bg-muted" />
-          </button>
+      {/* Categorized avatar grid */}
+      <div className="w-full max-w-lg space-y-6 mb-10 px-2">
+        {AVATAR_CATEGORIES.map((cat) => (
+          <div key={cat.label}>
+            <h3 className="text-sm font-semibold text-muted-foreground mb-3">{cat.label}</h3>
+            <div className="grid grid-cols-4 gap-3">
+              {cat.avatars.map((av) => (
+                <button
+                  key={av.id}
+                  onClick={() => selectPresetAvatar(av.src)}
+                  className={`aspect-square rounded-full overflow-hidden border-2 transition-all duration-200 hover:scale-105 ${
+                    selectedAvatar === av.src && !customAvatarPreview
+                      ? "border-primary ring-2 ring-primary/40 scale-105"
+                      : "border-transparent hover:border-muted-foreground/40"
+                  }`}
+                >
+                  <img src={av.src} alt={av.label} className="w-full h-full object-cover bg-muted" />
+                </button>
+              ))}
+            </div>
+          </div>
         ))}
       </div>
 
