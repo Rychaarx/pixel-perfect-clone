@@ -162,11 +162,17 @@ const AdminSeasons = () => {
       .map((ep, idx) => ({ ep, idx }))
       .filter(({ ep }) => !ep.redirect_url);
 
-    const { data: { session } } = await supabase.auth.getSession();
+    // Refresh session to get a fresh token
+    const { data: { session } } = await supabase.auth.refreshSession();
+    if (!session) {
+      toast.error("Sessão expirada. Faça login novamente.");
+      setUploading(false);
+      return;
+    }
     const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
 
-    const UPLOAD_TIMEOUT = 30 * 60 * 1000; // 30 minutes for large files
-    const CONCURRENCY = 2;
+    const UPLOAD_TIMEOUT = 60 * 60 * 1000; // 60 minutes for very large files
+    const CONCURRENCY = 1; // Sequential for large files to avoid memory issues
 
     // Build upload tasks
     const tasks: Array<{ file: File; epIdx: number; filePath: string; fileKey: string }> = [];
@@ -177,18 +183,26 @@ const AdminSeasons = () => {
       tasks.push({ file, epIdx: idx, filePath, fileKey: `${seasonIdx}-${idx}` });
     }
 
+    // Helper to get fresh token
+    const getFreshToken = async () => {
+      const { data: { session: s } } = await supabase.auth.getSession();
+      return s?.access_token || session.access_token;
+    };
+
     const uploadOne = (task: typeof tasks[0]) => {
       let timer: ReturnType<typeof setTimeout>;
 
-      const promise = new Promise<void>((resolve, reject) => {
+      const promise = new Promise<void>(async (resolve, reject) => {
         let settled = false;
         const settle = (fn: () => void) => { if (!settled) { settled = true; clearTimeout(timer); fn(); } };
 
+        const token = await getFreshToken();
+
         const upload = new tus.Upload(task.file, {
           endpoint: `https://${projectId}.supabase.co/storage/v1/upload/resumable`,
-          retryDelays: [0, 3000, 5000],
+          retryDelays: [0, 3000, 5000, 10000, 20000],
           headers: {
-            authorization: `Bearer ${session?.access_token}`,
+            authorization: `Bearer ${token}`,
             "x-upsert": "true",
           },
           uploadDataDuringCreation: true,
@@ -199,7 +213,19 @@ const AdminSeasons = () => {
             contentType: task.file.type || "application/octet-stream",
             cacheControl: "3600",
           },
-          chunkSize: 50 * 1024 * 1024, // 50MB chunks for large files
+          chunkSize: 20 * 1024 * 1024, // 20MB chunks — more reliable for large files
+          onShouldRetry: (err) => {
+            const status = (err as any)?.originalResponse?.getStatus?.();
+            // Retry on network errors and 5xx, but not on 4xx (except 409/423)
+            if (status === 409 || status === 423) return true;
+            if (status && status >= 400 && status < 500) return false;
+            return true;
+          },
+          onBeforeRequest: async (req) => {
+            // Refresh token before each chunk to avoid expiration
+            const freshToken = await getFreshToken();
+            req.setHeader("Authorization", `Bearer ${freshToken}`);
+          },
           onError: (error) => settle(() => reject(error)),
           onProgress: (bytesUploaded, bytesTotal) => {
             setUploadProgress((prev) => ({
