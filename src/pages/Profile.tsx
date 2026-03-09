@@ -1,5 +1,5 @@
-import { User, Settings, LogOut, Heart, ChevronRight } from "lucide-react";
-
+import { Settings, LogOut, Heart, ChevronRight } from "lucide-react";
+import profileAvatar from "@/assets/profile-avatar.png";
 
 const Profile = () => {
   const menuItems = [
