@@ -87,9 +87,17 @@ const AdminCatalog = () => {
     let lastLoaded = 0;
     let lastTime = Date.now();
 
+    let lastRefresh = Date.now();
+    let cachedToken = session.access_token;
     const getFreshToken = async () => {
-      const { data: { session: currentSession } } = await supabase.auth.getSession();
-      return currentSession?.access_token || session.access_token;
+      if (Date.now() - lastRefresh > 30_000) {
+        const { data: { session: s } } = await supabase.auth.refreshSession();
+        if (s) {
+          cachedToken = s.access_token;
+          lastRefresh = Date.now();
+        }
+      }
+      return cachedToken;
     };
 
     const upload = new tus.Upload(file, {
