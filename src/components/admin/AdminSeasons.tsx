@@ -183,10 +183,19 @@ const AdminSeasons = () => {
       tasks.push({ file, epIdx: idx, filePath, fileKey: `${seasonIdx}-${idx}` });
     }
 
-    // Helper to get fresh token
+    // Helper to get fresh token — always refresh to avoid expired JWS
+    let lastRefresh = Date.now();
+    let cachedToken = session.access_token;
     const getFreshToken = async () => {
-      const { data: { session: s } } = await supabase.auth.getSession();
-      return s?.access_token || session.access_token;
+      // Refresh every 30 seconds to keep token alive during large uploads
+      if (Date.now() - lastRefresh > 30_000) {
+        const { data: { session: s } } = await supabase.auth.refreshSession();
+        if (s) {
+          cachedToken = s.access_token;
+          lastRefresh = Date.now();
+        }
+      }
+      return cachedToken;
     };
 
     const uploadOne = (task: typeof tasks[0]) => {
@@ -216,15 +225,16 @@ const AdminSeasons = () => {
           chunkSize: 20 * 1024 * 1024, // 20MB chunks — more reliable for large files
           onShouldRetry: (err) => {
             const status = (err as any)?.originalResponse?.getStatus?.();
-            // Retry on network errors and 5xx, but not on 4xx (except 409/423)
-            if (status === 409 || status === 423) return true;
+            // Retry on 403 (token expired), 409, 423, network errors and 5xx
+            if (status === 403 || status === 409 || status === 423) return true;
             if (status && status >= 400 && status < 500) return false;
             return true;
           },
           onBeforeRequest: async (req) => {
-            // Refresh token before each chunk to avoid expiration
+            // Always get fresh token before each request (create + chunks)
             const freshToken = await getFreshToken();
             req.setHeader("Authorization", `Bearer ${freshToken}`);
+            req.setHeader("authorization", `Bearer ${freshToken}`);
           },
           onError: (error) => settle(() => reject(error)),
           onProgress: (bytesUploaded, bytesTotal) => {
