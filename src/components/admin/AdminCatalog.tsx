@@ -105,7 +105,7 @@ const AdminCatalog = () => {
       retryDelays: [0, 3000, 5000, 10000, 20000],
       chunkSize: 20 * 1024 * 1024, // 20MB chunks for more stable long uploads
       headers: {
-        authorization: `Bearer ${session.access_token}`,
+        authorization: `Bearer ${cachedToken}`,
         "x-upsert": "false",
       },
       uploadDataDuringCreation: true,
@@ -116,9 +116,16 @@ const AdminCatalog = () => {
         contentType: file.type || "application/octet-stream",
         cacheControl: "3600",
       },
+      onShouldRetry: (err) => {
+        const status = (err as any)?.originalResponse?.getStatus?.();
+        if (status === 403 || status === 409 || status === 423) return true;
+        if (status && status >= 400 && status < 500) return false;
+        return true;
+      },
       onBeforeRequest: async (req) => {
         const freshToken = await getFreshToken();
         req.setHeader("Authorization", `Bearer ${freshToken}`);
+        req.setHeader("authorization", `Bearer ${freshToken}`);
       },
       onError: (error) => {
         console.error("TUS upload error:", error);
