@@ -231,9 +231,10 @@ const AdminSeasons = () => {
             return true;
           },
           onBeforeRequest: async (req) => {
-            // Refresh token before each chunk to avoid expiration
+            // Always get fresh token before each request (create + chunks)
             const freshToken = await getFreshToken();
             req.setHeader("Authorization", `Bearer ${freshToken}`);
+            req.setHeader("authorization", `Bearer ${freshToken}`);
           },
           onError: (error) => settle(() => reject(error)),
           onProgress: (bytesUploaded, bytesTotal) => {
