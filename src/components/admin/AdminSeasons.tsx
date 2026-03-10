@@ -138,7 +138,7 @@ const AdminSeasons = () => {
     toast.success("Temporadas salvas!");
   };
 
-  // Bulk file upload using TUS — parallel with timeout
+  // Bulk file upload using XHR — sequential
   const handleBulkFileUpload = async (seasonIdx: number, files: FileList) => {
     if (!files.length) return;
     setUploading(true);
@@ -147,7 +147,6 @@ const AdminSeasons = () => {
     const baseEpisodes = seasonsRef.current[seasonIdx]?.episodes ?? [];
     let workingEpisodes = [...baseEpisodes];
 
-    // Ensure we have enough episodes
     if (sortedFiles.length > workingEpisodes.length) {
       const startNum = workingEpisodes.length > 0 ? Math.max(...workingEpisodes.map((e) => e.episode_number)) + 1 : 1;
       const extraEps = Array.from({ length: sortedFiles.length - workingEpisodes.length }, (_, i) =>
@@ -157,24 +156,20 @@ const AdminSeasons = () => {
       updateSeason(seasonIdx, { episodes: workingEpisodes });
     }
 
-    // Get episodes without URLs (in order)
     const emptyUrlEps = workingEpisodes
       .map((ep, idx) => ({ ep, idx }))
       .filter(({ ep }) => !ep.redirect_url);
 
-    // Refresh session to get a fresh token
     const { data: { session } } = await supabase.auth.refreshSession();
     if (!session) {
       toast.error("Sessão expirada. Faça login novamente.");
       setUploading(false);
       return;
     }
-    const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
 
-    const UPLOAD_TIMEOUT = 60 * 60 * 1000; // 60 minutes for very large files
-    const CONCURRENCY = 1; // Sequential for large files to avoid memory issues
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    const bucketName = "videos";
 
-    // Build upload tasks
     const tasks: Array<{ file: File; epIdx: number; filePath: string; fileKey: string }> = [];
     for (let i = 0; i < sortedFiles.length && i < emptyUrlEps.length; i++) {
       const file = sortedFiles[i];
@@ -183,121 +178,59 @@ const AdminSeasons = () => {
       tasks.push({ file, epIdx: idx, filePath, fileKey: `${seasonIdx}-${idx}` });
     }
 
-    // Helper to get fresh token — always refresh to avoid expired JWS
-    let lastRefresh = Date.now();
-    let cachedToken = session.access_token;
-    const getFreshToken = async () => {
-      // Refresh every 30 seconds to keep token alive during large uploads
-      if (Date.now() - lastRefresh > 30_000) {
-        const { data: { session: s } } = await supabase.auth.refreshSession();
-        if (s) {
-          cachedToken = s.access_token;
-          lastRefresh = Date.now();
-        }
-      }
-      return cachedToken;
-    };
-
-    const uploadOne = (task: typeof tasks[0]) => {
-      let timer: ReturnType<typeof setTimeout>;
-
-      const promise = new Promise<void>(async (resolve, reject) => {
-        let settled = false;
-        const settle = (fn: () => void) => { if (!settled) { settled = true; clearTimeout(timer); fn(); } };
-
-        const token = await getFreshToken();
-
-        const upload = new tus.Upload(task.file, {
-          endpoint: `https://${projectId}.supabase.co/storage/v1/upload/resumable`,
-          retryDelays: [0, 3000, 5000, 10000, 20000],
-          headers: {
-            authorization: `Bearer ${token}`,
-            "x-upsert": "true",
-          },
-          uploadDataDuringCreation: true,
-          removeFingerprintOnSuccess: true,
-          metadata: {
-            bucketName: "videos",
-            objectName: task.filePath,
-            contentType: task.file.type || "application/octet-stream",
-            cacheControl: "3600",
-          },
-          chunkSize: 20 * 1024 * 1024, // 20MB chunks — more reliable for large files
-          onShouldRetry: (err) => {
-            const status = (err as any)?.originalResponse?.getStatus?.();
-            // Retry on 403 (token expired), 409, 423, network errors and 5xx
-            if (status === 403 || status === 409 || status === 423) return true;
-            if (status && status >= 400 && status < 500) return false;
-            return true;
-          },
-          onBeforeRequest: async (req) => {
-            // Always get fresh token before each request (create + chunks)
-            const freshToken = await getFreshToken();
-            req.setHeader("Authorization", `Bearer ${freshToken}`);
-            req.setHeader("authorization", `Bearer ${freshToken}`);
-          },
-          onError: (error) => settle(() => reject(error)),
-          onProgress: (bytesUploaded, bytesTotal) => {
-            setUploadProgress((prev) => ({
-              ...prev,
-              [task.fileKey]: Math.round((bytesUploaded / bytesTotal) * 100),
-            }));
-          },
-          onSuccess: () => settle(() => {
-            const publicUrl = `https://${projectId}.supabase.co/storage/v1/object/public/videos/${task.filePath}`;
-            setSeasons((prev) =>
-              prev.map((season, i) => {
-                if (i !== seasonIdx) return season;
-                return {
-                  ...season,
-                  episodes: season.episodes.map((ep, j) =>
-                    j === task.epIdx ? { ...ep, redirect_url: publicUrl } : ep
-                  ),
-                };
-              })
-            );
-            setUploadProgress((prev) => ({ ...prev, [task.fileKey]: 100 }));
-            resolve();
-          }),
-        });
-
-        timer = setTimeout(() => {
-          upload.abort();
-          settle(() => reject(new Error(`Timeout: ${task.file.name}`)));
-        }, UPLOAD_TIMEOUT);
-
-        upload.start();
-      });
-
-      return promise;
-    };
-
-    // Process with concurrency pool
-    let completed = 0;
-    const pool: Promise<void>[] = [];
     const errors: string[] = [];
 
     for (const task of tasks) {
-      const p = uploadOne(task)
-        .catch((err) => {
-          console.error(`Upload error: ${task.file.name}`, err);
-          errors.push(task.file.name);
-        })
-        .finally(() => { completed++; });
+      try {
+        // Get fresh token for each file
+        const { data: { session: freshSession } } = await supabase.auth.refreshSession();
+        const token = freshSession?.access_token || session.access_token;
 
-      pool.push(p);
+        await new Promise<void>((resolve, reject) => {
+          const xhr = new XMLHttpRequest();
 
-      if (pool.length >= CONCURRENCY) {
-        await Promise.race(pool);
-        // Remove settled promises
-        for (let i = pool.length - 1; i >= 0; i--) {
-          const settled = await Promise.race([pool[i].then(() => true), Promise.resolve(false)]);
-          if (settled) pool.splice(i, 1);
-        }
+          xhr.upload.addEventListener("progress", (event) => {
+            if (!event.lengthComputable) return;
+            setUploadProgress((prev) => ({
+              ...prev,
+              [task.fileKey]: Math.round((event.loaded / event.total) * 100),
+            }));
+          });
+
+          xhr.addEventListener("load", () => {
+            if (xhr.status >= 200 && xhr.status < 300) {
+              const { data: urlData } = supabase.storage.from(bucketName).getPublicUrl(task.filePath);
+              setSeasons((prev) =>
+                prev.map((season, i) => {
+                  if (i !== seasonIdx) return season;
+                  return {
+                    ...season,
+                    episodes: season.episodes.map((ep, j) =>
+                      j === task.epIdx ? { ...ep, redirect_url: urlData.publicUrl } : ep
+                    ),
+                  };
+                })
+              );
+              setUploadProgress((prev) => ({ ...prev, [task.fileKey]: 100 }));
+              resolve();
+            } else {
+              reject(new Error(`HTTP ${xhr.status}: ${xhr.responseText}`));
+            }
+          });
+
+          xhr.addEventListener("error", () => reject(new Error("Network error")));
+          xhr.addEventListener("abort", () => reject(new Error("Aborted")));
+
+          xhr.open("POST", `${supabaseUrl}/storage/v1/object/${bucketName}/${task.filePath}`);
+          xhr.setRequestHeader("Authorization", `Bearer ${token}`);
+          xhr.setRequestHeader("x-upsert", "true");
+          xhr.send(task.file);
+        });
+      } catch (err) {
+        console.error(`Upload error: ${task.file.name}`, err);
+        errors.push(task.file.name);
       }
     }
-
-    await Promise.allSettled(pool);
 
     setUploading(false);
     setUploadProgress({});
