@@ -225,8 +225,8 @@ const AdminSeasons = () => {
           chunkSize: 20 * 1024 * 1024, // 20MB chunks — more reliable for large files
           onShouldRetry: (err) => {
             const status = (err as any)?.originalResponse?.getStatus?.();
-            // Retry on network errors and 5xx, but not on 4xx (except 409/423)
-            if (status === 409 || status === 423) return true;
+            // Retry on 403 (token expired), 409, 423, network errors and 5xx
+            if (status === 403 || status === 409 || status === 423) return true;
             if (status && status >= 400 && status < 500) return false;
             return true;
           },
