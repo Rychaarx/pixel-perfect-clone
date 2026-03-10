@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plus, Trash2, Save, ChevronDown, ChevronUp, FolderUp, GripVertical } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import * as tus from "tus-js-client";
+
 
 const AdminSeasons = () => {
   const { items } = useCatalog();
