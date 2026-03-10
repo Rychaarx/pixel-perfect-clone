@@ -183,10 +183,19 @@ const AdminSeasons = () => {
       tasks.push({ file, epIdx: idx, filePath, fileKey: `${seasonIdx}-${idx}` });
     }
 
-    // Helper to get fresh token
+    // Helper to get fresh token — always refresh to avoid expired JWS
+    let lastRefresh = Date.now();
+    let cachedToken = session.access_token;
     const getFreshToken = async () => {
-      const { data: { session: s } } = await supabase.auth.getSession();
-      return s?.access_token || session.access_token;
+      // Refresh every 30 seconds to keep token alive during large uploads
+      if (Date.now() - lastRefresh > 30_000) {
+        const { data: { session: s } } = await supabase.auth.refreshSession();
+        if (s) {
+          cachedToken = s.access_token;
+          lastRefresh = Date.now();
+        }
+      }
+      return cachedToken;
     };
 
     const uploadOne = (task: typeof tasks[0]) => {
