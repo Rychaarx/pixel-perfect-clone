@@ -30,7 +30,7 @@ const AdminCatalog = () => {
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadSpeed, setUploadSpeed] = useState("");
-  const uploadRef = useRef<tus.Upload | null>(null);
+  const uploadRef = useRef<XMLHttpRequest | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [pendingTmdbDetail, setPendingTmdbDetail] = useState<TmdbDetail | null>(null);
 
