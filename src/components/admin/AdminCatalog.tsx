@@ -56,9 +56,9 @@ const AdminCatalog = () => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const maxSize = 10 * 1024 * 1024 * 1024; // 10GB
+    const maxSize = 5 * 1024 * 1024 * 1024; // 5GB (Supabase standard limit)
     if (file.size > maxSize) {
-      toast.error(`Arquivo muito grande (${formatFileSize(file.size)}). Máximo: 10 GB.`);
+      toast.error(`Arquivo muito grande (${formatFileSize(file.size)}). Máximo: 5 GB.`);
       if (fileInputRef.current) fileInputRef.current.value = "";
       return;
     }
@@ -73,6 +73,7 @@ const AdminCatalog = () => {
     setUploadSpeed("");
 
     const fileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+    const bucketName = "videos";
 
     const { data: { session } } = await supabase.auth.refreshSession();
     if (!session) {
@@ -81,113 +82,82 @@ const AdminCatalog = () => {
       return;
     }
 
-    const bucketName = "videos";
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
     let lastLoaded = 0;
     let lastTime = Date.now();
 
-    let lastRefresh = Date.now();
-    let cachedToken = session.access_token;
-    const getFreshToken = async () => {
-      if (Date.now() - lastRefresh > 30_000) {
-        const { data: { session: s } } = await supabase.auth.refreshSession();
-        if (s) {
-          cachedToken = s.access_token;
-          lastRefresh = Date.now();
-        }
+    const xhr = new XMLHttpRequest();
+    uploadRef.current = xhr;
+
+    xhr.upload.addEventListener("progress", (event) => {
+      if (!event.lengthComputable) return;
+      const percent = Math.round((event.loaded / event.total) * 100);
+      setUploadProgress(percent);
+
+      const now = Date.now();
+      const elapsed = (now - lastTime) / 1000;
+      if (elapsed >= 1) {
+        const speed = (event.loaded - lastLoaded) / elapsed;
+        const remaining = (event.total - event.loaded) / speed;
+        const speedStr = speed >= 1024 * 1024
+          ? `${(speed / (1024 * 1024)).toFixed(1)} MB/s`
+          : `${(speed / 1024).toFixed(0)} KB/s`;
+        const timeStr = remaining > 60
+          ? `${Math.ceil(remaining / 60)} min restantes`
+          : `${Math.ceil(remaining)}s restantes`;
+        setUploadSpeed(`${speedStr} · ${timeStr}`);
+        lastLoaded = event.loaded;
+        lastTime = now;
       }
-      return cachedToken;
-    };
+    });
 
-    const upload = new tus.Upload(file, {
-      endpoint: `${supabaseUrl}/storage/v1/upload/resumable`,
-      retryDelays: [0, 3000, 5000, 10000, 20000],
-      chunkSize: 20 * 1024 * 1024, // 20MB chunks for more stable long uploads
-      headers: {
-        authorization: `Bearer ${cachedToken}`,
-        "x-upsert": "false",
-      },
-      uploadDataDuringCreation: true,
-      removeFingerprintOnSuccess: true,
-      metadata: {
-        bucketName,
-        objectName: fileName,
-        contentType: file.type || "application/octet-stream",
-        cacheControl: "3600",
-      },
-      onShouldRetry: (err) => {
-        const status = (err as any)?.originalResponse?.getStatus?.();
-        if (status === 403 || status === 409 || status === 423) return true;
-        if (status && status >= 400 && status < 500) return false;
-        return true;
-      },
-      onBeforeRequest: async (req) => {
-        const freshToken = await getFreshToken();
-        req.setHeader("Authorization", `Bearer ${freshToken}`);
-        req.setHeader("authorization", `Bearer ${freshToken}`);
-      },
-      onError: (error) => {
-        console.error("TUS upload error:", error);
-        const msg = error?.message || String(error);
-        const status = (error as any)?.originalResponse?.getStatus?.();
-
-        if (status === 413 || msg.includes("Maximum size") || msg.includes("413")) {
-          toast.error("Arquivo excede o tamanho máximo permitido pelo servidor.");
-        } else if (status === 401 || status === 403) {
-          toast.error("Sessão expirada durante o upload. Tente novamente.");
-        } else {
-          toast.error("Falha no upload por instabilidade de rede. Tente novamente.");
-        }
-
-        setUploading(false);
-        setUploadProgress(0);
-        setUploadSpeed("");
-        uploadRef.current = null;
-        if (fileInputRef.current) fileInputRef.current.value = "";
-      },
-      onProgress: (bytesUploaded, bytesTotal) => {
-        const percent = Math.round((bytesUploaded / bytesTotal) * 100);
-        setUploadProgress(percent);
-
-        const now = Date.now();
-        const elapsed = (now - lastTime) / 1000;
-        if (elapsed >= 1) {
-          const speed = (bytesUploaded - lastLoaded) / elapsed;
-          const remaining = (bytesTotal - bytesUploaded) / speed;
-          const speedStr = speed >= 1024 * 1024
-            ? `${(speed / (1024 * 1024)).toFixed(1)} MB/s`
-            : `${(speed / 1024).toFixed(0)} KB/s`;
-          const timeStr = remaining > 60
-            ? `${Math.ceil(remaining / 60)} min restantes`
-            : `${Math.ceil(remaining)}s restantes`;
-          setUploadSpeed(`${speedStr} · ${timeStr}`);
-          lastLoaded = bytesUploaded;
-          lastTime = now;
-        }
-      },
-      onSuccess: () => {
+    xhr.addEventListener("load", () => {
+      uploadRef.current = null;
+      if (xhr.status >= 200 && xhr.status < 300) {
         const { data: urlData } = supabase.storage.from(bucketName).getPublicUrl(fileName);
-        console.log("TUS upload success, public URL:", urlData.publicUrl);
         setForm((prev) => ({ ...prev, redirectUrl: urlData.publicUrl }));
         setUploadProgress(100);
         setUploadSpeed("");
         setUploading(false);
-        uploadRef.current = null;
         if (fileInputRef.current) fileInputRef.current.value = "";
         toast.success("Vídeo enviado com sucesso!");
-      },
-    });
-
-    uploadRef.current = upload;
-
-    // Check for previous uploads to resume
-    upload.findPreviousUploads().then((previousUploads) => {
-      if (previousUploads.length > 0) {
-        upload.resumeFromPreviousUpload(previousUploads[0]);
-        toast.info("Retomando upload anterior...");
+      } else {
+        console.error("Upload error:", xhr.status, xhr.responseText);
+        if (xhr.status === 413) {
+          toast.error("Arquivo excede o tamanho máximo permitido pelo servidor.");
+        } else if (xhr.status === 401 || xhr.status === 403) {
+          toast.error("Sessão expirada. Faça login novamente e tente.");
+        } else {
+          toast.error("Falha no upload. Tente novamente.");
+        }
+        setUploading(false);
+        setUploadProgress(0);
+        setUploadSpeed("");
+        if (fileInputRef.current) fileInputRef.current.value = "";
       }
-      upload.start();
     });
+
+    xhr.addEventListener("error", () => {
+      console.error("Upload network error");
+      toast.error("Falha no upload por instabilidade de rede. Tente novamente.");
+      setUploading(false);
+      setUploadProgress(0);
+      setUploadSpeed("");
+      uploadRef.current = null;
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    });
+
+    xhr.addEventListener("abort", () => {
+      setUploading(false);
+      setUploadProgress(0);
+      setUploadSpeed("");
+      uploadRef.current = null;
+    });
+
+    xhr.open("POST", `${supabaseUrl}/storage/v1/object/${bucketName}/${fileName}`);
+    xhr.setRequestHeader("Authorization", `Bearer ${session.access_token}`);
+    xhr.setRequestHeader("x-upsert", "false");
+    xhr.send(file);
   };
 
   // Debounced TMDB search
