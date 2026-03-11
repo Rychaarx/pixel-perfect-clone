@@ -7,9 +7,17 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Plus, Pencil, Trash2, Search, X, ExternalLink, Loader2, Upload, Film } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, X, ExternalLink, Loader2, Upload, Film, RotateCcw, AlertCircle } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
+import {
+  UploadRecord,
+  saveUpload,
+  deleteUpload,
+  getPendingUploads,
+  clearCompletedUploads,
+  generateUploadId,
+} from "@/lib/uploadDB";
 
 const emptyForm = {
   title: "", type: "Filme" as CatalogItem["type"], status: "na_lista" as CatalogStatus,
@@ -33,6 +41,23 @@ const AdminCatalog = () => {
   const uploadRef = useRef<XMLHttpRequest | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [pendingTmdbDetail, setPendingTmdbDetail] = useState<TmdbDetail | null>(null);
+  const [failedUploads, setFailedUploads] = useState<UploadRecord[]>([]);
+  const retryFileRef = useRef<HTMLInputElement>(null);
+  const [retryingUploadId, setRetryingUploadId] = useState<string | null>(null);
+
+  // Load failed uploads on mount
+  useEffect(() => {
+    loadFailedUploads();
+  }, []);
+
+  const loadFailedUploads = async () => {
+    try {
+      const pending = await getPendingUploads("catalog");
+      setFailedUploads(pending);
+    } catch (e) {
+      console.error("Failed to load pending uploads:", e);
+    }
+  };
 
   const formatFileSize = (bytes: number) => {
     if (bytes >= 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`;
@@ -52,33 +77,39 @@ const AdminCatalog = () => {
     toast.info("Upload cancelado");
   }, []);
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const executeUpload = async (file: File, storagePath: string, isRetry = false) => {
+    const bucketName = "videos";
+    const uploadId = generateUploadId(file.name, file.size, storagePath);
 
-    const maxSize = 5 * 1024 * 1024 * 1024; // 5GB (Supabase standard limit)
-    if (file.size > maxSize) {
-      toast.error(`Arquivo muito grande (${formatFileSize(file.size)}). Máximo: 5 GB.`);
-      if (fileInputRef.current) fileInputRef.current.value = "";
-      return;
-    }
-    if (file.size === 0) {
-      toast.error("O arquivo selecionado está vazio.");
-      if (fileInputRef.current) fileInputRef.current.value = "";
-      return;
-    }
+    const record: UploadRecord = {
+      id: uploadId,
+      fileName: file.name,
+      fileSize: file.size,
+      fileType: file.type,
+      fileLastModified: file.lastModified,
+      storagePath,
+      bucketName,
+      context: "catalog",
+      status: "uploading",
+      progress: 0,
+      createdAt: isRetry ? Date.now() : Date.now(),
+      updatedAt: Date.now(),
+    };
+    await saveUpload(record);
 
     setUploading(true);
     setUploadProgress(0);
     setUploadSpeed("");
 
-    const fileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
-    const bucketName = "videos";
-
     const { data: { session } } = await supabase.auth.refreshSession();
     if (!session) {
       toast.error("Você precisa estar logado para fazer upload.");
+      record.status = "failed";
+      record.error = "Sessão expirada";
+      record.updatedAt = Date.now();
+      await saveUpload(record);
       setUploading(false);
+      loadFailedUploads();
       return;
     }
 
@@ -89,7 +120,7 @@ const AdminCatalog = () => {
     const xhr = new XMLHttpRequest();
     uploadRef.current = xhr;
 
-    xhr.upload.addEventListener("progress", (event) => {
+    xhr.upload.addEventListener("progress", async (event) => {
       if (!event.lengthComputable) return;
       const percent = Math.round((event.loaded / event.total) * 100);
       setUploadProgress(percent);
@@ -109,26 +140,46 @@ const AdminCatalog = () => {
         lastLoaded = event.loaded;
         lastTime = now;
       }
+
+      // Periodically save progress to IndexedDB
+      if (percent % 10 === 0) {
+        record.progress = percent;
+        record.updatedAt = Date.now();
+        await saveUpload(record);
+      }
     });
 
-    xhr.addEventListener("load", () => {
+    xhr.addEventListener("load", async () => {
       uploadRef.current = null;
       if (xhr.status >= 200 && xhr.status < 300) {
-        const { data: urlData } = supabase.storage.from(bucketName).getPublicUrl(fileName);
+        const { data: urlData } = supabase.storage.from(bucketName).getPublicUrl(storagePath);
         setForm((prev) => ({ ...prev, redirectUrl: urlData.publicUrl }));
         setUploadProgress(100);
         setUploadSpeed("");
         setUploading(false);
         if (fileInputRef.current) fileInputRef.current.value = "";
+        
+        record.status = "completed";
+        record.progress = 100;
+        record.updatedAt = Date.now();
+        await saveUpload(record);
+        await clearCompletedUploads("catalog");
+        loadFailedUploads();
         toast.success("Vídeo enviado com sucesso!");
       } else {
         console.error("Upload error:", xhr.status, xhr.responseText);
+        record.status = "failed";
+        record.error = `HTTP ${xhr.status}`;
+        record.updatedAt = Date.now();
+        await saveUpload(record);
+        loadFailedUploads();
+
         if (xhr.status === 413) {
           toast.error("Arquivo excede o tamanho máximo permitido pelo servidor.");
         } else if (xhr.status === 401 || xhr.status === 403) {
           toast.error("Sessão expirada. Faça login novamente e tente.");
         } else {
-          toast.error("Falha no upload. Tente novamente.");
+          toast.error("Falha no upload. Use 'Retomar' para tentar novamente.");
         }
         setUploading(false);
         setUploadProgress(0);
@@ -137,9 +188,14 @@ const AdminCatalog = () => {
       }
     });
 
-    xhr.addEventListener("error", () => {
+    xhr.addEventListener("error", async () => {
       console.error("Upload network error");
-      toast.error("Falha no upload por instabilidade de rede. Tente novamente.");
+      record.status = "failed";
+      record.error = "Erro de rede";
+      record.updatedAt = Date.now();
+      await saveUpload(record);
+      loadFailedUploads();
+      toast.error("Falha no upload por instabilidade de rede. Use 'Retomar' para tentar novamente.");
       setUploading(false);
       setUploadProgress(0);
       setUploadSpeed("");
@@ -147,17 +203,70 @@ const AdminCatalog = () => {
       if (fileInputRef.current) fileInputRef.current.value = "";
     });
 
-    xhr.addEventListener("abort", () => {
+    xhr.addEventListener("abort", async () => {
+      record.status = "failed";
+      record.error = "Cancelado pelo usuário";
+      record.updatedAt = Date.now();
+      await saveUpload(record);
+      loadFailedUploads();
       setUploading(false);
       setUploadProgress(0);
       setUploadSpeed("");
       uploadRef.current = null;
     });
 
-    xhr.open("POST", `${supabaseUrl}/storage/v1/object/${bucketName}/${fileName}`);
+    xhr.open("POST", `${supabaseUrl}/storage/v1/object/${bucketName}/${storagePath}`);
     xhr.setRequestHeader("Authorization", `Bearer ${session.access_token}`);
-    xhr.setRequestHeader("x-upsert", "false");
+    xhr.setRequestHeader("x-upsert", "true");
     xhr.send(file);
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const maxSize = 5 * 1024 * 1024 * 1024;
+    if (file.size > maxSize) {
+      toast.error(`Arquivo muito grande (${formatFileSize(file.size)}). Máximo: 5 GB.`);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      return;
+    }
+    if (file.size === 0) {
+      toast.error("O arquivo selecionado está vazio.");
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      return;
+    }
+
+    const fileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+    await executeUpload(file, fileName);
+  };
+
+  const handleRetryUpload = (record: UploadRecord) => {
+    setRetryingUploadId(record.id);
+    retryFileRef.current?.click();
+  };
+
+  const onRetryFileSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file || !retryingUploadId) return;
+
+    const record = failedUploads.find((r) => r.id === retryingUploadId);
+    setRetryingUploadId(null);
+    if (!record) return;
+
+    // Verify file matches
+    if (file.name !== record.fileName || file.size !== record.fileSize) {
+      toast.error(`Selecione o mesmo arquivo: "${record.fileName}" (${formatFileSize(record.fileSize)})`);
+      return;
+    }
+
+    await executeUpload(file, record.storagePath, true);
+  };
+
+  const dismissFailedUpload = async (id: string) => {
+    await deleteUpload(id);
+    loadFailedUploads();
   };
 
   // Debounced TMDB search
@@ -266,7 +375,6 @@ const AdminCatalog = () => {
         return;
       }
       
-      // Auto-create seasons and episodes from TMDB data
       if (result?.id && pendingTmdbDetail?.seasons && pendingTmdbDetail.seasons.length > 0) {
         try {
           for (const season of pendingTmdbDetail.seasons) {
@@ -314,6 +422,62 @@ const AdminCatalog = () => {
 
   return (
     <div className="space-y-6">
+      {/* Hidden retry file input */}
+      <input
+        ref={retryFileRef}
+        type="file"
+        accept="*/*"
+        onChange={onRetryFileSelected}
+        className="hidden"
+      />
+
+      {/* Failed Uploads Banner */}
+      {failedUploads.length > 0 && (
+        <div className="glass rounded-xl border border-destructive/30 p-4 space-y-3">
+          <div className="flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 text-destructive" />
+            <h3 className="font-display text-sm font-bold text-foreground">
+              Uploads interrompidos ({failedUploads.length})
+            </h3>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Estes uploads falharam ou foram interrompidos. Selecione o mesmo arquivo para retomar.
+          </p>
+          <div className="space-y-2">
+            {failedUploads.map((record) => (
+              <div key={record.id} className="flex items-center gap-3 p-3 rounded-lg bg-secondary/30 border border-border/30">
+                <Film className="w-4 h-4 text-muted-foreground shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-foreground truncate">{record.fileName}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {formatFileSize(record.fileSize)} · {record.error || "Interrompido"} · {record.progress}% concluído
+                  </p>
+                </div>
+                <div className="flex items-center gap-1 shrink-0">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleRetryUpload(record)}
+                    disabled={uploading}
+                    className="text-xs gap-1 h-7"
+                  >
+                    <RotateCcw className="w-3 h-3" /> Retomar
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => dismissFailedUpload(record.id)}
+                    className="text-xs h-7 text-muted-foreground hover:text-destructive"
+                  >
+                    <X className="w-3 h-3" />
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Toolbar */}
       <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
         <div className="flex gap-2 flex-1 w-full sm:w-auto">
