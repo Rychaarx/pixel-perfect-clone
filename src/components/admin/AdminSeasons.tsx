@@ -4,9 +4,17 @@ import { useSeasons, Season, createEmptySeason, createEmptyEpisode } from "@/hoo
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Trash2, Save, ChevronDown, ChevronUp, FolderUp, GripVertical } from "lucide-react";
+import { Plus, Trash2, Save, ChevronDown, ChevronUp, FolderUp, GripVertical, RotateCcw, AlertCircle, X } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  UploadRecord,
+  saveUpload,
+  deleteUpload,
+  getPendingUploads,
+  clearCompletedUploads,
+  generateUploadId,
+} from "@/lib/uploadDB";
 
 
 const AdminSeasons = () => {
@@ -25,6 +33,29 @@ const AdminSeasons = () => {
   const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
   const seasonsRef = useRef<Season[]>([]);
   seasonsRef.current = seasons;
+  const [failedUploads, setFailedUploads] = useState<UploadRecord[]>([]);
+  const retryFileRef = useRef<HTMLInputElement>(null);
+  const [retryingRecord, setRetryingRecord] = useState<UploadRecord | null>(null);
+
+  // Load failed uploads on mount
+  useEffect(() => {
+    loadFailedUploads();
+  }, []);
+
+  const loadFailedUploads = async () => {
+    try {
+      const pending = await getPendingUploads("seasons");
+      setFailedUploads(pending);
+    } catch (e) {
+      console.error("Failed to load pending uploads:", e);
+    }
+  };
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes >= 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`;
+    if (bytes >= 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+    return `${(bytes / 1024).toFixed(0)} KB`;
+  };
 
   const handleDragStart = (seasonIdx: number, epIdx: number) => {
     setDragState({ seasonIdx, epIdx });
@@ -45,7 +76,6 @@ const AdminSeasons = () => {
     const eps = [...season.episodes];
     const [moved] = eps.splice(dragState.epIdx, 1);
     eps.splice(targetEpIdx, 0, moved);
-    // Re-number episodes after reorder
     const renumbered = eps.map((ep, i) => ({ ...ep, episode_number: i + 1 }));
     updateSeason(seasonIdx, { episodes: renumbered });
     setDragState(null);
@@ -57,7 +87,6 @@ const AdminSeasons = () => {
     setDragOverIdx(null);
   };
 
-  // Only show series/anime
   const seriesItems = items.filter((i) => i.type === "Série" || i.type === "Anime");
 
   useEffect(() => {
@@ -138,6 +167,102 @@ const AdminSeasons = () => {
     toast.success("Temporadas salvas!");
   };
 
+  const uploadSingleFile = async (
+    file: File,
+    storagePath: string,
+    token: string,
+    fileKey: string,
+    seasonIdx: number,
+    epIdx: number,
+    isRetry = false
+  ): Promise<boolean> => {
+    const bucketName = "videos";
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    const uploadId = generateUploadId(file.name, file.size, storagePath);
+
+    const record: UploadRecord = {
+      id: uploadId,
+      fileName: file.name,
+      fileSize: file.size,
+      fileType: file.type,
+      fileLastModified: file.lastModified,
+      storagePath,
+      bucketName,
+      context: "seasons",
+      meta: { seasonIdx, epIdx },
+      status: "uploading",
+      progress: 0,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    };
+    await saveUpload(record);
+
+    return new Promise<boolean>((resolve) => {
+      const xhr = new XMLHttpRequest();
+
+      xhr.upload.addEventListener("progress", (event) => {
+        if (!event.lengthComputable) return;
+        const pct = Math.round((event.loaded / event.total) * 100);
+        setUploadProgress((prev) => ({ ...prev, [fileKey]: pct }));
+        if (pct % 10 === 0) {
+          record.progress = pct;
+          record.updatedAt = Date.now();
+          saveUpload(record);
+        }
+      });
+
+      xhr.addEventListener("load", async () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          const { data: urlData } = supabase.storage.from(bucketName).getPublicUrl(storagePath);
+          setSeasons((prev) =>
+            prev.map((season, i) => {
+              if (i !== seasonIdx) return season;
+              return {
+                ...season,
+                episodes: season.episodes.map((ep, j) =>
+                  j === epIdx ? { ...ep, redirect_url: urlData.publicUrl } : ep
+                ),
+              };
+            })
+          );
+          setUploadProgress((prev) => ({ ...prev, [fileKey]: 100 }));
+          record.status = "completed";
+          record.progress = 100;
+          record.updatedAt = Date.now();
+          await saveUpload(record);
+          resolve(true);
+        } else {
+          record.status = "failed";
+          record.error = `HTTP ${xhr.status}`;
+          record.updatedAt = Date.now();
+          await saveUpload(record);
+          resolve(false);
+        }
+      });
+
+      xhr.addEventListener("error", async () => {
+        record.status = "failed";
+        record.error = "Erro de rede";
+        record.updatedAt = Date.now();
+        await saveUpload(record);
+        resolve(false);
+      });
+
+      xhr.addEventListener("abort", async () => {
+        record.status = "failed";
+        record.error = "Cancelado";
+        record.updatedAt = Date.now();
+        await saveUpload(record);
+        resolve(false);
+      });
+
+      xhr.open("POST", `${supabaseUrl}/storage/v1/object/${bucketName}/${storagePath}`);
+      xhr.setRequestHeader("Authorization", `Bearer ${token}`);
+      xhr.setRequestHeader("x-upsert", "true");
+      xhr.send(file);
+    });
+  };
+
   // Bulk file upload using XHR — sequential
   const handleBulkFileUpload = async (seasonIdx: number, files: FileList) => {
     if (!files.length) return;
@@ -167,9 +292,6 @@ const AdminSeasons = () => {
       return;
     }
 
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-    const bucketName = "videos";
-
     const tasks: Array<{ file: File; epIdx: number; filePath: string; fileKey: string }> = [];
     for (let i = 0; i < sortedFiles.length && i < emptyUrlEps.length; i++) {
       const file = sortedFiles[i];
@@ -181,63 +303,31 @@ const AdminSeasons = () => {
     const errors: string[] = [];
 
     for (const task of tasks) {
-      try {
-        // Get fresh token for each file
-        const { data: { session: freshSession } } = await supabase.auth.refreshSession();
-        const token = freshSession?.access_token || session.access_token;
-
-        await new Promise<void>((resolve, reject) => {
-          const xhr = new XMLHttpRequest();
-
-          xhr.upload.addEventListener("progress", (event) => {
-            if (!event.lengthComputable) return;
-            setUploadProgress((prev) => ({
-              ...prev,
-              [task.fileKey]: Math.round((event.loaded / event.total) * 100),
-            }));
-          });
-
-          xhr.addEventListener("load", () => {
-            if (xhr.status >= 200 && xhr.status < 300) {
-              const { data: urlData } = supabase.storage.from(bucketName).getPublicUrl(task.filePath);
-              setSeasons((prev) =>
-                prev.map((season, i) => {
-                  if (i !== seasonIdx) return season;
-                  return {
-                    ...season,
-                    episodes: season.episodes.map((ep, j) =>
-                      j === task.epIdx ? { ...ep, redirect_url: urlData.publicUrl } : ep
-                    ),
-                  };
-                })
-              );
-              setUploadProgress((prev) => ({ ...prev, [task.fileKey]: 100 }));
-              resolve();
-            } else {
-              reject(new Error(`HTTP ${xhr.status}: ${xhr.responseText}`));
-            }
-          });
-
-          xhr.addEventListener("error", () => reject(new Error("Network error")));
-          xhr.addEventListener("abort", () => reject(new Error("Aborted")));
-
-          xhr.open("POST", `${supabaseUrl}/storage/v1/object/${bucketName}/${task.filePath}`);
-          xhr.setRequestHeader("Authorization", `Bearer ${token}`);
-          xhr.setRequestHeader("x-upsert", "true");
-          xhr.send(task.file);
-        });
-      } catch (err) {
-        console.error(`Upload error: ${task.file.name}`, err);
-        errors.push(task.file.name);
-      }
+      const { data: { session: freshSession } } = await supabase.auth.refreshSession();
+      const token = freshSession?.access_token || session.access_token;
+      
+      const ok = await uploadSingleFile(
+        task.file,
+        task.filePath,
+        token,
+        task.fileKey,
+        seasonIdx,
+        task.epIdx
+      );
+      if (!ok) errors.push(task.file.name);
     }
 
     setUploading(false);
     setUploadProgress({});
+    await clearCompletedUploads("seasons");
+    await loadFailedUploads();
+    
     if (errors.length > 0) {
-      toast.error(`Falha em ${errors.length} arquivo(s): ${errors.join(", ")}`);
+      toast.error(`Falha em ${errors.length} arquivo(s). Use 'Retomar' para tentar novamente.`);
     }
-    toast.success(`${tasks.length - errors.length} de ${tasks.length} arquivo(s) enviado(s)!`);
+    if (tasks.length - errors.length > 0) {
+      toast.success(`${tasks.length - errors.length} de ${tasks.length} arquivo(s) enviado(s)!`);
+    }
   };
 
   const triggerFileUpload = (seasonIdx: number) => {
@@ -252,9 +342,65 @@ const AdminSeasons = () => {
     e.target.value = "";
   };
 
+  const handleRetryUpload = (record: UploadRecord) => {
+    setRetryingRecord(record);
+    retryFileRef.current?.click();
+  };
+
+  const onRetryFileSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file || !retryingRecord) return;
+
+    const record = retryingRecord;
+    setRetryingRecord(null);
+
+    if (file.name !== record.fileName || file.size !== record.fileSize) {
+      toast.error(`Selecione o mesmo arquivo: "${record.fileName}" (${formatFileSize(record.fileSize)})`);
+      return;
+    }
+
+    const { data: { session } } = await supabase.auth.refreshSession();
+    if (!session) {
+      toast.error("Sessão expirada. Faça login novamente.");
+      return;
+    }
+
+    setUploading(true);
+    const seasonIdx = Number(record.meta?.seasonIdx ?? 0);
+    const epIdx = Number(record.meta?.epIdx ?? 0);
+    const fileKey = `${seasonIdx}-${epIdx}`;
+
+    const ok = await uploadSingleFile(
+      file,
+      record.storagePath,
+      session.access_token,
+      fileKey,
+      seasonIdx,
+      epIdx,
+      true
+    );
+
+    setUploading(false);
+    setUploadProgress({});
+    await clearCompletedUploads("seasons");
+    await loadFailedUploads();
+
+    if (ok) {
+      toast.success(`"${file.name}" reenviado com sucesso!`);
+    } else {
+      toast.error(`Falha ao reenviar "${file.name}". Tente novamente.`);
+    }
+  };
+
+  const dismissFailedUpload = async (id: string) => {
+    await deleteUpload(id);
+    loadFailedUploads();
+  };
+
   return (
     <div className="space-y-6">
-      {/* Hidden file input for bulk upload */}
+      {/* Hidden file inputs */}
       <input
         ref={fileInputRef}
         type="file"
@@ -263,6 +409,59 @@ const AdminSeasons = () => {
         onChange={onFileChange}
         className="hidden"
       />
+      <input
+        ref={retryFileRef}
+        type="file"
+        accept="video/*,.mkv,.avi,.mp4,.webm,.mov"
+        onChange={onRetryFileSelected}
+        className="hidden"
+      />
+
+      {/* Failed Uploads Banner */}
+      {failedUploads.length > 0 && (
+        <div className="glass rounded-xl border border-destructive/30 p-4 space-y-3">
+          <div className="flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 text-destructive" />
+            <h3 className="font-display text-sm font-bold text-foreground">
+              Uploads interrompidos ({failedUploads.length})
+            </h3>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Estes uploads falharam ou foram interrompidos. Selecione o mesmo arquivo para retomar.
+          </p>
+          <div className="space-y-2 max-h-48 overflow-y-auto">
+            {failedUploads.map((record) => (
+              <div key={record.id} className="flex items-center gap-3 p-3 rounded-lg bg-secondary/30 border border-border/30">
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-foreground truncate">{record.fileName}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {formatFileSize(record.fileSize)} · {record.error || "Interrompido"} · {record.progress}% concluído
+                  </p>
+                </div>
+                <div className="flex items-center gap-1 shrink-0">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleRetryUpload(record)}
+                    disabled={uploading}
+                    className="text-xs gap-1 h-7"
+                  >
+                    <RotateCcw className="w-3 h-3" /> Retomar
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => dismissFailedUpload(record.id)}
+                    className="text-xs h-7 text-muted-foreground hover:text-destructive"
+                  >
+                    <X className="w-3 h-3" />
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Selector */}
       <div className="glass rounded-xl border border-border/30 p-4">
