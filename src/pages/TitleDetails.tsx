@@ -1,7 +1,7 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Play, Clock, Calendar, Tag, Film, X, ChevronDown, Eye, EyeOff, CheckCircle, Heart, Maximize } from "lucide-react";
+import { ArrowLeft, Play, Clock, Calendar, Tag, Film, X, ChevronDown, Eye, EyeOff, CheckCircle, Heart, RotateCw } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import { useWatchProgress } from "@/hooks/useWatchProgress";
 import { useWatchedMovies } from "@/hooks/useWatchedMovies";
@@ -18,8 +18,7 @@ const TitleDetails = () => {
   const { items, loading } = useCatalog();
   const item = items.find((c) => c.id === id);
   const [watching, setWatching] = useState(false);
-  const videoRef = useRef<HTMLVideoElement>(null);
-  
+  const [isRotated, setIsRotated] = useState(false);
   const { fetchSeasons } = useSeasons();
   const { markEpisodeWatched, unmarkEpisodeWatched, isEpisodeWatched } = useWatchProgress();
   const { markMovieWatched, unmarkMovieWatched, isMovieWatched, getMovieProgress, setMovieProgress } = useWatchedMovies();
@@ -35,17 +34,6 @@ const TitleDetails = () => {
       });
     }
   }, [id, item?.type, fetchSeasons]);
-
-  const handleFullscreen = () => {
-    if (videoRef.current) {
-      if (videoRef.current.requestFullscreen) {
-        videoRef.current.requestFullscreen();
-      } else if ((videoRef.current as any).webkitEnterFullscreen) {
-        // Suporte específico para iPhone/Safari
-        (videoRef.current as any).webkitEnterFullscreen();
-      }
-    }
-  };
 
   if (loading) {
     return (
@@ -95,26 +83,29 @@ const TitleDetails = () => {
     return (
       <div className="fixed inset-0 z-50 bg-black flex items-center justify-center overflow-hidden">
         <div className="absolute top-4 right-4 z-[60] flex gap-2">
-          {isDirectVideo(src) && (
-            <button
-              onClick={handleFullscreen}
-              className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/80 backdrop-blur-sm text-primary-foreground hover:bg-primary transition-colors"
-              title="Tela Cheia"
-            >
-              <Maximize className="h-5 w-5" />
-            </button>
-          )}
           <button
-            onClick={() => setWatching(false)}
+            onClick={() => setIsRotated(!isRotated)}
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary/60 backdrop-blur-sm text-foreground hover:bg-secondary transition-colors"
+            title="Girar vídeo"
+          >
+            <RotateCw className="h-5 w-5" />
+          </button>
+          <button
+            onClick={() => {
+              setWatching(false);
+              setIsRotated(false);
+            }}
             className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary/60 backdrop-blur-sm text-foreground hover:bg-secondary transition-colors"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
-        <div className="w-full h-full flex items-center justify-center">
+        <div 
+          className={`w-full h-full transition-transform duration-300 flex items-center justify-center ${isRotated ? 'rotate-90' : ''}`}
+          style={isRotated ? { width: '100vh', height: '100vw' } : {}}
+        >
           {isDirectVideo(src) ? (
             <video
-              ref={videoRef}
               src={src}
               controls
               autoPlay
@@ -310,11 +301,11 @@ const TitleDetails = () => {
               >
                 <CollapsibleTrigger className="flex w-full items-center justify-between rounded-lg bg-secondary/50 px-4 py-3 text-left hover:bg-secondary/80 transition-colors">
                   <span className="font-medium text-foreground">
-                    {season.name || `Temporada ${season.season_number}`}
+                    {season.name || \`Temporada \${season.season_number}\`}
                   </span>
                   <div className="flex items-center gap-2 text-muted-foreground text-sm">
                     <span>{season.episodes.length} ep.</span>
-                    <ChevronDown className={`h-4 w-4 transition-transform ${openSeason === season.season_number ? "rotate-180" : ""}`} />
+                    <ChevronDown className={\`h-4 w-4 transition-transform \${openSeason === season.season_number ? "rotate-180" : ""}\`} />
                   </div>
                 </CollapsibleTrigger>
                 <CollapsibleContent className="mt-2 space-y-2">
