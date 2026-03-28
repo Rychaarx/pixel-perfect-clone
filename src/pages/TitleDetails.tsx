@@ -89,12 +89,17 @@ const TitleDetails = () => {
         </button>
         {isDirectVideo(src) ? (
           <video
-            src={src}
-            controls
-            autoPlay
-            playsInline
-            webkit-playsinline="true"
-            className="w-full h-full object-contain"
+  key={src}
+  controls
+  playsInline
+  webkit-playsinline="true"
+  preload="metadata"
+  className="w-full h-full object-contain"
+>
+  <source src={src} type="video/mp4" />
+  Seu navegador não suporta a reprodução de vídeos.
+</video>
+
           />
         ) : (
           <iframe
