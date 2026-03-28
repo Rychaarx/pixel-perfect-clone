@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Play, Clock, Calendar, Tag, Film, X, ChevronDown, Eye, EyeOff, CheckCircle, Heart } from "lucide-react";
+import { ArrowLeft, Play, Clock, Calendar, Tag, Film, X, ChevronDown, Eye, EyeOff, CheckCircle, Heart, RotateCw } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import { useWatchProgress } from "@/hooks/useWatchProgress";
 import { useWatchedMovies } from "@/hooks/useWatchedMovies";
@@ -18,6 +18,7 @@ const TitleDetails = () => {
   const { items, loading } = useCatalog();
   const item = items.find((c) => c.id === id);
   const [watching, setWatching] = useState(false);
+  const [isRotated, setIsRotated] = useState(false);
   const { fetchSeasons } = useSeasons();
   const { markEpisodeWatched, unmarkEpisodeWatched, isEpisodeWatched } = useWatchProgress();
   const { markMovieWatched, unmarkMovieWatched, isMovieWatched, getMovieProgress, setMovieProgress } = useWatchedMovies();
@@ -80,35 +81,47 @@ const TitleDetails = () => {
     }
 
     return (
-      <div className="fixed inset-0 z-50 bg-black flex flex-col">
-        <button
-          onClick={() => setWatching(false)}
-          className="absolute top-4 right-4 z-50 flex h-10 w-10 items-center justify-center rounded-full bg-secondary/60 backdrop-blur-sm text-foreground hover:bg-secondary transition-colors"
+      <div className="fixed inset-0 z-50 bg-black flex items-center justify-center overflow-hidden">
+        <div className="absolute top-4 right-4 z-[60] flex gap-2">
+          <button
+            onClick={() => setIsRotated(!isRotated)}
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary/60 backdrop-blur-sm text-foreground hover:bg-secondary transition-colors"
+            title="Girar vídeo"
+          >
+            <RotateCw className="h-5 w-5" />
+          </button>
+          <button
+            onClick={() => {
+              setWatching(false);
+              setIsRotated(false);
+            }}
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary/60 backdrop-blur-sm text-foreground hover:bg-secondary transition-colors"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+        <div 
+          className={`w-full h-full transition-transform duration-300 flex items-center justify-center ${isRotated ? 'rotate-90' : ''}`}
+          style={isRotated ? { width: '100vh', height: '100vw' } : {}}
         >
-          <X className="h-5 w-5" />
-        </button>
-        {isDirectVideo(src) ? (
-          <video
-  key={src}
-  controls
-  playsInline
-  webkit-playsinline="true"
-  preload="metadata"
-  className="w-full h-full object-contain"
->
-  <source src={src} type="video/mp4" />
-  Seu navegador não suporta a reprodução de vídeos.
-</video>
-
-          />
-        ) : (
-          <iframe
-            src={src}
-            className="w-full h-full"
-            allow="autoplay; fullscreen; encrypted-media"
-            allowFullScreen
-          />
-        )}
+          {isDirectVideo(src) ? (
+            <video
+              src={src}
+              controls
+              autoPlay
+              playsInline
+              webkit-playsinline="true"
+              className="w-full h-full object-contain"
+            />
+          ) : (
+            <iframe
+              src={src}
+              className="w-full h-full"
+              allow="autoplay; fullscreen; encrypted-media"
+              allowFullScreen
+            />
+          )}
+        </div>
       </div>
     );
   }
@@ -288,64 +301,54 @@ const TitleDetails = () => {
               >
                 <CollapsibleTrigger className="flex w-full items-center justify-between rounded-lg bg-secondary/50 px-4 py-3 text-left hover:bg-secondary/80 transition-colors">
                   <span className="font-medium text-foreground">
-                    {season.name || `Temporada ${season.season_number}`}
+                    {season.name || \`Temporada \${season.season_number}\`}
                   </span>
                   <div className="flex items-center gap-2 text-muted-foreground text-sm">
                     <span>{season.episodes.length} ep.</span>
-                    <ChevronDown className={`h-4 w-4 transition-transform ${openSeason === season.season_number ? "rotate-180" : ""}`} />
+                    <ChevronDown className={\`h-4 w-4 transition-transform \${openSeason === season.season_number ? "rotate-180" : ""}\`} />
                   </div>
                 </CollapsibleTrigger>
-                <CollapsibleContent>
-                  <div className="mt-1 space-y-1 pl-2">
-                    {season.episodes.map((ep) => {
-                      const watched = ep.id ? isEpisodeWatched(ep.id) : false;
-                      return (
-                      <div
-                        key={ep.episode_number}
-                        className={`flex items-center justify-between rounded-md px-4 py-3 hover:bg-secondary/30 transition-colors group ${watched ? "opacity-60" : ""}`}
-                      >
-                        <div className="flex items-center gap-3">
-                          <span className="text-muted-foreground text-sm w-6 text-center">{ep.episode_number}</span>
-                          <span className={`text-sm ${watched ? "text-muted-foreground line-through" : "text-foreground"}`}>
-                            {ep.title || `Episódio ${ep.episode_number}`}
-                          </span>
-                          {watched && <span className="text-[10px] text-primary font-medium">✓ Assistido</span>}
-                        </div>
-                        <div className="flex items-center gap-2">
-                          {ep.duration && (
-                            <span className="text-muted-foreground text-xs flex items-center gap-1">
-                              <Clock className="h-3 w-3" /> {ep.duration}
-                            </span>
-                          )}
-                          {ep.id && id && (
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              className="h-8 w-8 p-0"
-                              title={watched ? "Desmarcar como assistido" : "Marcar como assistido"}
-                              onClick={() => watched ? unmarkEpisodeWatched(ep.id!) : markEpisodeWatched(ep.id!, id)}
-                            >
-                              {watched ? <EyeOff className="h-3.5 w-3.5 text-muted-foreground" /> : <Eye className="h-3.5 w-3.5 text-muted-foreground" />}
-                            </Button>
-                          )}
-                          {ep.redirect_url && (
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              className="opacity-0 group-hover:opacity-100 transition-opacity"
-                              onClick={() => {
-                                if (ep.id && id) markEpisodeWatched(ep.id, id);
-                                window.open(ep.redirect_url, "_blank");
-                              }}
-                            >
-                              <Play className="h-3.5 w-3.5" />
-                            </Button>
+                <CollapsibleContent className="mt-2 space-y-2">
+                  {season.episodes.map((episode) => (
+                    <div
+                      key={episode.id}
+                      className="flex items-center justify-between rounded-lg border border-border bg-card p-3 hover:bg-secondary/30 transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        <button
+                          onClick={() => {
+                            if (item.videoUrl || item.redirectUrl) {
+                              setWatching(true);
+                            }
+                          }}
+                          className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/20 text-primary hover:bg-primary hover:text-primary-foreground transition-colors"
+                        >
+                          <Play className="h-3.5 w-3.5 fill-current" />
+                        </button>
+                        <div>
+                          <p className="text-sm font-medium text-foreground">
+                            {episode.episode_number}. {episode.name}
+                          </p>
+                          {episode.air_date && (
+                            <p className="text-[10px] text-muted-foreground">{episode.air_date}</p>
                           )}
                         </div>
                       </div>
-                      );
-                    })}
-                  </div>
+                      <button
+                        onClick={() => isEpisodeWatched(id!, season.season_number, episode.episode_number) 
+                          ? unmarkEpisodeWatched(id!, season.season_number, episode.episode_number)
+                          : markEpisodeWatched(id!, season.season_number, episode.episode_number)
+                        }
+                        className="text-muted-foreground hover:text-primary transition-colors"
+                      >
+                        {isEpisodeWatched(id!, season.season_number, episode.episode_number) ? (
+                          <Eye className="h-4 w-4 text-primary" />
+                        ) : (
+                          <EyeOff className="h-4 w-4" />
+                        )}
+                      </button>
+                    </div>
+                  ))}
                 </CollapsibleContent>
               </Collapsible>
             ))}
