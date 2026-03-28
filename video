@@ -1,3 +1,4 @@
-<video controls playsinline width="100%">
-  <source src="videos/filme1/index.m3u8" type="application/x-mpegURL">
-</video>
+ffmpeg -i filme.mp4 \
+-map 0:v -map 0:a \
+-b:v:0 800k -b:v:1 1400k -b:v:2 2800k \
+-f hls master.m3u8
