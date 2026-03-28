@@ -210,18 +210,18 @@ const MovieDetail = () => {
               </button>
             </div>
 
-            {/* Barra de progresso na página */}
-            {savedPercent > 0 && (
-              <div className="mb-6" style={{ background: "#1a1a1a", borderRadius: 10, padding: "12px 14px" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
-                  <span style={{ color: "#aaa", fontSize: 12 }}>▶ Assistido até {savedTimeLabel}</span>
-                  <span style={{ color: "#e50914", fontSize: 12, fontWeight: 700 }}>{savedPercent}%</span>
-                </div>
-                <div style={{ width: "100%", height: 6, background: "#444", borderRadius: 3, overflow: "hidden" }}>
-                  <div style={{ height: "100%", width: `${savedPercent}%`, background: "#e50914", borderRadius: 3 }} />
-                </div>
-              </div>
-            )}
+           {/* Barra de progresso na página */}
+{savedPercent > 0 && (
+  <div className="mb-6" style={{ background: "#1a1a1a", borderRadius: 10, padding: "12px 14px" }}>
+    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
+      <span style={{ color: "#aaa", fontSize: 12 }}>▶ Assistido até {savedTimeLabel}</span>
+      <span style={{ color: "#e50914", fontSize: 12, fontWeight: 700 }}>{savedPercent}%</span>
+    </div>
+    <div style={{ width: "100%", height: 6, background: "#444", borderRadius: 3, overflow: "hidden" }}>
+      <div style={{ height: "100%", width: `${savedPercent}%`, background: "#e50914", borderRadius: 3 }} />
+    </div>
+  </div>
+)}
 
             <p className="text-muted-foreground text-sm leading-relaxed max-w-2xl mb-6">{movie.description}</p>
             <div className="space-y-2 text-sm">
