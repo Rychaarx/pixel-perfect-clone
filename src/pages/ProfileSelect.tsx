@@ -85,6 +85,19 @@ const AVATAR_CATEGORIES: AvatarCategory[] = [
       { id: "unicorn", src: avatarUnicorn, label: "Unicórnio" },
     ],
   },
+  {
+    label: "😎 Personagens",
+    avatars: [
+      { id: "coolguy", src: avatarCoolguy, label: "Estiloso" },
+      { id: "kawaii-svg", src: avatarKawaii, label: "Kawaii" },
+      { id: "nerd", src: avatarNerd, label: "Nerd" },
+      { id: "ninja-svg", src: avatarNinjaSvg, label: "Ninja" },
+      { id: "punk", src: avatarPunkSvg, label: "Punk" },
+      { id: "shadow", src: avatarShadow, label: "Sombra" },
+      { id: "warrior", src: avatarWarrior, label: "Guerreiro" },
+      { id: "witch", src: avatarWitch, label: "Bruxa" },
+    ],
+  },
 ];
 
 const getAvatarPublicUrl = (path: string) =>
