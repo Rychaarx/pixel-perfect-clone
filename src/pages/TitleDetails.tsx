@@ -82,7 +82,20 @@ const TitleDetails = () => {
     }
 
     return (
-      <div ref={landscapeRef} className="fixed inset-0 z-50 bg-black flex flex-col">
+      <div
+        ref={landscapeRef}
+        className="fixed inset-0 z-50 bg-black flex flex-col"
+        style={cssRotate ? {
+          transform: "rotate(90deg)",
+          transformOrigin: "center center",
+          width: "100vh",
+          height: "100vw",
+          top: "50%",
+          left: "50%",
+          marginTop: "calc(-50vw)",
+          marginLeft: "calc(-50vh)",
+        } : undefined}
+      >
         <button
           onClick={() => setWatching(false)}
           className="absolute top-4 right-4 z-50 flex h-10 w-10 items-center justify-center rounded-full bg-secondary/60 backdrop-blur-sm text-foreground hover:bg-secondary transition-colors"
