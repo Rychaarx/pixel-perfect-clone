@@ -1,45 +1,66 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 /**
- * Forces fullscreen + landscape orientation on mobile when `active` is true.
- * screen.orientation.lock() requires fullscreen mode on most mobile browsers.
+ * Forces landscape viewing experience on mobile.
+ * - Android/Chrome: uses fullscreen + screen.orientation.lock()
+ * - iOS/Safari: rotates the container 90° via CSS when in portrait mode
  */
 export function useLandscape(active: boolean) {
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const [cssRotate, setCssRotate] = useState(false);
 
   useEffect(() => {
-    if (!active) return;
+    if (!active) {
+      setCssRotate(false);
+      return;
+    }
 
-    const el = containerRef.current || document.documentElement;
+    let orientationLocked = false;
 
-    const enterFullscreenAndLock = async () => {
+    const tryNativeLock = async () => {
       try {
-        // Enter fullscreen first — required for orientation lock
-        if (!document.fullscreenElement) {
-          await el.requestFullscreen?.();
+        const el = containerRef.current || document.documentElement;
+        if (!document.fullscreenElement && el.requestFullscreen) {
+          await el.requestFullscreen();
         }
-        // Then lock to landscape
         // @ts-ignore
         await screen.orientation?.lock?.("landscape");
+        orientationLocked = true;
       } catch {
-        // Not supported or denied — ignore silently
+        // Native lock not supported (iOS Safari) — use CSS fallback
+        orientationLocked = false;
+        applyCSS();
       }
     };
 
-    enterFullscreenAndLock();
+    const applyCSS = () => {
+      const isPortrait = window.innerHeight > window.innerWidth;
+      setCssRotate(isPortrait);
+    };
+
+    const handleResize = () => {
+      if (!orientationLocked) {
+        applyCSS();
+      }
+    };
+
+    tryNativeLock();
+    window.addEventListener("resize", handleResize);
+    window.addEventListener("orientationchange", handleResize);
 
     return () => {
+      window.removeEventListener("resize", handleResize);
+      window.removeEventListener("orientationchange", handleResize);
+      setCssRotate(false);
       try {
         // @ts-ignore
         screen.orientation?.unlock?.();
       } catch {}
       try {
-        if (document.fullscreenElement) {
-          document.exitFullscreen?.();
-        }
+        if (document.fullscreenElement) document.exitFullscreen?.();
       } catch {}
     };
   }, [active]);
 
-  return containerRef;
+  return { containerRef, cssRotate };
 }
