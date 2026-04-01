@@ -32,6 +32,15 @@ import avatarAnimeWarrior from "@/assets/avatars/avatar-anime-warrior.png";
 import avatarAnimeGirl from "@/assets/avatars/avatar-anime-girl.png";
 import avatarSamurai from "@/assets/avatars/avatar-samurai.png";
 import avatarVampire from "@/assets/avatars/avatar-vampire.png";
+// Personagens
+const avatarCoolguy = "/avatars/avatar-coolguy.svg";
+const avatarKawaii = "/avatars/avatar-kawaii.svg";
+const avatarNerd = "/avatars/avatar-nerd.svg";
+const avatarNinjaSvg = "/avatars/avatar-ninja.svg";
+const avatarPunkSvg = "/avatars/avatar-punk.svg";
+const avatarShadow = "/avatars/avatar-shadow.svg";
+const avatarWarrior = "/avatars/avatar-warrior.svg";
+const avatarWitch = "/avatars/avatar-witch.svg";
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
