@@ -32,6 +32,15 @@ import avatarAnimeWarrior from "@/assets/avatars/avatar-anime-warrior.png";
 import avatarAnimeGirl from "@/assets/avatars/avatar-anime-girl.png";
 import avatarSamurai from "@/assets/avatars/avatar-samurai.png";
 import avatarVampire from "@/assets/avatars/avatar-vampire.png";
+// Personagens
+const avatarCoolguy = "/avatars/avatar-coolguy.svg";
+const avatarKawaii = "/avatars/avatar-kawaii.svg";
+const avatarNerd = "/avatars/avatar-nerd.svg";
+const avatarNinjaSvg = "/avatars/avatar-ninja.svg";
+const avatarPunkSvg = "/avatars/avatar-punk.svg";
+const avatarShadow = "/avatars/avatar-shadow.svg";
+const avatarWarrior = "/avatars/avatar-warrior.svg";
+const avatarWitch = "/avatars/avatar-witch.svg";
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
@@ -74,6 +83,19 @@ const AVATAR_CATEGORIES: AvatarCategory[] = [
       { id: "panda", src: avatarPanda, label: "Panda" },
       { id: "eagle", src: avatarEagle, label: "Águia" },
       { id: "unicorn", src: avatarUnicorn, label: "Unicórnio" },
+    ],
+  },
+  {
+    label: "😎 Personagens",
+    avatars: [
+      { id: "coolguy", src: avatarCoolguy, label: "Estiloso" },
+      { id: "kawaii-svg", src: avatarKawaii, label: "Kawaii" },
+      { id: "nerd", src: avatarNerd, label: "Nerd" },
+      { id: "ninja-svg", src: avatarNinjaSvg, label: "Ninja" },
+      { id: "punk", src: avatarPunkSvg, label: "Punk" },
+      { id: "shadow", src: avatarShadow, label: "Sombra" },
+      { id: "warrior", src: avatarWarrior, label: "Guerreiro" },
+      { id: "witch", src: avatarWitch, label: "Bruxa" },
     ],
   },
 ];
