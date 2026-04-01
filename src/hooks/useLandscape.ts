@@ -1,31 +1,45 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 /**
- * Forces landscape orientation on mobile when `active` is true.
- * Falls back gracefully on unsupported browsers.
+ * Forces fullscreen + landscape orientation on mobile when `active` is true.
+ * screen.orientation.lock() requires fullscreen mode on most mobile browsers.
  */
 export function useLandscape(active: boolean) {
+  const containerRef = useRef<HTMLDivElement | null>(null);
+
   useEffect(() => {
     if (!active) return;
 
-    const lock = async () => {
+    const el = containerRef.current || document.documentElement;
+
+    const enterFullscreenAndLock = async () => {
       try {
-        // @ts-ignore – screen.orientation.lock is not in all TS libs
+        // Enter fullscreen first — required for orientation lock
+        if (!document.fullscreenElement) {
+          await el.requestFullscreen?.();
+        }
+        // Then lock to landscape
+        // @ts-ignore
         await screen.orientation?.lock?.("landscape");
       } catch {
-        // Not supported or denied — ignore
+        // Not supported or denied — ignore silently
       }
     };
 
-    lock();
+    enterFullscreenAndLock();
 
     return () => {
       try {
         // @ts-ignore
         screen.orientation?.unlock?.();
-      } catch {
-        // ignore
-      }
+      } catch {}
+      try {
+        if (document.fullscreenElement) {
+          document.exitFullscreen?.();
+        }
+      } catch {}
     };
   }, [active]);
+
+  return containerRef;
 }
