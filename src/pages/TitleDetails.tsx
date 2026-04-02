@@ -103,12 +103,7 @@ const TitleDetails = () => {
           <X className="h-5 w-5" />
         </button>
         {isDirectVideo(src) ? (
-          <video
-            src={src}
-            controls
-            autoPlay
-            className="w-full h-full object-contain"
-          />
+          <ResumeVideo src={src} catalogItemId={id!} />
         ) : (
           <iframe
             src={src}
