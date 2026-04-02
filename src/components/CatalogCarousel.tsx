@@ -60,7 +60,7 @@ const CatalogCarousel = ({ title, emoji, items }: CatalogCarouselProps) => {
           </div>
           <button
             onClick={() => scroll("right")}
-            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-background/80 border border-border flex items-center justify-center text-foreground opacity-0 group-hover:opacity-100 transition-opacity"
+            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-background/80 border border-border flex items-center justify-center text-foreground opacity-0 group-hover/carousel:opacity-100 transition-opacity"
           >
             <ChevronRight className="w-5 h-5" />
           </button>
