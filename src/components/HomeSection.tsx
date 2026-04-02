@@ -30,8 +30,8 @@ const HomeSection = ({ section, catalogItems }: HomeSectionProps) => {
           <h2 className="font-display text-base md:text-xl font-bold text-foreground">{section.title}</h2>
           <span className="px-2 py-0.5 rounded-full bg-primary/20 text-primary text-[10px] sm:text-xs font-medium">{items.length} títulos</span>
         </div>
-        <div className="relative group">
-          <button onClick={() => scroll("left")} className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-background/80 border border-border flex items-center justify-center text-foreground opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="relative group/carousel">
+          <button onClick={() => scroll("left")} className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-background/80 border border-border flex items-center justify-center text-foreground opacity-0 group-hover/carousel:opacity-100 transition-opacity">
             <ChevronLeft className="w-5 h-5" />
           </button>
           <div ref={scrollRef} className="flex gap-3 md:gap-5 overflow-x-auto snap-x snap-mandatory pb-2" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
