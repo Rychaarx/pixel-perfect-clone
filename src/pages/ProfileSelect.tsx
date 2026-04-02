@@ -40,6 +40,8 @@ const AVATAR_CATEGORIES: AvatarCategory[] = [
   },
 ];
 
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+
 const getAvatarPublicUrl = (path: string) =>
   `${SUPABASE_URL}/storage/v1/object/public/avatars/${path}`;
 
