@@ -428,13 +428,13 @@ const ProfileSelect = () => {
                 <button
                   key={av.id}
                   onClick={() => selectPresetAvatar(av.src)}
-                  className={`aspect-square rounded-full overflow-hidden border-2 transition-all duration-200 hover:scale-105 ${
+                  className={`group/avatar aspect-square rounded-full overflow-hidden border-2 transition-all duration-300 hover:scale-110 hover:shadow-[0_0_20px_hsl(var(--primary)/0.5),0_0_40px_hsl(var(--primary)/0.2)] ${
                     selectedAvatar === av.src && !customAvatarPreview
-                      ? "border-primary ring-2 ring-primary/40 scale-105"
-                      : "border-transparent hover:border-muted-foreground/40"
+                      ? "border-primary ring-2 ring-primary/40 scale-110 shadow-[0_0_20px_hsl(var(--primary)/0.5)]"
+                      : "border-transparent hover:border-primary/60"
                   }`}
                 >
-                  <img src={av.src} alt={av.label} className="w-full h-full object-cover bg-muted" />
+                  <img src={av.src} alt={av.label} className="w-full h-full object-cover bg-muted transition-all duration-300 group-hover/avatar:brightness-110 group-hover/avatar:saturate-[1.2]" />
                 </button>
               ))}
             </div>
