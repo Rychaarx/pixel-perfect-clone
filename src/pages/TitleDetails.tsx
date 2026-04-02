@@ -13,6 +13,43 @@ import { useSeasons, Season } from "@/hooks/useSeasons";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
+const ResumeVideo = ({ src, catalogItemId }: { src: string; catalogItemId: string }) => {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const storageKey = `video_position_${catalogItemId}`;
+
+  const handleLoadedMetadata = useCallback(() => {
+    const saved = localStorage.getItem(storageKey);
+    if (saved && videoRef.current) {
+      const pos = parseFloat(saved);
+      if (pos > 0 && pos < videoRef.current.duration - 5) {
+        videoRef.current.currentTime = pos;
+      }
+    }
+  }, [storageKey]);
+
+  const handleTimeUpdate = useCallback(() => {
+    if (!videoRef.current) return;
+    localStorage.setItem(storageKey, String(videoRef.current.currentTime));
+  }, [storageKey]);
+
+  const handleEnded = useCallback(() => {
+    localStorage.removeItem(storageKey);
+  }, [storageKey]);
+
+  return (
+    <video
+      ref={videoRef}
+      src={src}
+      controls
+      autoPlay
+      className="w-full h-full object-contain"
+      onLoadedMetadata={handleLoadedMetadata}
+      onTimeUpdate={handleTimeUpdate}
+      onEnded={handleEnded}
+    />
+  );
+};
+
 const TitleDetails = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
