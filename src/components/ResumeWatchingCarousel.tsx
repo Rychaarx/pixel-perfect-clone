@@ -1,5 +1,5 @@
-import { useRef, useState, useEffect } from "react";
-import { ChevronLeft, ChevronRight, Play } from "lucide-react";
+import { useRef, useState, useEffect, useCallback } from "react";
+import { ChevronLeft, ChevronRight, Play, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { CatalogItem } from "@/hooks/useCatalog";
 
@@ -28,6 +28,12 @@ const ResumeWatchingCarousel = ({ catalogItems }: ResumeWatchingCarouselProps) =
     }
     setResumeItems(items);
   }, [catalogItems]);
+
+  const removeItem = useCallback((itemId: string) => {
+    localStorage.removeItem(`video_position_${itemId}`);
+    localStorage.removeItem(`video_duration_${itemId}`);
+    setResumeItems((prev) => prev.filter((r) => r.item.id !== itemId));
+  }, []);
 
   if (resumeItems.length === 0) return null;
 
@@ -93,6 +99,14 @@ const ResumeWatchingCarousel = ({ catalogItems }: ResumeWatchingCarouselProps) =
                         </div>
                       )}
                       <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" />
+                      {/* Remove button */}
+                      <button
+                        onClick={(e) => { e.stopPropagation(); removeItem(item.id); }}
+                        className="absolute top-2 right-2 z-10 w-7 h-7 rounded-full bg-background/80 border border-border flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors opacity-0 group-hover/card:opacity-100"
+                        title="Remover"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
                       {/* Play overlay */}
                       <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/card:opacity-100 transition-opacity">
                         <div className="w-12 h-12 rounded-full bg-primary/90 flex items-center justify-center backdrop-blur-sm">
