@@ -49,6 +49,9 @@ const Index = () => {
       {/* Hero */}
       <HeroSlider items={heroItems.length > 0 ? heroItems : catalogItems.slice(0, 5)} />
 
+      {/* Resume Watching */}
+      <ResumeWatchingCarousel catalogItems={catalogItems} />
+
       {/* Catalog Carousels by Type */}
       <CatalogCarousel title="FILMES" emoji="🎬" items={movies} />
       <CatalogCarousel title="SÉRIES" emoji="📺" items={series} />
