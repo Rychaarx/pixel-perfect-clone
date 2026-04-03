@@ -35,7 +35,8 @@ const ResumeVideo = ({ src, catalogItemId }: { src: string; catalogItemId: strin
 
   const handleEnded = useCallback(() => {
     localStorage.removeItem(storageKey);
-  }, [storageKey]);
+    localStorage.removeItem(`video_duration_${catalogItemId}`);
+  }, [storageKey, catalogItemId]);
 
   return (
     <video

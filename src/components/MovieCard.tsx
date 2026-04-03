@@ -89,6 +89,21 @@ const MovieCard = (props: MovieCardProps) => {
               {props.type}
             </div>
           )}
+          {/* Progress bar */}
+          {progressPercent > 0 && (
+            <div className="absolute bottom-0 left-0 right-0 h-1 bg-black/50">
+              <div
+                className={`h-full transition-all ${
+                  props.type === "Anime"
+                    ? "bg-pink-500"
+                    : props.type === "Série"
+                    ? "bg-blue-500"
+                    : "bg-amber-500"
+                }`}
+                style={{ width: `${progressPercent}%` }}
+              />
+            </div>
+          )}
         </div>
         <div className="mt-1.5 sm:mt-2">
           <h3 className="text-[11px] sm:text-sm font-medium text-foreground truncate">{props.title}</h3>
