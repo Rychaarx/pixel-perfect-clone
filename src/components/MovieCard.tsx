@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Star, Sparkles, Film, Tv } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -21,6 +22,16 @@ export interface MovieCardProps {
 const MovieCard = (props: MovieCardProps) => {
   const navigate = useNavigate();
   const { movie, variant = "grid", index = 0 } = props;
+  const [progressPercent, setProgressPercent] = useState(0);
+
+  useEffect(() => {
+    if (!props.id) return;
+    const pos = parseFloat(localStorage.getItem(`video_position_${props.id}`) || "0");
+    const dur = parseFloat(localStorage.getItem(`video_duration_${props.id}`) || "0");
+    if (pos > 0 && dur > 0) {
+      setProgressPercent(Math.min(100, (pos / dur) * 100));
+    }
+  }, [props.id]);
 
   // Catalog-based card
   if (!movie && props.id) {
@@ -76,6 +87,21 @@ const MovieCard = (props: MovieCardProps) => {
             }`}>
               {props.type === "Anime" ? <Sparkles className="h-2 w-2 sm:h-2.5 sm:w-2.5" /> : props.type === "Série" ? <Tv className="h-2 w-2 sm:h-2.5 sm:w-2.5" /> : <Film className="h-2 w-2 sm:h-2.5 sm:w-2.5" />}
               {props.type}
+            </div>
+          )}
+          {/* Progress bar */}
+          {progressPercent > 0 && (
+            <div className="absolute bottom-0 left-0 right-0 h-1 bg-black/50">
+              <div
+                className={`h-full transition-all ${
+                  props.type === "Anime"
+                    ? "bg-pink-500"
+                    : props.type === "Série"
+                    ? "bg-blue-500"
+                    : "bg-amber-500"
+                }`}
+                style={{ width: `${progressPercent}%` }}
+              />
             </div>
           )}
         </div>
