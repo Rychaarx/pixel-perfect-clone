@@ -3,7 +3,13 @@ import { motion } from "framer-motion";
 import { Star, Sparkles, Film, Tv } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import type { Movie } from "@/data/movies";
-import type { CatalogStatus } from "@/hooks/useCatalog";
+import { type CatalogStatus, statusConfig } from "@/hooks/useCatalog";
+
+const statusBadge: Record<CatalogStatus, { label: string; className: string }> = {
+  concluido: { label: "Disponível", className: "bg-green-500/80 text-white" },
+  em_espera: { label: "Em breve", className: "bg-amber-500/80 text-white" },
+  na_lista: { label: "Na Lista", className: "bg-blue-500/80 text-white" },
+};
 
 export interface MovieCardProps {
   // Legacy Movie-based usage
