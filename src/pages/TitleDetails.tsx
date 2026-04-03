@@ -272,36 +272,6 @@ const TitleDetails = () => {
               )}
             </div>
 
-            {/* Movie progress bar */}
-            {id && item.type?.toLowerCase() === "filme" && (
-              <div className="mb-6 max-w-md">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm text-muted-foreground">Progresso</span>
-                  <span className="text-sm font-medium text-foreground">{getMovieProgress(id)}%</span>
-                </div>
-                <input
-                  type="range"
-                  min={0}
-                  max={100}
-                  step={5}
-                  value={getMovieProgress(id)}
-                  onChange={(e) => setMovieProgress(id, Number(e.target.value))}
-                  className="w-full h-2 rounded-full appearance-none cursor-pointer bg-secondary accent-primary"
-                />
-                <div className="flex items-center justify-between mt-2">
-                  <span className="text-[10px] text-muted-foreground/60">0%</span>
-                  {isMovieWatched(id) && (
-                    <button
-                      onClick={() => unmarkMovieWatched(id)}
-                      className="text-[10px] text-destructive hover:underline"
-                    >
-                      Remover progresso
-                    </button>
-                  )}
-                  <span className="text-[10px] text-muted-foreground/60">100%</span>
-                </div>
-              </div>
-            )}
 
             {item.synopsis && (
               <p className="text-muted-foreground text-sm leading-relaxed max-w-2xl mb-6">
