@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Star, Sparkles, Film, Tv } from "lucide-react";
 import { useNavigate } from "react-router-dom";
