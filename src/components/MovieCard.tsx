@@ -74,6 +74,12 @@ const MovieCard = (props: MovieCardProps) => {
               ? "bg-gradient-to-t from-blue-900/80 via-blue-500/10 to-transparent"
               : "bg-gradient-to-t from-amber-900/80 via-amber-500/10 to-transparent"
           }`} />
+          {/* Status badge */}
+          {props.status && statusBadge[props.status] && (
+            <div className={`absolute top-1 left-1 sm:top-1.5 sm:left-1.5 px-1.5 sm:px-2 py-0.5 rounded text-[8px] sm:text-[10px] font-semibold backdrop-blur-sm ${statusBadge[props.status].className}`}>
+              {statusBadge[props.status].label}
+            </div>
+          )}
           {/* Neon border glow */}
           <div className={`absolute inset-0 rounded-lg border transition-all duration-300 pointer-events-none ${
             props.type === "Anime"
