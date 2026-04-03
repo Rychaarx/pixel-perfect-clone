@@ -22,6 +22,16 @@ export interface MovieCardProps {
 const MovieCard = (props: MovieCardProps) => {
   const navigate = useNavigate();
   const { movie, variant = "grid", index = 0 } = props;
+  const [progressPercent, setProgressPercent] = useState(0);
+
+  useEffect(() => {
+    if (!props.id) return;
+    const pos = parseFloat(localStorage.getItem(`video_position_${props.id}`) || "0");
+    const dur = parseFloat(localStorage.getItem(`video_duration_${props.id}`) || "0");
+    if (pos > 0 && dur > 0) {
+      setProgressPercent(Math.min(100, (pos / dur) * 100));
+    }
+  }, [props.id]);
 
   // Catalog-based card
   if (!movie && props.id) {
