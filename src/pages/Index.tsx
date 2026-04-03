@@ -7,6 +7,7 @@ import { useWatchedMovies } from "@/hooks/useWatchedMovies";
 import { useFavorites } from "@/hooks/useFavorites";
 import HomeSection from "@/components/HomeSection";
 import CatalogCarousel from "@/components/CatalogCarousel";
+import ResumeWatchingCarousel from "@/components/ResumeWatchingCarousel";
 import ContinueWatchingSection from "@/components/ContinueWatchingSection";
 import RecentlyWatchedSection from "@/components/RecentlyWatchedSection";
 import FavoritesSection from "@/components/FavoritesSection";
