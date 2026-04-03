@@ -3,7 +3,13 @@ import { motion } from "framer-motion";
 import { Star, Sparkles, Film, Tv } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import type { Movie } from "@/data/movies";
-import type { CatalogStatus } from "@/hooks/useCatalog";
+import { type CatalogStatus, statusConfig } from "@/hooks/useCatalog";
+
+const statusBadge: Record<CatalogStatus, { label: string; className: string }> = {
+  concluido: { label: "Disponível", className: "bg-green-500/80 text-white" },
+  em_espera: { label: "Em breve", className: "bg-amber-500/80 text-white" },
+  na_lista: { label: "Na Lista", className: "bg-blue-500/80 text-white" },
+};
 
 export interface MovieCardProps {
   // Legacy Movie-based usage
@@ -68,6 +74,12 @@ const MovieCard = (props: MovieCardProps) => {
               ? "bg-gradient-to-t from-blue-900/80 via-blue-500/10 to-transparent"
               : "bg-gradient-to-t from-amber-900/80 via-amber-500/10 to-transparent"
           }`} />
+          {/* Status badge */}
+          {props.status && statusBadge[props.status] && (
+            <div className={`absolute top-1 left-1 sm:top-1.5 sm:left-1.5 px-1.5 sm:px-2 py-0.5 rounded text-[8px] sm:text-[10px] font-semibold backdrop-blur-sm ${statusBadge[props.status].className}`}>
+              {statusBadge[props.status].label}
+            </div>
+          )}
           {/* Neon border glow */}
           <div className={`absolute inset-0 rounded-lg border transition-all duration-300 pointer-events-none ${
             props.type === "Anime"
