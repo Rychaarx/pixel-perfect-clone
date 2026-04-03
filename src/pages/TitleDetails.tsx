@@ -30,7 +30,8 @@ const ResumeVideo = ({ src, catalogItemId }: { src: string; catalogItemId: strin
   const handleTimeUpdate = useCallback(() => {
     if (!videoRef.current) return;
     localStorage.setItem(storageKey, String(videoRef.current.currentTime));
-  }, [storageKey]);
+    localStorage.setItem(`video_duration_${catalogItemId}`, String(videoRef.current.duration));
+  }, [storageKey, catalogItemId]);
 
   const handleEnded = useCallback(() => {
     localStorage.removeItem(storageKey);
