@@ -29,6 +29,12 @@ const ResumeWatchingCarousel = ({ catalogItems }: ResumeWatchingCarouselProps) =
     setResumeItems(items);
   }, [catalogItems]);
 
+  const removeItem = useCallback((itemId: string) => {
+    localStorage.removeItem(`video_position_${itemId}`);
+    localStorage.removeItem(`video_duration_${itemId}`);
+    setResumeItems((prev) => prev.filter((r) => r.item.id !== itemId));
+  }, []);
+
   if (resumeItems.length === 0) return null;
 
   const scroll = (dir: "left" | "right") => {
