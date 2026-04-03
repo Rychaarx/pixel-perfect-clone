@@ -7,6 +7,7 @@ import { useWatchedMovies } from "@/hooks/useWatchedMovies";
 import { useFavorites } from "@/hooks/useFavorites";
 import HomeSection from "@/components/HomeSection";
 import CatalogCarousel from "@/components/CatalogCarousel";
+import ResumeWatchingCarousel from "@/components/ResumeWatchingCarousel";
 import ContinueWatchingSection from "@/components/ContinueWatchingSection";
 import RecentlyWatchedSection from "@/components/RecentlyWatchedSection";
 import FavoritesSection from "@/components/FavoritesSection";
@@ -47,6 +48,9 @@ const Index = () => {
 
       {/* Hero */}
       <HeroSlider items={heroItems.length > 0 ? heroItems : catalogItems.slice(0, 5)} />
+
+      {/* Resume Watching */}
+      <ResumeWatchingCarousel catalogItems={catalogItems} />
 
       {/* Catalog Carousels by Type */}
       <CatalogCarousel title="FILMES" emoji="🎬" items={movies} />
