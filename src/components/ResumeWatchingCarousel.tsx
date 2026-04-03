@@ -1,5 +1,5 @@
-import { useRef, useState, useEffect } from "react";
-import { ChevronLeft, ChevronRight, Play } from "lucide-react";
+import { useRef, useState, useEffect, useCallback } from "react";
+import { ChevronLeft, ChevronRight, Play, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { CatalogItem } from "@/hooks/useCatalog";
 
