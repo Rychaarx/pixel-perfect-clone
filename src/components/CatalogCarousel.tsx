@@ -26,9 +26,6 @@ const CatalogCarousel = ({ title, emoji, items }: CatalogCarouselProps) => {
         <div className="flex items-center gap-3 mb-4 md:mb-6">
           <span className="text-xl">{emoji}</span>
           <h2 className="font-display text-base md:text-xl font-bold text-foreground tracking-wider">{title}</h2>
-          <span className="px-2 py-0.5 rounded-full bg-primary/20 text-primary text-[10px] sm:text-xs font-medium">
-            {items.length} títulos
-          </span>
         </div>
         <div className="relative group/carousel">
           <button

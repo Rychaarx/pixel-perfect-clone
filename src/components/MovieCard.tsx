@@ -76,19 +76,6 @@ const MovieCard = (props: MovieCardProps) => {
               ? "border-blue-500/0 group-hover:border-blue-500/40 sm:group-hover:border-blue-500/60"
               : "border-amber-500/0 group-hover:border-amber-500/40 sm:group-hover:border-amber-500/60"
           }`} />
-          {/* Type badge */}
-          {props.type && (
-            <div className={`absolute top-1 left-1 sm:top-1.5 sm:left-1.5 flex items-center gap-0.5 sm:gap-1 px-1 sm:px-1.5 py-0.5 rounded text-[8px] sm:text-[10px] font-semibold backdrop-blur-sm ${
-              props.type === "Anime"
-                ? "bg-pink-500/80 text-white"
-                : props.type === "Série"
-                ? "bg-blue-500/80 text-white"
-                : "bg-amber-500/80 text-white"
-            }`}>
-              {props.type === "Anime" ? <Sparkles className="h-2 w-2 sm:h-2.5 sm:w-2.5" /> : props.type === "Série" ? <Tv className="h-2 w-2 sm:h-2.5 sm:w-2.5" /> : <Film className="h-2 w-2 sm:h-2.5 sm:w-2.5" />}
-              {props.type}
-            </div>
-          )}
           {/* Progress bar */}
           {progressPercent > 0 && (
             <div className="absolute bottom-0 left-0 right-0 h-1 bg-black/50">
