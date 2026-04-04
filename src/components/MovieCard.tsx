@@ -75,7 +75,7 @@ const MovieCard = (props: MovieCardProps) => {
               : "bg-gradient-to-t from-amber-900/80 via-amber-500/10 to-transparent"
           }`} />
           {/* Status badge */}
-          {props.status && statusBadge[props.status] && (
+          {props.status && props.status !== 'concluido' && statusBadge[props.status] && (
             <div className={`absolute top-1 left-1 sm:top-1.5 sm:left-1.5 px-1.5 sm:px-2 py-0.5 rounded text-[8px] sm:text-[10px] font-semibold backdrop-blur-sm ${statusBadge[props.status].className}`}>
               {statusBadge[props.status].label}
             </div>
