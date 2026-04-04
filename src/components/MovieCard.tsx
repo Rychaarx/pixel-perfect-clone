@@ -76,9 +76,14 @@ const MovieCard = (props: MovieCardProps) => {
           }`} />
           {/* Status badge */}
           {props.status && props.status !== 'concluido' && statusBadge[props.status] && (
-            <div className={`absolute top-1 left-1 sm:top-1.5 sm:left-1.5 px-1.5 sm:px-2 py-0.5 rounded text-[8px] sm:text-[10px] font-semibold backdrop-blur-sm ${statusBadge[props.status].className}`}>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8, y: -5 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              transition={{ delay: 0.2 + index * 0.05, duration: 0.3, ease: "easeOut" }}
+              className={`absolute top-1 left-1 sm:top-1.5 sm:left-1.5 px-1.5 sm:px-2 py-0.5 rounded text-[8px] sm:text-[10px] font-semibold backdrop-blur-sm ${statusBadge[props.status].className}`}
+            >
               {statusBadge[props.status].label}
-            </div>
+            </motion.div>
           )}
           {/* Neon border glow */}
           <div className={`absolute inset-0 rounded-lg border transition-all duration-300 pointer-events-none ${
