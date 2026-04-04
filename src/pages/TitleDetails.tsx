@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Play, Clock, Calendar, Tag, Film, X, ChevronDown, Eye, EyeOff, CheckCircle, Heart } from "lucide-react";
+import { ArrowLeft, Play, Clock, Calendar, Tag, Film, X, ChevronDown, Eye, EyeOff, CheckCircle, Heart, RotateCcw } from "lucide-react";
 import { useLandscape } from "@/hooks/useLandscape";
 import Navbar from "@/components/Navbar";
 import { useWatchProgress } from "@/hooks/useWatchProgress";
@@ -58,7 +58,8 @@ const TitleDetails = () => {
   const { items, loading } = useCatalog();
   const item = items.find((c) => c.id === id);
   const [watching, setWatching] = useState(false);
-  const { containerRef: landscapeRef, cssRotate } = useLandscape(watching);
+  const [forceRotation, setForceRotation] = useState(false);
+  const { containerRef: landscapeRef, cssRotate } = useLandscape(watching && forceRotation);
   const { fetchSeasons } = useSeasons();
   const { markEpisodeWatched, unmarkEpisodeWatched, isEpisodeWatched } = useWatchProgress();
   const { markMovieWatched, unmarkMovieWatched, isMovieWatched, getMovieProgress, setMovieProgress } = useWatchedMovies();
@@ -135,12 +136,21 @@ const TitleDetails = () => {
           marginLeft: "calc(-50vh)",
         } : undefined}
       >
-        <button
-          onClick={() => setWatching(false)}
-          className="absolute top-4 right-4 z-50 flex h-10 w-10 items-center justify-center rounded-full bg-secondary/60 backdrop-blur-sm text-foreground hover:bg-secondary transition-colors"
-        >
-          <X className="h-5 w-5" />
-        </button>
+        <div className="absolute top-4 right-4 z-50 flex items-center gap-2">
+          <button
+            onClick={() => setForceRotation((r) => !r)}
+            className={`flex h-10 w-10 items-center justify-center rounded-full backdrop-blur-sm transition-colors ${forceRotation ? "bg-primary/80 text-primary-foreground" : "bg-secondary/60 text-foreground hover:bg-secondary"}`}
+            title={forceRotation ? "Desativar rotação" : "Rotacionar tela"}
+          >
+            <RotateCcw className="h-5 w-5" />
+          </button>
+          <button
+            onClick={() => { setWatching(false); setForceRotation(false); }}
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary/60 backdrop-blur-sm text-foreground hover:bg-secondary transition-colors"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
         {isDirectVideo(src) ? (
           <ResumeVideo src={src} catalogItemId={id!} />
         ) : (
