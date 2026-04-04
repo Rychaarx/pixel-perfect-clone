@@ -136,12 +136,21 @@ const TitleDetails = () => {
           marginLeft: "calc(-50vh)",
         } : undefined}
       >
-        <button
-          onClick={() => setWatching(false)}
-          className="absolute top-4 right-4 z-50 flex h-10 w-10 items-center justify-center rounded-full bg-secondary/60 backdrop-blur-sm text-foreground hover:bg-secondary transition-colors"
-        >
-          <X className="h-5 w-5" />
-        </button>
+        <div className="absolute top-4 right-4 z-50 flex items-center gap-2">
+          <button
+            onClick={() => setForceRotation((r) => !r)}
+            className={`flex h-10 w-10 items-center justify-center rounded-full backdrop-blur-sm transition-colors ${forceRotation ? "bg-primary/80 text-primary-foreground" : "bg-secondary/60 text-foreground hover:bg-secondary"}`}
+            title={forceRotation ? "Desativar rotação" : "Rotacionar tela"}
+          >
+            <RotateCcw className="h-5 w-5" />
+          </button>
+          <button
+            onClick={() => { setWatching(false); setForceRotation(false); }}
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary/60 backdrop-blur-sm text-foreground hover:bg-secondary transition-colors"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
         {isDirectVideo(src) ? (
           <ResumeVideo src={src} catalogItemId={id!} />
         ) : (
