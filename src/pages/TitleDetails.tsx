@@ -58,7 +58,8 @@ const TitleDetails = () => {
   const { items, loading } = useCatalog();
   const item = items.find((c) => c.id === id);
   const [watching, setWatching] = useState(false);
-  const { containerRef: landscapeRef, cssRotate } = useLandscape(watching);
+  const [forceRotation, setForceRotation] = useState(false);
+  const { containerRef: landscapeRef, cssRotate } = useLandscape(watching && forceRotation);
   const { fetchSeasons } = useSeasons();
   const { markEpisodeWatched, unmarkEpisodeWatched, isEpisodeWatched } = useWatchProgress();
   const { markMovieWatched, unmarkMovieWatched, isMovieWatched, getMovieProgress, setMovieProgress } = useWatchedMovies();
