@@ -116,11 +116,34 @@ const Suggestions = () => {
     setSending(true);
 
     try {
-      // If a TMDB result was selected, fetch full details and pre-create catalog item
+      // If a TMDB result was selected, pre-create catalog item via edge function
       if (selectedTmdb) {
         const detail = await getDetails(selectedTmdb.id, selectedTmdb.mediaType);
         if (detail) {
-          await preCreateCatalogItem(detail, user.id);
+          const catalogType = detail.isAnime ? "Anime" : detail.mediaType === "tv" ? "Série" : "Filme";
+          const session = await supabase.auth.getSession();
+          const token = session.data.session?.access_token;
+          if (token) {
+            await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-suggestion-item`, {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${token}`,
+                apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                title: detail.title,
+                type: catalogType,
+                year: detail.year,
+                duration: detail.duration,
+                genres: detail.genres,
+                synopsis: detail.synopsis,
+                posterUrl: detail.posterUrl,
+                backdropUrl: detail.backdropUrl,
+                seasons: detail.seasons || [],
+              }),
+            });
+          }
         }
       }
 
@@ -153,56 +176,6 @@ const Suggestions = () => {
       toast.error("Erro ao processar sugestão.");
     } finally {
       setSending(false);
-    }
-  };
-
-  const preCreateCatalogItem = async (detail: TmdbDetail, userId: string) => {
-    const catalogType = detail.isAnime ? "Anime" : detail.mediaType === "tv" ? "Série" : "Filme";
-
-    // Check if item already exists by title
-    const { data: existing } = await supabase
-      .from("catalog_items")
-      .select("id")
-      .ilike("title", detail.title)
-      .maybeSingle();
-
-    if (existing) return; // Already exists, skip
-
-    const { data: newItem, error } = await supabase.from("catalog_items").insert({
-      user_id: userId,
-      title: detail.title,
-      type: catalogType,
-      status: "na_lista",
-      year: detail.year || null,
-      duration: detail.duration || null,
-      genres: detail.genres || null,
-      synopsis: detail.synopsis || null,
-      image_url: detail.posterUrl || null,
-      backdrop_url: detail.backdropUrl || null,
-    }).select("id").single();
-
-    if (error || !newItem) return;
-
-    // If it's a series/anime with seasons, pre-create seasons and episodes
-    if (detail.seasons && detail.seasons.length > 0) {
-      for (const season of detail.seasons) {
-        const { data: sData } = await supabase.from("seasons").insert({
-          catalog_item_id: newItem.id,
-          season_number: season.seasonNumber,
-          name: season.name || null,
-        }).select("id").single();
-
-        if (sData && season.episodes.length > 0) {
-          await supabase.from("episodes").insert(
-            season.episodes.map((ep) => ({
-              season_id: sData.id,
-              episode_number: ep.episodeNumber,
-              title: ep.title || "",
-              duration: ep.duration || null,
-            }))
-          );
-        }
-      }
     }
   };
 
