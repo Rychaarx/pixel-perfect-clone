@@ -168,7 +168,7 @@ const TitleDetails = () => {
   return (
     <div className="min-h-screen bg-background pb-24 md:pb-20">
       {/* Hero backdrop */}
-      <div className="relative h-[45vh] min-h-[350px]">
+      <div className="relative h-[35vh] sm:h-[40vh] md:h-[45vh] min-h-[250px] md:min-h-[350px]">
         {item.imageUrl ? (
           <img
             src={item.imageUrl}
