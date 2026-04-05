@@ -3,7 +3,7 @@ import { Lightbulb, Send, CheckCircle, Search, Film, Tv, X } from "lucide-react"
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import Navbar from "@/components/Navbar";
-import { useTmdbSearch, TmdbSearchResult, TmdbDetail } from "@/hooks/useTmdbSearch";
+import { useTmdbSearch, TmdbSearchResult } from "@/hooks/useTmdbSearch";
 
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
