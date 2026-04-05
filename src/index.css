@@ -67,6 +67,13 @@
       linear-gradient(hsl(280 100% 60% / 0.03) 1px, transparent 1px),
       linear-gradient(90deg, hsl(280 100% 60% / 0.03) 1px, transparent 1px);
     background-size: 60px 60px;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
   }
 
   h1, h2, h3, h4 {
@@ -159,4 +166,66 @@
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+/* Device-adaptive responsive adjustments */
+
+/* Small phones (iPhone SE, Galaxy S series) */
+@media (max-width: 374px) {
+  html { font-size: 13px; }
+  .font-display { letter-spacing: 0.05em; }
+}
+
+/* Standard phones */
+@media (min-width: 375px) and (max-width: 767px) {
+  html { font-size: 14px; }
+}
+
+/* Tablets (iPad, Galaxy Tab) */
+@media (min-width: 768px) and (max-width: 1023px) {
+  html { font-size: 15px; }
+}
+
+/* Desktop */
+@media (min-width: 1024px) {
+  html { font-size: 16px; }
+}
+
+/* Large screens */
+@media (min-width: 1440px) {
+  html { font-size: 17px; }
+}
+
+/* Ultra-wide */
+@media (min-width: 1920px) {
+  html { font-size: 18px; }
+}
+
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+  button, a, [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Always show carousel scroll buttons on touch */
+  .group\/carousel button,
+  .group\/resume button {
+    opacity: 1 !important;
+  }
+}
+
+/* Landscape phone adjustments */
+@media (max-height: 500px) and (orientation: landscape) {
+  .min-h-screen {
+    min-height: 100dvh;
+  }
+}
+
+/* Dynamic viewport height for mobile browsers */
+@supports (height: 100dvh) {
+  .min-h-screen {
+    min-height: 100dvh;
+  }
+}
 }
