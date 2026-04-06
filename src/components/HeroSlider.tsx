@@ -48,7 +48,7 @@ const HeroSlider = ({ items = [] }: HeroSliderProps) => {
             <img
               src={item.backdropUrl || item.imageUrl}
               alt={item.title}
-              className="h-full w-full object-cover"
+              className="h-full w-full object-cover object-[center_20%]"
               onError={(e) => { (e.target as HTMLImageElement).src = "/placeholder.svg"; }}
             />
           ) : (
