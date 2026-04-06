@@ -1,8 +1,9 @@
 import { Link, useLocation } from "react-router-dom";
 import { Film, Calendar, Lightbulb, MessageSquare, LogIn, Menu, X, User, LogOut, Users, Shield } from "lucide-react";
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRole } from "@/hooks/useRole";
+import NotificationBell from "@/components/NotificationBell";
 
 const navItems = [
   { label: "Início", path: "/", icon: Film },
@@ -34,13 +35,16 @@ const Navbar = () => {
 
   return (
     <>
-      {/* Hamburger button - always visible */}
-      <button
-        onClick={() => setMenuOpen(!menuOpen)}
-        className="fixed top-4 right-4 z-[60] w-10 h-10 rounded-lg glass border border-border/50 flex items-center justify-center text-foreground hover:bg-secondary/80 transition-all"
-      >
-        {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-      </button>
+      {/* Top right buttons */}
+      <div className="fixed top-4 right-4 z-[60] flex items-center gap-2">
+        <NotificationBell />
+        <button
+          onClick={() => setMenuOpen(!menuOpen)}
+          className="w-10 h-10 rounded-lg glass border border-border/50 flex items-center justify-center text-foreground hover:bg-secondary/80 transition-all"
+        >
+          {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+        </button>
+      </div>
 
       {/* Overlay */}
       {menuOpen && (
