@@ -366,7 +366,31 @@ const AdminCatalog = () => {
     };
 
     if (editingId) {
+      // Check if status changed to "concluido" — notify users who suggested this title
+      const oldItem = items.find((i) => i.id === editingId);
       await updateItem(editingId, payload);
+      
+      if (payload.status === "concluido" && oldItem?.status !== "concluido") {
+        // Find suggestions matching this title and notify their authors
+        const { data: matchingSuggestions } = await supabase
+          .from("suggestions")
+          .select("user_id, title")
+          .ilike("title", form.title.trim());
+        
+        if (matchingSuggestions && matchingSuggestions.length > 0) {
+          const uniqueUserIds = [...new Set(matchingSuggestions.map((s: any) => s.user_id))];
+          for (const uid of uniqueUserIds) {
+            await supabase.from("notifications").insert({
+              user_id: uid,
+              title: "Conteúdo disponível! 🎬",
+              message: `"${form.title}" já está disponível para assistir! Acesse agora.`,
+              type: "content_ready",
+              catalog_item_id: editingId,
+            });
+          }
+        }
+      }
+      
       toast.success("Item atualizado!");
     } else {
       const result = await addItem(payload);
