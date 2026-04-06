@@ -738,7 +738,14 @@ const AdminCatalog = () => {
                             <img src={item.imageUrl} alt="" className="w-10 h-14 rounded object-cover hidden sm:block" />
                           )}
                           <div>
-                            <p className="font-medium text-foreground truncate max-w-[200px]">{item.title}</p>
+                            <div className="flex items-center gap-2">
+                              <p className="font-medium text-foreground truncate max-w-[200px]">{item.title}</p>
+                              {item.status === "na_lista" && !item.redirectUrl && !item.videoUrl && (
+                                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-500/20 text-amber-400 border border-amber-500/30 whitespace-nowrap">
+                                  <Upload className="w-3 h-3" /> Aguarda upload
+                                </span>
+                              )}
+                            </div>
                             <p className="text-xs text-muted-foreground sm:hidden">{item.type}</p>
                           </div>
                         </div>
