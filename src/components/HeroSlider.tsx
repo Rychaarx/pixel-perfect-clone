@@ -34,7 +34,7 @@ const HeroSlider = ({ items = [] }: HeroSliderProps) => {
   const item = items[current];
 
   return (
-    <div className="relative h-[32vh] min-h-[220px] md:h-[60vh] md:min-h-[400px] overflow-hidden">
+    <div className="relative h-[45vh] min-h-[280px] sm:h-[50vh] sm:min-h-[340px] md:h-[60vh] md:min-h-[420px] lg:h-[70vh] lg:min-h-[500px] overflow-hidden">
       <AnimatePresence mode="wait">
         <motion.div
           key={item.id}
@@ -48,7 +48,7 @@ const HeroSlider = ({ items = [] }: HeroSliderProps) => {
             <img
               src={item.backdropUrl || item.imageUrl}
               alt={item.title}
-              className="h-full w-full object-cover"
+              className="h-full w-full object-cover object-[center_20%]"
               onError={(e) => { (e.target as HTMLImageElement).src = "/placeholder.svg"; }}
             />
           ) : (

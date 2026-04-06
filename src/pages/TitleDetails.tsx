@@ -168,12 +168,12 @@ const TitleDetails = () => {
   return (
     <div className="min-h-screen bg-background pb-24 md:pb-20">
       {/* Hero backdrop */}
-      <div className="relative h-[35vh] sm:h-[40vh] md:h-[45vh] min-h-[250px] md:min-h-[350px]">
+      <div className="relative h-[40vh] sm:h-[45vh] md:h-[50vh] lg:h-[55vh] min-h-[280px] md:min-h-[350px]">
         {item.imageUrl ? (
           <img
             src={item.imageUrl}
             alt={item.title}
-            className="h-full w-full object-cover"
+            className="h-full w-full object-cover object-[center_20%]"
           />
         ) : (
           <div className="h-full w-full bg-secondary" />
