@@ -694,7 +694,7 @@ const AdminCatalog = () => {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
         <div className="glass rounded-xl p-4 border border-border/30">
           <p className="text-2xl font-display font-bold text-foreground">{items.length}</p>
           <p className="text-xs text-muted-foreground">Total</p>
@@ -705,6 +705,15 @@ const AdminCatalog = () => {
             <p className="text-xs text-muted-foreground">{cfg.icon} {cfg.label}</p>
           </div>
         ))}
+        {(() => {
+          const pending = items.filter((i) => i.status === "na_lista" && !i.redirectUrl && !i.videoUrl).length;
+          return pending > 0 ? (
+            <div className="glass rounded-xl p-4 border border-amber-500/30">
+              <p className="text-2xl font-display font-bold text-amber-400">{pending}</p>
+              <p className="text-xs text-muted-foreground">⬆️ Aguarda Upload</p>
+            </div>
+          ) : null;
+        })()}
       </div>
 
       {/* Table */}
