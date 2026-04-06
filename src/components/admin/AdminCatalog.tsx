@@ -694,7 +694,7 @@ const AdminCatalog = () => {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
         <div className="glass rounded-xl p-4 border border-border/30">
           <p className="text-2xl font-display font-bold text-foreground">{items.length}</p>
           <p className="text-xs text-muted-foreground">Total</p>
@@ -705,6 +705,15 @@ const AdminCatalog = () => {
             <p className="text-xs text-muted-foreground">{cfg.icon} {cfg.label}</p>
           </div>
         ))}
+        {(() => {
+          const pending = items.filter((i) => i.status === "na_lista" && !i.redirectUrl && !i.videoUrl).length;
+          return pending > 0 ? (
+            <div className="glass rounded-xl p-4 border border-amber-500/30">
+              <p className="text-2xl font-display font-bold text-amber-400">{pending}</p>
+              <p className="text-xs text-muted-foreground">⬆️ Aguarda Upload</p>
+            </div>
+          ) : null;
+        })()}
       </div>
 
       {/* Table */}
@@ -738,7 +747,14 @@ const AdminCatalog = () => {
                             <img src={item.imageUrl} alt="" className="w-10 h-14 rounded object-cover hidden sm:block" />
                           )}
                           <div>
-                            <p className="font-medium text-foreground truncate max-w-[200px]">{item.title}</p>
+                            <div className="flex items-center gap-2">
+                              <p className="font-medium text-foreground truncate max-w-[200px]">{item.title}</p>
+                              {item.status === "na_lista" && !item.redirectUrl && !item.videoUrl && (
+                                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-500/20 text-amber-400 border border-amber-500/30 whitespace-nowrap">
+                                  <Upload className="w-3 h-3" /> Aguarda upload
+                                </span>
+                              )}
+                            </div>
                             <p className="text-xs text-muted-foreground sm:hidden">{item.type}</p>
                           </div>
                         </div>
