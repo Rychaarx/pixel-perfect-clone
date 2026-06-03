@@ -23,6 +23,7 @@ export function useProfiles() {
     const { data } = await supabase
       .from("user_profiles")
       .select("*")
+      .eq("user_id", user.id)
       .order("created_at", { ascending: true });
 
     if (data) setProfiles(data as UserProfile[]);
@@ -36,12 +37,13 @@ export function useProfiles() {
   const addProfile = useCallback(
     async (name: string, avatarUrl?: string) => {
       if (!user) return;
-      await supabase.from("user_profiles").insert({
+      const { error } = await supabase.from("user_profiles").insert({
         user_id: user.id,
         name,
         avatar_url: avatarUrl || null,
         is_default: profiles.length === 0,
       });
+      if (error) throw error;
       await fetchProfiles();
     },
     [user, profiles.length, fetchProfiles]
@@ -49,18 +51,22 @@ export function useProfiles() {
 
   const removeProfile = useCallback(
     async (id: string) => {
-      await supabase.from("user_profiles").delete().eq("id", id);
+      if (!user) return;
+      const { error } = await supabase.from("user_profiles").delete().eq("id", id).eq("user_id", user.id);
+      if (error) throw error;
       await fetchProfiles();
     },
-    [fetchProfiles]
+    [user, fetchProfiles]
   );
 
   const updateProfile = useCallback(
     async (id: string, patch: Partial<Pick<UserProfile, "name" | "avatar_url">>) => {
-      await supabase.from("user_profiles").update(patch).eq("id", id);
+      if (!user) return;
+      const { error } = await supabase.from("user_profiles").update(patch).eq("id", id).eq("user_id", user.id);
+      if (error) throw error;
       await fetchProfiles();
     },
-    [fetchProfiles]
+    [user, fetchProfiles]
   );
 
   return { profiles, loading, addProfile, removeProfile, updateProfile };
