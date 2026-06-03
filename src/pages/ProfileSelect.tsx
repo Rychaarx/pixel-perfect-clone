@@ -296,7 +296,7 @@ const ProfileSelect = () => {
           </div>
 
           {/* Actions */}
-          <div className="flex gap-3 justify-center pt-4">
+          <div className="flex gap-3 justify-center pt-4 flex-wrap">
             <Button
               onClick={onSave}
               disabled={saving || !name.trim()}
@@ -311,6 +311,22 @@ const ProfileSelect = () => {
             <Button variant="outline" onClick={resetState} className="px-8 h-11 border-muted-foreground/30 text-muted-foreground hover:text-foreground">
               Cancelar
             </Button>
+            {isEdit && editingId && (() => {
+              const p = profiles.find((x) => x.id === editingId);
+              if (!p || p.is_default) return null;
+              return (
+                <Button
+                  variant="outline"
+                  onClick={async () => {
+                    await handleDelete(p.id, p.name);
+                    resetState();
+                  }}
+                  className="px-8 h-11 border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                >
+                  <Trash2 className="w-4 h-4 mr-2" /> Excluir perfil
+                </Button>
+              );
+            })()}
           </div>
         </div>
       </motion.div>
