@@ -112,25 +112,39 @@ const ProfileSelect = () => {
   const handleCreate = async () => {
     if (!newName.trim()) { toast.error("Nome obrigatório"); return; }
     setSaving(true);
-    const avatarUrl = await resolveAvatarUrl();
-    await addProfile(newName.trim(), avatarUrl || undefined);
-    resetState();
-    toast.success("Perfil criado!");
+    try {
+      const avatarUrl = await resolveAvatarUrl();
+      await addProfile(newName.trim(), avatarUrl || undefined);
+      resetState();
+      toast.success("Perfil criado!");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Erro ao criar perfil");
+      setSaving(false);
+    }
   };
 
   const handleUpdate = async () => {
     if (!editingId || !editName.trim()) return;
     setSaving(true);
-    const avatarUrl = await resolveAvatarUrl();
-    await updateProfile(editingId, { name: editName.trim(), avatar_url: avatarUrl });
-    resetState();
-    toast.success("Perfil atualizado!");
+    try {
+      const avatarUrl = await resolveAvatarUrl();
+      await updateProfile(editingId, { name: editName.trim(), avatar_url: avatarUrl });
+      resetState();
+      toast.success("Perfil atualizado!");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Erro ao atualizar perfil");
+      setSaving(false);
+    }
   };
 
   const handleDelete = async (id: string, name: string) => {
     if (!confirm(`Excluir perfil "${name}"?`)) return;
-    await removeProfile(id);
-    toast.success("Perfil removido!");
+    try {
+      await removeProfile(id);
+      toast.success("Perfil removido!");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Erro ao excluir perfil");
+    }
   };
 
   const startCreate = () => {
@@ -213,11 +227,9 @@ const ProfileSelect = () => {
               <button onClick={() => startEdit(p)} className="w-7 h-7 rounded-full bg-card border border-border flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors">
                 <Pencil className="w-3.5 h-3.5" />
               </button>
-              {!p.is_default && (
-                <button onClick={() => handleDelete(p.id, p.name)} className="w-7 h-7 rounded-full bg-card border border-border flex items-center justify-center text-muted-foreground hover:text-destructive transition-colors">
-                  <Trash2 className="w-3.5 h-3.5" />
-                </button>
-              )}
+              <button onClick={() => handleDelete(p.id, p.name)} className="w-7 h-7 rounded-full bg-card border border-border flex items-center justify-center text-muted-foreground hover:text-destructive transition-colors">
+                <Trash2 className="w-3.5 h-3.5" />
+              </button>
             </div>
           </motion.div>
         ))}
@@ -313,7 +325,7 @@ const ProfileSelect = () => {
             </Button>
             {isEdit && editingId && (() => {
               const p = profiles.find((x) => x.id === editingId);
-              if (!p || p.is_default) return null;
+              if (!p) return null;
               return (
                 <Button
                   variant="outline"
