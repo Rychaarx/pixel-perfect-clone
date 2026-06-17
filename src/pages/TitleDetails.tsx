@@ -109,10 +109,22 @@ const TitleDetails = () => {
     return /youtube\.com|youtu\.be|vimeo\.com|dailymotion\.com/i.test(url);
   };
 
+  // Normalize YouTube URLs to embeddable form (youtu.be/ID or watch?v=ID -> embed/ID)
+  const toEmbedUrl = (url: string) => {
+    const ytShort = url.match(/youtu\.be\/([A-Za-z0-9_-]{6,})/);
+    if (ytShort) return `https://www.youtube.com/embed/${ytShort[1]}`;
+    const ytWatch = url.match(/youtube\.com\/watch\?[^#]*v=([A-Za-z0-9_-]{6,})/);
+    if (ytWatch) return `https://www.youtube.com/embed/${ytWatch[1]}`;
+    const vimeo = url.match(/vimeo\.com\/(\d+)/);
+    if (vimeo) return `https://player.vimeo.com/video/${vimeo[1]}`;
+    return url;
+  };
+
   // Full-screen video player
   if (watching) {
     // Priority: redirectUrl (link to watch) > videoUrl (trailer)
-    const src = item.redirectUrl || item.videoUrl || '';
+    const rawSrc = item.redirectUrl || item.videoUrl || '';
+    const src = isEmbeddable(rawSrc) ? toEmbedUrl(rawSrc) : rawSrc;
 
     // If it's a non-embeddable external link, open in new tab
     if (src && !isDirectVideo(src) && !isEmbeddable(src)) {
@@ -120,6 +132,7 @@ const TitleDetails = () => {
       setWatching(false);
       return null;
     }
+
 
     return (
       <div
