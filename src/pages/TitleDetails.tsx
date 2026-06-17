@@ -329,7 +329,18 @@ const TitleDetails = () => {
                   {isFavorite(id) ? "Favoritado" : "Favoritar"}
                 </Button>
               )}
+              <Button
+                variant="outline"
+                onClick={handleShare}
+                className="gap-2 rounded-full px-5"
+                size="lg"
+                title="Compartilhar link"
+              >
+                <Share2 className="h-4 w-4" />
+                Compartilhar
+              </Button>
             </div>
+
 
 
             {item.synopsis && (
