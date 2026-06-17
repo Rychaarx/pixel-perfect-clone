@@ -504,7 +504,11 @@ const AdminCatalog = () => {
         </div>
       )}
 
+      {/* Missing videos quick-fill */}
+      <MissingVideosPanel />
+
       {/* Toolbar */}
+
       <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
         <div className="flex gap-2 flex-1 w-full sm:w-auto">
           <div className="relative flex-1 sm:max-w-xs">
