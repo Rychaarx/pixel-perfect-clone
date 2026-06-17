@@ -1,17 +1,20 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Play, Clock, Calendar, Tag, Film, X, ChevronDown, Eye, EyeOff, CheckCircle, Heart, RotateCcw } from "lucide-react";
+import { ArrowLeft, Play, Clock, Calendar, Tag, Film, X, ChevronDown, Eye, EyeOff, CheckCircle, Heart, RotateCcw, Share2 } from "lucide-react";
 import { useLandscape } from "@/hooks/useLandscape";
 import Navbar from "@/components/Navbar";
 import { useWatchProgress } from "@/hooks/useWatchProgress";
 import { useWatchedMovies } from "@/hooks/useWatchedMovies";
 import { useFavorites } from "@/hooks/useFavorites";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 
 import { useCatalog, statusConfig } from "@/hooks/useCatalog";
 import { useSeasons, Season } from "@/hooks/useSeasons";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+
 
 const ResumeVideo = ({ src, catalogItemId }: { src: string; catalogItemId: string }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -55,6 +58,7 @@ const ResumeVideo = ({ src, catalogItemId }: { src: string; catalogItemId: strin
 const TitleDetails = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { user, loading: authLoading } = useAuth();
   const { items, loading } = useCatalog();
   const item = items.find((c) => c.id === id);
   const [watching, setWatching] = useState(false);
@@ -66,6 +70,38 @@ const TitleDetails = () => {
   const { toggleFavorite, isFavorite } = useFavorites();
   const [seasons, setSeasons] = useState<Season[]>([]);
   const [openSeason, setOpenSeason] = useState<number | null>(null);
+
+  // Auth gate: shared links redirect unauthenticated users to /login and come back here after sign in
+  useEffect(() => {
+    if (!authLoading && !user && id) {
+      navigate(`/login?redirect=${encodeURIComponent(`/titulo/${id}`)}`, { replace: true });
+    }
+  }, [authLoading, user, id, navigate]);
+
+  const handleShare = useCallback(async () => {
+    if (!id) return;
+    const url = `${window.location.origin}/titulo/${id}`;
+    const shareData = {
+      title: item?.title || "CineCloud",
+      text: item?.title ? `Assista "${item.title}" no CineCloud` : "Confira no CineCloud",
+      url,
+    };
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+        return;
+      }
+    } catch (err: any) {
+      if (err?.name === "AbortError") return;
+    }
+    try {
+      await navigator.clipboard.writeText(url);
+      toast.success("Link copiado!");
+    } catch {
+      toast.error("Não foi possível copiar o link");
+    }
+  }, [id, item?.title]);
+
 
   useEffect(() => {
     if (id && (item?.type?.toLowerCase() === "série" || item?.type?.toLowerCase() === "anime")) {
@@ -293,7 +329,18 @@ const TitleDetails = () => {
                   {isFavorite(id) ? "Favoritado" : "Favoritar"}
                 </Button>
               )}
+              <Button
+                variant="outline"
+                onClick={handleShare}
+                className="gap-2 rounded-full px-5"
+                size="lg"
+                title="Compartilhar link"
+              >
+                <Share2 className="h-4 w-4" />
+                Compartilhar
+              </Button>
             </div>
+
 
 
             {item.synopsis && (
