@@ -58,6 +58,7 @@ const ResumeVideo = ({ src, catalogItemId }: { src: string; catalogItemId: strin
 const TitleDetails = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { user, loading: authLoading } = useAuth();
   const { items, loading } = useCatalog();
   const item = items.find((c) => c.id === id);
   const [watching, setWatching] = useState(false);
@@ -69,6 +70,38 @@ const TitleDetails = () => {
   const { toggleFavorite, isFavorite } = useFavorites();
   const [seasons, setSeasons] = useState<Season[]>([]);
   const [openSeason, setOpenSeason] = useState<number | null>(null);
+
+  // Auth gate: shared links redirect unauthenticated users to /login and come back here after sign in
+  useEffect(() => {
+    if (!authLoading && !user && id) {
+      navigate(`/login?redirect=${encodeURIComponent(`/titulo/${id}`)}`, { replace: true });
+    }
+  }, [authLoading, user, id, navigate]);
+
+  const handleShare = useCallback(async () => {
+    if (!id) return;
+    const url = `${window.location.origin}/titulo/${id}`;
+    const shareData = {
+      title: item?.title || "CineCloud",
+      text: item?.title ? `Assista "${item.title}" no CineCloud` : "Confira no CineCloud",
+      url,
+    };
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+        return;
+      }
+    } catch (err: any) {
+      if (err?.name === "AbortError") return;
+    }
+    try {
+      await navigator.clipboard.writeText(url);
+      toast.success("Link copiado!");
+    } catch {
+      toast.error("Não foi possível copiar o link");
+    }
+  }, [id, item?.title]);
+
 
   useEffect(() => {
     if (id && (item?.type?.toLowerCase() === "série" || item?.type?.toLowerCase() === "anime")) {
