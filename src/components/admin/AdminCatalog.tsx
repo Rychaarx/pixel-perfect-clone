@@ -18,6 +18,8 @@ import {
   clearCompletedUploads,
   generateUploadId,
 } from "@/lib/uploadDB";
+import MissingVideosPanel from "./MissingVideosPanel";
+
 
 const emptyForm = {
   title: "", type: "Filme" as CatalogItem["type"], status: "na_lista" as CatalogStatus,
