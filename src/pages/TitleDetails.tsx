@@ -316,16 +316,27 @@ const TitleDetails = () => {
 
             {/* Action buttons */}
             <div className="flex flex-wrap gap-3 mb-4">
-              {hasVideo && (
+              {(hasVideo || canUseAddons) && (
                 <Button
                   onClick={() => {
-                    setWatching(true);
+                    if (canUseAddons) setSourcesOpen(true);
+                    else setWatching(true);
                   }}
                   className="gap-2 rounded-full px-6 py-3 gradient-neon text-primary-foreground neon-glow"
                   size="lg"
                 >
                   <Play className="h-4 w-4 fill-current" />
                   Assistir Agora
+                </Button>
+              )}
+              {hasEnabledAddons && item.imdbId && hasVideo && (
+                <Button
+                  variant="outline"
+                  onClick={() => setSourcesOpen(true)}
+                  className="gap-2 rounded-full px-5"
+                  size="lg"
+                >
+                  Buscar fontes
                 </Button>
               )}
               {id && (
