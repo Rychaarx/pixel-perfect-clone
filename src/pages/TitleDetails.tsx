@@ -12,8 +12,10 @@ import { toast } from "sonner";
 
 import { useCatalog, statusConfig } from "@/hooks/useCatalog";
 import { useSeasons, Season } from "@/hooks/useSeasons";
+import { useAddons, StreamSource } from "@/hooks/useAddons";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import SourcesDialog from "@/components/SourcesDialog";
 
 
 const ResumeVideo = ({ src, catalogItemId }: { src: string; catalogItemId: string }) => {
@@ -70,6 +72,9 @@ const TitleDetails = () => {
   const { toggleFavorite, isFavorite } = useFavorites();
   const [seasons, setSeasons] = useState<Season[]>([]);
   const [openSeason, setOpenSeason] = useState<number | null>(null);
+  const { addons } = useAddons();
+  const [sourcesOpen, setSourcesOpen] = useState(false);
+  const [externalSrc, setExternalSrc] = useState<string | null>(null);
 
   // Auth gate: shared links redirect unauthenticated users to /login and come back here after sign in
   useEffect(() => {
