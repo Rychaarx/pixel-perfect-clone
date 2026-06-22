@@ -74,7 +74,7 @@ serve(async (req) => {
       }
 
       const detailRes = await fetch(
-        `${TMDB_BASE}/${type}/${id}?api_key=${TMDB_API_KEY}&language=pt-BR&append_to_response=videos`
+        `${TMDB_BASE}/${type}/${id}?api_key=${TMDB_API_KEY}&language=pt-BR&append_to_response=videos,external_ids`
       );
       const d = await detailRes.json();
 
@@ -97,6 +97,7 @@ serve(async (req) => {
         trailerUrl: trailer ? `https://www.youtube.com/embed/${trailer.key}` : null,
         mediaType: type,
         isAnime,
+        imdbId: d.external_ids?.imdb_id || d.imdb_id || null,
       };
 
       // For TV shows, fetch all seasons with episodes

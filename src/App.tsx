@@ -15,6 +15,7 @@ import Admin from "./pages/Admin";
 import BuscaPage from "./pages/BuscaPage";
 import ListaPage from "./pages/ListaPage";
 import NotFound from "./pages/NotFound";
+import Addons from "./pages/Addons";
 
 const queryClient = new QueryClient();
 
@@ -36,6 +37,7 @@ const App = () => (
             <Route path="/feedback" element={<Feedback />} />
             <Route path="/buscar" element={<BuscaPage />} />
             <Route path="/lista" element={<ListaPage />} />
+            <Route path="/addons" element={<Addons />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
