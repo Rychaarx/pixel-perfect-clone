@@ -204,7 +204,7 @@ const TitleDetails = () => {
             <RotateCcw className="h-5 w-5" />
           </button>
           <button
-            onClick={() => { setWatching(false); setForceRotation(false); }}
+            onClick={() => { setWatching(false); setForceRotation(false); setExternalSrc(null); }}
             className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary/60 backdrop-blur-sm text-foreground hover:bg-secondary transition-colors"
           >
             <X className="h-5 w-5" />
