@@ -22,6 +22,7 @@ export type Database = {
           genres: string[] | null
           id: string
           image_url: string | null
+          imdb_id: string | null
           redirect_url: string | null
           status: string
           synopsis: string | null
@@ -39,6 +40,7 @@ export type Database = {
           genres?: string[] | null
           id?: string
           image_url?: string | null
+          imdb_id?: string | null
           redirect_url?: string | null
           status?: string
           synopsis?: string | null
@@ -56,6 +58,7 @@ export type Database = {
           genres?: string[] | null
           id?: string
           image_url?: string | null
+          imdb_id?: string | null
           redirect_url?: string | null
           status?: string
           synopsis?: string | null
@@ -318,6 +321,54 @@ export type Database = {
           status?: string
           title?: string
           type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_addons: {
+        Row: {
+          created_at: string
+          description: string | null
+          enabled: boolean
+          id: string
+          logo_url: string | null
+          manifest_url: string
+          name: string
+          resources: string[]
+          sort_order: number
+          transport_url: string
+          types: string[]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          enabled?: boolean
+          id?: string
+          logo_url?: string | null
+          manifest_url: string
+          name: string
+          resources?: string[]
+          sort_order?: number
+          transport_url: string
+          types?: string[]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          enabled?: boolean
+          id?: string
+          logo_url?: string | null
+          manifest_url?: string
+          name?: string
+          resources?: string[]
+          sort_order?: number
+          transport_url?: string
+          types?: string[]
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
