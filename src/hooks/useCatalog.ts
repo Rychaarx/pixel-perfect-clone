@@ -23,6 +23,7 @@ export interface CatalogItem {
   duration?: string;
   genres?: string[];
   synopsis?: string;
+  imdbId?: string;
 }
 
 export function useCatalog() {
@@ -51,6 +52,7 @@ export function useCatalog() {
           duration: d.duration ?? undefined,
           genres: d.genres ?? undefined,
           synopsis: d.synopsis ?? undefined,
+          imdbId: d.imdb_id ?? undefined,
         }))
       );
     }
@@ -131,6 +133,7 @@ export function useCatalog() {
       if (patch.duration !== undefined) dbPatch.duration = patch.duration;
       if (patch.genres !== undefined) dbPatch.genres = patch.genres;
       if (patch.synopsis !== undefined) dbPatch.synopsis = patch.synopsis;
+      if (patch.imdbId !== undefined) dbPatch.imdb_id = patch.imdbId;
 
       await supabase.from("catalog_items").update(dbPatch).eq("id", id);
       await fetchItems();
