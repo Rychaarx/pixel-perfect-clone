@@ -507,6 +507,7 @@ const AdminCatalog = () => {
 
       {/* Missing videos quick-fill */}
       <MissingVideosPanel />
+      <MissingImdbPanel />
 
       {/* Toolbar */}
 
