@@ -19,6 +19,7 @@ import {
   generateUploadId,
 } from "@/lib/uploadDB";
 import MissingVideosPanel from "./MissingVideosPanel";
+import MissingImdbPanel from "./MissingImdbPanel";
 
 
 const emptyForm = {
@@ -506,6 +507,7 @@ const AdminCatalog = () => {
 
       {/* Missing videos quick-fill */}
       <MissingVideosPanel />
+      <MissingImdbPanel />
 
       {/* Toolbar */}
 

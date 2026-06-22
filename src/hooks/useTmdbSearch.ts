@@ -35,6 +35,7 @@ export interface TmdbDetail {
   trailerUrl: string | null;
   mediaType: "movie" | "tv";
   isAnime?: boolean;
+  imdbId?: string | null;
   seasons?: TmdbSeason[];
 }
 
@@ -43,10 +44,10 @@ export function useTmdbSearch() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const search = useCallback(async (query: string) => {
+  const search = useCallback(async (query: string): Promise<TmdbSearchResult[]> => {
     if (!query.trim()) {
       setResults([]);
-      return;
+      return [];
     }
     setLoading(true);
     setError(null);
@@ -69,10 +70,13 @@ export function useTmdbSearch() {
       }
 
       const json = await res.json();
-      setResults(json.results || []);
+      const list: TmdbSearchResult[] = json.results || [];
+      setResults(list);
+      return list;
     } catch (e) {
       setError(e instanceof Error ? e.message : "Erro ao buscar");
       setResults([]);
+      return [];
     } finally {
       setLoading(false);
     }

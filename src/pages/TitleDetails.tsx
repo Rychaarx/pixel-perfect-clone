@@ -12,8 +12,10 @@ import { toast } from "sonner";
 
 import { useCatalog, statusConfig } from "@/hooks/useCatalog";
 import { useSeasons, Season } from "@/hooks/useSeasons";
+import { useAddons, StreamSource } from "@/hooks/useAddons";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import SourcesDialog from "@/components/SourcesDialog";
 
 
 const ResumeVideo = ({ src, catalogItemId }: { src: string; catalogItemId: string }) => {
@@ -70,6 +72,9 @@ const TitleDetails = () => {
   const { toggleFavorite, isFavorite } = useFavorites();
   const [seasons, setSeasons] = useState<Season[]>([]);
   const [openSeason, setOpenSeason] = useState<number | null>(null);
+  const { addons } = useAddons();
+  const [sourcesOpen, setSourcesOpen] = useState(false);
+  const [externalSrc, setExternalSrc] = useState<string | null>(null);
 
   // Auth gate: shared links redirect unauthenticated users to /login and come back here after sign in
   useEffect(() => {
@@ -134,10 +139,14 @@ const TitleDetails = () => {
 
   const sc = statusConfig[item.status];
   const hasVideo = !!(item.redirectUrl || item.videoUrl);
+  const hasEnabledAddons = addons.some((a) => a.enabled);
+  const stremioType: "movie" | "series" =
+    item.type === "Filme" ? "movie" : "series";
+  const canUseAddons = !!item.imdbId && hasEnabledAddons;
 
   // Determine if a URL is a direct video file (playable via <video> tag)
   const isDirectVideo = (url: string) => {
-    return /\.(mp4|webm|ogg|mov|mkv|avi)(\?.*)?$/i.test(url) || url.includes('/storage/v1/object/');
+    return /\.(mp4|webm|ogg|mov|mkv|avi|m3u8)(\?.*)?$/i.test(url) || url.includes('/storage/v1/object/');
   };
 
   // Determine if a URL is an embeddable source (YouTube, Vimeo, etc.)
@@ -158,14 +167,15 @@ const TitleDetails = () => {
 
   // Full-screen video player
   if (watching) {
-    // Priority: redirectUrl (link to watch) > videoUrl (trailer)
-    const rawSrc = item.redirectUrl || item.videoUrl || '';
+    // Priority: externalSrc (picked from addons) > redirectUrl > videoUrl
+    const rawSrc = externalSrc || item.redirectUrl || item.videoUrl || '';
     const src = isEmbeddable(rawSrc) ? toEmbedUrl(rawSrc) : rawSrc;
 
     // If it's a non-embeddable external link, open in new tab
     if (src && !isDirectVideo(src) && !isEmbeddable(src)) {
       window.open(src, '_blank');
       setWatching(false);
+      setExternalSrc(null);
       return null;
     }
 
@@ -194,7 +204,7 @@ const TitleDetails = () => {
             <RotateCcw className="h-5 w-5" />
           </button>
           <button
-            onClick={() => { setWatching(false); setForceRotation(false); }}
+            onClick={() => { setWatching(false); setForceRotation(false); setExternalSrc(null); }}
             className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary/60 backdrop-blur-sm text-foreground hover:bg-secondary transition-colors"
           >
             <X className="h-5 w-5" />
@@ -306,16 +316,27 @@ const TitleDetails = () => {
 
             {/* Action buttons */}
             <div className="flex flex-wrap gap-3 mb-4">
-              {hasVideo && (
+              {(hasVideo || canUseAddons) && (
                 <Button
                   onClick={() => {
-                    setWatching(true);
+                    if (canUseAddons) setSourcesOpen(true);
+                    else setWatching(true);
                   }}
                   className="gap-2 rounded-full px-6 py-3 gradient-neon text-primary-foreground neon-glow"
                   size="lg"
                 >
                   <Play className="h-4 w-4 fill-current" />
                   Assistir Agora
+                </Button>
+              )}
+              {hasEnabledAddons && item.imdbId && hasVideo && (
+                <Button
+                  variant="outline"
+                  onClick={() => setSourcesOpen(true)}
+                  className="gap-2 rounded-full px-5"
+                  size="lg"
+                >
+                  Buscar fontes
                 </Button>
               )}
               {id && (
@@ -434,6 +455,24 @@ const TitleDetails = () => {
           </div>
         </motion.div>
       )}
+
+      <SourcesDialog
+        open={sourcesOpen}
+        onOpenChange={setSourcesOpen}
+        imdbId={item.imdbId}
+        type={stremioType}
+        title={item.title}
+        onPick={(s) => {
+          if (!s.url) return;
+          setSourcesOpen(false);
+          if (/^https?:\/\//i.test(s.url) && (isDirectVideo(s.url) || /youtube|vimeo/i.test(s.url))) {
+            setExternalSrc(s.url);
+            setWatching(true);
+          } else if (s.url) {
+            window.open(s.url, "_blank");
+          }
+        }}
+      />
     </div>
   );
 };
