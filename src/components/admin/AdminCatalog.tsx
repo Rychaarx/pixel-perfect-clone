@@ -19,6 +19,7 @@ import {
   generateUploadId,
 } from "@/lib/uploadDB";
 import MissingVideosPanel from "./MissingVideosPanel";
+import MissingImdbPanel from "./MissingImdbPanel";
 
 
 const emptyForm = {
