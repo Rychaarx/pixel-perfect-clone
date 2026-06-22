@@ -139,10 +139,14 @@ const TitleDetails = () => {
 
   const sc = statusConfig[item.status];
   const hasVideo = !!(item.redirectUrl || item.videoUrl);
+  const hasEnabledAddons = addons.some((a) => a.enabled);
+  const stremioType: "movie" | "series" =
+    item.type === "Filme" ? "movie" : "series";
+  const canUseAddons = !!item.imdbId && hasEnabledAddons;
 
   // Determine if a URL is a direct video file (playable via <video> tag)
   const isDirectVideo = (url: string) => {
-    return /\.(mp4|webm|ogg|mov|mkv|avi)(\?.*)?$/i.test(url) || url.includes('/storage/v1/object/');
+    return /\.(mp4|webm|ogg|mov|mkv|avi|m3u8)(\?.*)?$/i.test(url) || url.includes('/storage/v1/object/');
   };
 
   // Determine if a URL is an embeddable source (YouTube, Vimeo, etc.)
@@ -163,14 +167,15 @@ const TitleDetails = () => {
 
   // Full-screen video player
   if (watching) {
-    // Priority: redirectUrl (link to watch) > videoUrl (trailer)
-    const rawSrc = item.redirectUrl || item.videoUrl || '';
+    // Priority: externalSrc (picked from addons) > redirectUrl > videoUrl
+    const rawSrc = externalSrc || item.redirectUrl || item.videoUrl || '';
     const src = isEmbeddable(rawSrc) ? toEmbedUrl(rawSrc) : rawSrc;
 
     // If it's a non-embeddable external link, open in new tab
     if (src && !isDirectVideo(src) && !isEmbeddable(src)) {
       window.open(src, '_blank');
       setWatching(false);
+      setExternalSrc(null);
       return null;
     }
 
