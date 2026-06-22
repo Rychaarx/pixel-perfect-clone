@@ -455,6 +455,24 @@ const TitleDetails = () => {
           </div>
         </motion.div>
       )}
+
+      <SourcesDialog
+        open={sourcesOpen}
+        onOpenChange={setSourcesOpen}
+        imdbId={item.imdbId}
+        type={stremioType}
+        title={item.title}
+        onPick={(s) => {
+          if (!s.url) return;
+          setSourcesOpen(false);
+          if (/^https?:\/\//i.test(s.url) && (isDirectVideo(s.url) || /youtube|vimeo/i.test(s.url))) {
+            setExternalSrc(s.url);
+            setWatching(true);
+          } else if (s.url) {
+            window.open(s.url, "_blank");
+          }
+        }}
+      />
     </div>
   );
 };
