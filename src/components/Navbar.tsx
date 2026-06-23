@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Film, Calendar, Lightbulb, MessageSquare, LogIn, Menu, X, User, LogOut, Users, Shield, Puzzle } from "lucide-react";
+import { Film, Calendar, Lightbulb, MessageSquare, LogIn, Menu, X, User, LogOut, Users, Shield, Puzzle, Search } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRole } from "@/hooks/useRole";
@@ -7,6 +7,7 @@ import NotificationBell from "@/components/NotificationBell";
 
 const navItems = [
   { label: "Início", path: "/", icon: Film },
+  { label: "Buscar", path: "/buscar", icon: Search },
   { label: "Agenda", path: "/agenda", icon: Calendar },
   { label: "Addons", path: "/addons", icon: Puzzle },
   { label: "Sugestões", path: "/sugestoes", icon: Lightbulb },
