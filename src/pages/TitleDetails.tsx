@@ -317,10 +317,10 @@ const TitleDetails = () => {
 
             {/* Action buttons */}
             <div className="flex flex-wrap gap-3 mb-4">
-              {(hasVideo || canUseAddons) && (
+              {(hasVideo || preferAddons) && (
                 <Button
                   onClick={() => {
-                    if (canUseAddons) setSourcesOpen(true);
+                    if (preferAddons) setSourcesOpen(true);
                     else setWatching(true);
                   }}
                   className="gap-2 rounded-full px-6 py-3 gradient-neon text-primary-foreground neon-glow"
@@ -330,14 +330,14 @@ const TitleDetails = () => {
                   Assistir Agora
                 </Button>
               )}
-              {hasEnabledAddons && item.imdbId && hasVideo && (
+              {preferAddons && hasVideo && (
                 <Button
                   variant="outline"
-                  onClick={() => setSourcesOpen(true)}
+                  onClick={() => setWatching(true)}
                   className="gap-2 rounded-full px-5"
                   size="lg"
                 >
-                  Buscar fontes
+                  Versão manual
                 </Button>
               )}
               {id && (
