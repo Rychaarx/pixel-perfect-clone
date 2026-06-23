@@ -460,9 +460,11 @@ const TitleDetails = () => {
       <SourcesDialog
         open={sourcesOpen}
         onOpenChange={setSourcesOpen}
+        catalogId={item.id}
         imdbId={item.imdbId}
         type={stremioType}
         title={item.title}
+        year={item.year}
         onPick={(s) => {
           if (!s.url) return;
           setSourcesOpen(false);
