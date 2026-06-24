@@ -16,6 +16,7 @@ import BuscaPage from "./pages/BuscaPage";
 import ListaPage from "./pages/ListaPage";
 import NotFound from "./pages/NotFound";
 import Addons from "./pages/Addons";
+import AddonsCatalog from "./pages/AddonsCatalog";
 
 const queryClient = new QueryClient();
 
