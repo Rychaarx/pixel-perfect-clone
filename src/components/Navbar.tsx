@@ -10,7 +10,6 @@ const navItems = [
   { label: "Buscar", path: "/buscar", icon: Search },
   { label: "Agenda", path: "/agenda", icon: Calendar },
   { label: "Addons", path: "/addons", icon: Puzzle },
-  { label: "Catálogos", path: "/catalogos", icon: Puzzle },
   { label: "Sugestões", path: "/sugestoes", icon: Lightbulb },
   { label: "Problemas", path: "/feedback", icon: MessageSquare },
 ];
