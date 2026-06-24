@@ -13,6 +13,7 @@ import RecentlyWatchedSection from "@/components/RecentlyWatchedSection";
 import FavoritesSection from "@/components/FavoritesSection";
 import HeroSlider from "@/components/HeroSlider";
 import Navbar from "@/components/Navbar";
+import AddonCatalogsHome from "@/components/AddonCatalogsHome";
 
 
 const Index = () => {
