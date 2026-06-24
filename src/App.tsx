@@ -39,6 +39,7 @@ const App = () => (
             <Route path="/buscar" element={<BuscaPage />} />
             <Route path="/lista" element={<ListaPage />} />
             <Route path="/addons" element={<Addons />} />
+            <Route path="/catalogos" element={<AddonsCatalog />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
