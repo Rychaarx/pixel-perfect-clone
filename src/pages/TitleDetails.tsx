@@ -142,8 +142,8 @@ const TitleDetails = () => {
   const hasEnabledAddons = addons.some((a) => a.enabled);
   const stremioType: "movie" | "series" =
     item.type === "Filme" ? "movie" : "series";
-  // Prefer addons automatically whenever the user has any enabled — IMDB id is auto-resolved inside SourcesDialog
-  const preferAddons = hasEnabledAddons;
+  // Always prefer addons when there's an enabled addon OR a known IMDB id (auto-resolved in SourcesDialog otherwise)
+  const preferAddons = hasEnabledAddons || !!item.imdbId;
 
   // Determine if a URL is a direct video file (playable via <video> tag)
   const isDirectVideo = (url: string) => {
