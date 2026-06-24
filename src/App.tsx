@@ -16,6 +16,7 @@ import BuscaPage from "./pages/BuscaPage";
 import ListaPage from "./pages/ListaPage";
 import NotFound from "./pages/NotFound";
 import Addons from "./pages/Addons";
+import AddonsCatalog from "./pages/AddonsCatalog";
 
 const queryClient = new QueryClient();
 
@@ -38,6 +39,7 @@ const App = () => (
             <Route path="/buscar" element={<BuscaPage />} />
             <Route path="/lista" element={<ListaPage />} />
             <Route path="/addons" element={<Addons />} />
+            <Route path="/catalogos" element={<AddonsCatalog />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
