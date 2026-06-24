@@ -75,7 +75,9 @@ const Index = () => {
           ))}
         </div>
       )}
-
+      {/* Addon catalogs (Stremio) */}
+      <AddonCatalogsHome />
+      
       
     </div>
   );
