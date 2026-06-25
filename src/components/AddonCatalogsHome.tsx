@@ -47,7 +47,7 @@ const AddonCatalogsHome = () => {
   const [groups, setGroups] = useState<AddonCatalogs[]>([]);
   const [items, setItems] = useState<Record<string, CatalogItem[]>>({});
   const [loadingKey, setLoadingKey] = useState<Set<string>>(new Set());
-  const [picked, setPicked] = useState<CatalogItem | null>(null);
+  const [picked, setPicked] = useState<(CatalogItem & { addonId: string }) | null>(null);
   const [playing, setPlaying] = useState<{ src: string; title: string } | null>(null);
 
   const fetchList = useCallback(async () => {
@@ -135,7 +135,7 @@ const AddonCatalogsHome = () => {
                       {list.map((it) => (
                         <button
                           key={it.id}
-                          onClick={() => setPicked(it)}
+                          onClick={() => setPicked({ ...it, addonId: g.addonId })}
                           className="group w-32 flex-shrink-0 snap-start text-left"
                         >
                           <div className="relative w-32 h-48 rounded-lg overflow-hidden bg-secondary">
@@ -178,6 +178,7 @@ const AddonCatalogsHome = () => {
           type={picked.type === "movie" ? "movie" : "series"}
           title={picked.name}
           year={picked.releaseInfo ?? undefined}
+          sourceAddonId={picked.addonId}
           onPick={(s: StreamSource) => {
             const url = s.url;
             const title = picked.name;
