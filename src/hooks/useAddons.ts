@@ -111,9 +111,9 @@ export function useAddons() {
   );
 
   const fetchStreams = useCallback(
-    async (imdbId: string, type: "movie" | "series", season?: number, episode?: number) => {
+    async (imdbId: string, type: "movie" | "series", season?: number, episode?: number, sourceAddonId?: string) => {
       const { data, error } = await supabase.functions.invoke("stremio-streams", {
-        body: { imdbId, type, season, episode },
+        body: { imdbId, type, season, episode, sourceAddonId },
       });
       if (error) throw new Error(error.message);
       if ((data as any)?.error) throw new Error((data as any).error);
