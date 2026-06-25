@@ -1,9 +1,23 @@
 import { useEffect, useState, useCallback } from "react";
-import { Loader2, Puzzle, Play } from "lucide-react";
+import { Loader2, Puzzle, Play, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import SourcesDialog from "@/components/SourcesDialog";
 import { StreamSource } from "@/hooks/useAddons";
+import { toast } from "sonner";
+
+const isDirectVideo = (url: string) =>
+  /\.(mp4|webm|ogg|mov|mkv|avi|m3u8)(\?.*)?$/i.test(url) || url.includes("/storage/v1/object/");
+const isEmbeddable = (url: string) => /youtube\.com|youtu\.be|vimeo\.com|dailymotion\.com/i.test(url);
+const toEmbedUrl = (url: string) => {
+  const ytShort = url.match(/youtu\.be\/([A-Za-z0-9_-]{6,})/);
+  if (ytShort) return `https://www.youtube.com/embed/${ytShort[1]}`;
+  const ytWatch = url.match(/youtube\.com\/watch\?[^#]*v=([A-Za-z0-9_-]{6,})/);
+  if (ytWatch) return `https://www.youtube.com/embed/${ytWatch[1]}`;
+  const vimeo = url.match(/vimeo\.com\/(\d+)/);
+  if (vimeo) return `https://player.vimeo.com/video/${vimeo[1]}`;
+  return url;
+};
 
 interface CatalogDef {
   type: string;
