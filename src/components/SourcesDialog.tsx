@@ -16,10 +16,11 @@ interface Props {
   episode?: number;
   title?: string;
   year?: string;
+  sourceAddonId?: string;
   onPick: (source: StreamSource) => void;
 }
 
-const SourcesDialog = ({ open, onOpenChange, catalogId, imdbId, type, season, episode, title, year, onPick }: Props) => {
+const SourcesDialog = ({ open, onOpenChange, catalogId, imdbId, type, season, episode, title, year, sourceAddonId, onPick }: Props) => {
   const { addons, fetchStreams } = useAddons();
   const { search, getDetails } = useTmdbSearch();
   const { updateItem } = useCatalog();
