@@ -179,10 +179,43 @@ const AddonCatalogsHome = () => {
           title={picked.name}
           year={picked.releaseInfo ?? undefined}
           onPick={(s: StreamSource) => {
-            if (s.url) window.open(s.url, "_blank");
+            const url = s.url;
+            const title = picked.name;
             setPicked(null);
+            if (!url) {
+              toast.error("Fonte sem URL reproduzível (provavelmente torrent).");
+              return;
+            }
+            if (isDirectVideo(url) || isEmbeddable(url)) {
+              setPlaying({ src: isEmbeddable(url) ? toEmbedUrl(url) : url, title });
+            } else {
+              window.location.href = url;
+            }
           }}
         />
+      )}
+
+      {playing && (
+        <div className="fixed inset-0 z-[100] bg-black flex flex-col">
+          <button
+            onClick={() => setPlaying(null)}
+            className="absolute top-4 right-4 z-10 w-10 h-10 rounded-full bg-black/60 hover:bg-black/80 flex items-center justify-center text-white"
+            aria-label="Fechar"
+          >
+            <X className="w-5 h-5" />
+          </button>
+          {isEmbeddable(playing.src) ? (
+            <iframe
+              src={playing.src}
+              title={playing.title}
+              className="w-full h-full"
+              allow="autoplay; encrypted-media; fullscreen"
+              allowFullScreen
+            />
+          ) : (
+            <video src={playing.src} controls autoPlay className="w-full h-full object-contain" />
+          )}
+        </div>
       )}
     </div>
   );
