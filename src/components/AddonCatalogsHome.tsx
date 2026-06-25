@@ -135,7 +135,7 @@ const AddonCatalogsHome = () => {
                       {list.map((it) => (
                         <button
                           key={it.id}
-                          onClick={() => setPicked(it)}
+                          onClick={() => setPicked({ ...it, addonId: g.addonId })}
                           className="group w-32 flex-shrink-0 snap-start text-left"
                         >
                           <div className="relative w-32 h-48 rounded-lg overflow-hidden bg-secondary">
