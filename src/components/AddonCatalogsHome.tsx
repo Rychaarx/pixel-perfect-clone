@@ -174,7 +174,7 @@ const AddonCatalogsHome = () => {
         <SourcesDialog
           open={!!picked}
           onOpenChange={(o) => !o && setPicked(null)}
-          imdbId={picked.id.startsWith("tt") ? picked.id.split(":")[0] : undefined}
+          imdbId={picked.id}
           type={picked.type === "movie" ? "movie" : "series"}
           title={picked.name}
           year={picked.releaseInfo ?? undefined}
