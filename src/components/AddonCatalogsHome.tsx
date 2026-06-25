@@ -1,9 +1,23 @@
 import { useEffect, useState, useCallback } from "react";
-import { Loader2, Puzzle, Play } from "lucide-react";
+import { Loader2, Puzzle, Play, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import SourcesDialog from "@/components/SourcesDialog";
 import { StreamSource } from "@/hooks/useAddons";
+import { toast } from "sonner";
+
+const isDirectVideo = (url: string) =>
+  /\.(mp4|webm|ogg|mov|mkv|avi|m3u8)(\?.*)?$/i.test(url) || url.includes("/storage/v1/object/");
+const isEmbeddable = (url: string) => /youtube\.com|youtu\.be|vimeo\.com|dailymotion\.com/i.test(url);
+const toEmbedUrl = (url: string) => {
+  const ytShort = url.match(/youtu\.be\/([A-Za-z0-9_-]{6,})/);
+  if (ytShort) return `https://www.youtube.com/embed/${ytShort[1]}`;
+  const ytWatch = url.match(/youtube\.com\/watch\?[^#]*v=([A-Za-z0-9_-]{6,})/);
+  if (ytWatch) return `https://www.youtube.com/embed/${ytWatch[1]}`;
+  const vimeo = url.match(/vimeo\.com\/(\d+)/);
+  if (vimeo) return `https://player.vimeo.com/video/${vimeo[1]}`;
+  return url;
+};
 
 interface CatalogDef {
   type: string;
@@ -34,6 +48,7 @@ const AddonCatalogsHome = () => {
   const [items, setItems] = useState<Record<string, CatalogItem[]>>({});
   const [loadingKey, setLoadingKey] = useState<Set<string>>(new Set());
   const [picked, setPicked] = useState<CatalogItem | null>(null);
+  const [playing, setPlaying] = useState<{ src: string; title: string } | null>(null);
 
   const fetchList = useCallback(async () => {
     setLoading(true);
@@ -164,10 +179,43 @@ const AddonCatalogsHome = () => {
           title={picked.name}
           year={picked.releaseInfo ?? undefined}
           onPick={(s: StreamSource) => {
-            if (s.url) window.open(s.url, "_blank");
+            const url = s.url;
+            const title = picked.name;
             setPicked(null);
+            if (!url) {
+              toast.error("Fonte sem URL reproduzível (provavelmente torrent).");
+              return;
+            }
+            if (isDirectVideo(url) || isEmbeddable(url)) {
+              setPlaying({ src: isEmbeddable(url) ? toEmbedUrl(url) : url, title });
+            } else {
+              window.location.href = url;
+            }
           }}
         />
+      )}
+
+      {playing && (
+        <div className="fixed inset-0 z-[100] bg-black flex flex-col">
+          <button
+            onClick={() => setPlaying(null)}
+            className="absolute top-4 right-4 z-10 w-10 h-10 rounded-full bg-black/60 hover:bg-black/80 flex items-center justify-center text-white"
+            aria-label="Fechar"
+          >
+            <X className="w-5 h-5" />
+          </button>
+          {isEmbeddable(playing.src) ? (
+            <iframe
+              src={playing.src}
+              title={playing.title}
+              className="w-full h-full"
+              allow="autoplay; encrypted-media; fullscreen"
+              allowFullScreen
+            />
+          ) : (
+            <video src={playing.src} controls autoPlay className="w-full h-full object-contain" />
+          )}
+        </div>
       )}
     </div>
   );
