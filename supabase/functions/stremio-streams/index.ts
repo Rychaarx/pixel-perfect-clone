@@ -25,7 +25,7 @@ Deno.serve(async (req) => {
 
     const body = await req.json();
     const { imdbId, type, season, episode } = body ?? {};
-    if (!imdbId || !/^tt\d+$/.test(imdbId)) return json({ error: "imdbId inválido" }, 400);
+    if (!imdbId || typeof imdbId !== "string") return json({ error: "id inválido" }, 400);
     if (!type || !["movie", "series"].includes(type)) return json({ error: "type inválido" }, 400);
 
     const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
