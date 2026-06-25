@@ -178,6 +178,7 @@ const AddonCatalogsHome = () => {
           type={picked.type === "movie" ? "movie" : "series"}
           title={picked.name}
           year={picked.releaseInfo ?? undefined}
+          sourceAddonId={picked.addonId}
           onPick={(s: StreamSource) => {
             const url = s.url;
             const title = picked.name;
