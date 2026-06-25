@@ -48,6 +48,7 @@ const AddonCatalogsHome = () => {
   const [items, setItems] = useState<Record<string, CatalogItem[]>>({});
   const [loadingKey, setLoadingKey] = useState<Set<string>>(new Set());
   const [picked, setPicked] = useState<CatalogItem | null>(null);
+  const [playing, setPlaying] = useState<{ src: string; title: string } | null>(null);
 
   const fetchList = useCallback(async () => {
     setLoading(true);
