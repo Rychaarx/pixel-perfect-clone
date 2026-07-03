@@ -122,5 +122,17 @@ export function useAddons() {
     []
   );
 
-  return { addons, loading, addAddon, updateAddon, removeAddon, validateManifest, fetchStreams };
+  const fetchMeta = useCallback(
+    async (imdbId: string, type: "movie" | "series", sourceAddonId?: string) => {
+      const { data, error } = await supabase.functions.invoke("stremio-streams", {
+        body: { action: "meta", imdbId, type, sourceAddonId },
+      });
+      if (error) throw new Error(error.message);
+      if ((data as any)?.error) throw new Error((data as any).error);
+      return (data as { meta: null | { id: string; imdb_id: string | null; name: string | null; type: string; videos: Array<{ id: string | null; season: number | null; episode: number | null; title: string | null; released: string | null; overview: string | null }> } }).meta;
+    },
+    []
+  );
+
+  return { addons, loading, addAddon, updateAddon, removeAddon, validateManifest, fetchStreams, fetchMeta };
 }
