@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Loader2, Play, ExternalLink, Puzzle, AlertCircle } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Loader2, Play, ExternalLink, Puzzle, AlertCircle, ChevronLeft } from "lucide-react";
 import { useAddons, StreamSource } from "@/hooks/useAddons";
 import { useTmdbSearch } from "@/hooks/useTmdbSearch";
 import { useCatalog } from "@/hooks/useCatalog";
@@ -20,8 +20,17 @@ interface Props {
   onPick: (source: StreamSource) => void;
 }
 
+interface EpisodeVideo {
+  id: string | null;
+  season: number | null;
+  episode: number | null;
+  title: string | null;
+  released: string | null;
+  overview: string | null;
+}
+
 const SourcesDialog = ({ open, onOpenChange, catalogId, imdbId, type, season, episode, title, year, sourceAddonId, onPick }: Props) => {
-  const { addons, fetchStreams } = useAddons();
+  const { addons, fetchStreams, fetchMeta } = useAddons();
   const { search, getDetails } = useTmdbSearch();
   const { updateItem } = useCatalog();
   const [loading, setLoading] = useState(false);
@@ -29,7 +38,26 @@ const SourcesDialog = ({ open, onOpenChange, catalogId, imdbId, type, season, ep
   const [streams, setStreams] = useState<StreamSource[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [resolvedImdb, setResolvedImdb] = useState<string | null>(null);
+  const [videos, setVideos] = useState<EpisodeVideo[] | null>(null);
+  const [pickedSE, setPickedSE] = useState<{ season: number; episode: number } | null>(null);
+  const [seasonFilter, setSeasonFilter] = useState<number | null>(null);
 
+  const needsEpisode = type === "series" && (season == null || episode == null);
+  const effectiveSE = pickedSE ?? (season != null && episode != null ? { season, episode } : null);
+
+  // Reset state when dialog opens
+  useEffect(() => {
+    if (open) {
+      setStreams([]);
+      setError(null);
+      setVideos(null);
+      setPickedSE(null);
+      setSeasonFilter(null);
+      setResolvedImdb(null);
+    }
+  }, [open]);
+
+  // Resolve IMDB (or accept non-imdb ID) + fetch meta (for series when episode missing)
   useEffect(() => {
     if (!open) return;
     let cancelled = false;
@@ -37,11 +65,9 @@ const SourcesDialog = ({ open, onOpenChange, catalogId, imdbId, type, season, ep
     const run = async () => {
       setLoading(true);
       setError(null);
-      setStreams([]);
 
       let effectiveImdb = imdbId || resolvedImdb;
 
-      // Auto-resolve IMDB ID from TMDB if missing
       if (!effectiveImdb && title) {
         setResolving(true);
         try {
@@ -62,23 +88,56 @@ const SourcesDialog = ({ open, onOpenChange, catalogId, imdbId, type, season, ep
               }
             }
           }
-        } catch {
-          /* ignore — show no-imdb message below */
-        } finally {
-          if (!cancelled) setResolving(false);
-        }
+        } catch { /* ignore */ }
+        finally { if (!cancelled) setResolving(false); }
       }
 
       if (!effectiveImdb) {
         if (!cancelled) {
-          setError("Não foi possível identificar o IMDB ID deste título.");
+          setError("Não foi possível identificar o título.");
           setLoading(false);
         }
         return;
       }
 
+      // For series without S/E: fetch meta first to show episode picker
+      if (needsEpisode && !pickedSE && !videos) {
+        try {
+          const meta = await fetchMeta(effectiveImdb, type, sourceAddonId);
+          if (cancelled) return;
+          const vids = (meta?.videos ?? []).filter((v) => v.season != null && v.episode != null) as EpisodeVideo[];
+          if (vids.length > 0) {
+            setVideos(vids);
+            const firstSeason = Math.min(...vids.map((v) => v.season as number));
+            setSeasonFilter(firstSeason);
+            setLoading(false);
+            return;
+          }
+          // No videos in meta – fall through and try S1E1 as a last resort
+          setPickedSE({ season: 1, episode: 1 });
+          return;
+        } catch {
+          // fallback to S1E1
+          setPickedSE({ season: 1, episode: 1 });
+          return;
+        }
+      }
+
+      // If series with S/E, fetch streams
+      const se = effectiveSE;
+      if (type === "series" && !se) {
+        setLoading(false);
+        return;
+      }
+
       try {
-        const res = await fetchStreams(effectiveImdb, type, season, episode, sourceAddonId);
+        const res = await fetchStreams(
+          effectiveImdb,
+          type,
+          se?.season,
+          se?.episode,
+          sourceAddonId
+        );
         if (!cancelled) setStreams(res.streams);
       } catch (e: any) {
         if (!cancelled) setError(e?.message || "Falha ao buscar fontes");
@@ -92,7 +151,7 @@ const SourcesDialog = ({ open, onOpenChange, catalogId, imdbId, type, season, ep
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, imdbId, type, season, episode, title, year, catalogId]);
+  }, [open, imdbId, type, season, episode, title, year, catalogId, pickedSE]);
 
   const grouped = streams.reduce<Record<string, StreamSource[]>>((acc, s) => {
     (acc[s.addonName] ||= []).push(s);
@@ -101,14 +160,41 @@ const SourcesDialog = ({ open, onOpenChange, catalogId, imdbId, type, season, ep
 
   const enabledAddons = addons.filter((a) => a.enabled);
 
+  const seasons = useMemo(() => {
+    if (!videos) return [];
+    return Array.from(new Set(videos.map((v) => v.season as number))).sort((a, b) => a - b);
+  }, [videos]);
+
+  const filteredVideos = useMemo(() => {
+    if (!videos) return [];
+    return videos
+      .filter((v) => seasonFilter == null || v.season === seasonFilter)
+      .sort((a, b) => (a.episode ?? 0) - (b.episode ?? 0));
+  }, [videos, seasonFilter]);
+
+  const showEpisodePicker = needsEpisode && videos && !pickedSE;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
+            {pickedSE && needsEpisode && (
+              <button
+                onClick={() => { setPickedSE(null); setStreams([]); }}
+                className="text-muted-foreground hover:text-foreground"
+                aria-label="Voltar"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+            )}
             <Puzzle className="w-5 h-5 text-primary" />
-            Fontes {title ? `— ${title}` : ""}
+            <span className="truncate">
+              {title ?? "Fontes"}
+              {pickedSE && ` — T${pickedSE.season}E${pickedSE.episode}`}
+            </span>
           </DialogTitle>
+          <DialogDescription className="sr-only">Fontes disponíveis nos addons ativos</DialogDescription>
         </DialogHeader>
 
         {enabledAddons.length === 0 && (
@@ -121,26 +207,70 @@ const SourcesDialog = ({ open, onOpenChange, catalogId, imdbId, type, season, ep
         {enabledAddons.length > 0 && (loading || resolving) && (
           <div className="py-8 flex items-center justify-center gap-2 text-sm text-muted-foreground">
             <Loader2 className="w-5 h-5 animate-spin text-primary" />
-            {resolving
-              ? "Identificando título via TMDB…"
-              : `Consultando ${enabledAddons.length} addon${enabledAddons.length !== 1 ? "s" : ""}…`}
+            {resolving ? "Identificando título…" : (needsEpisode && !pickedSE ? "Carregando episódios…" : `Consultando ${enabledAddons.length} addon${enabledAddons.length !== 1 ? "s" : ""}…`)}
           </div>
         )}
 
-        {enabledAddons.length > 0 && !loading && !resolving && error && (
+        {enabledAddons.length > 0 && !loading && !resolving && showEpisodePicker && (
+          <div className="space-y-3">
+            <div className="flex gap-2 flex-wrap">
+              {seasons.map((s) => (
+                <button
+                  key={s}
+                  onClick={() => setSeasonFilter(s)}
+                  className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                    seasonFilter === s ? "bg-primary text-primary-foreground" : "bg-secondary/60 text-muted-foreground hover:bg-secondary"
+                  }`}
+                >
+                  Temporada {s}
+                </button>
+              ))}
+            </div>
+            <div className="space-y-1.5 max-h-[55vh] overflow-y-auto">
+              {filteredVideos.map((v) => (
+                <button
+                  key={`${v.season}-${v.episode}`}
+                  onClick={() => setPickedSE({ season: v.season as number, episode: v.episode as number })}
+                  className="w-full text-left p-3 rounded-lg bg-secondary/40 hover:bg-secondary/80 transition-colors flex items-start gap-3"
+                >
+                  <div className="text-xs font-mono text-primary flex-shrink-0 w-12">
+                    T{v.season}E{v.episode}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-sm font-medium text-foreground line-clamp-1">
+                      {v.title ?? `Episódio ${v.episode}`}
+                    </div>
+                    {v.released && (
+                      <div className="text-xs text-muted-foreground">
+                        {new Date(v.released).toLocaleDateString("pt-BR")}
+                      </div>
+                    )}
+                  </div>
+                </button>
+              ))}
+              {filteredVideos.length === 0 && (
+                <div className="text-xs text-muted-foreground py-4 text-center">
+                  Sem episódios nesta temporada.
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {enabledAddons.length > 0 && !loading && !resolving && !showEpisodePicker && error && (
           <div className="py-8 text-center text-sm text-destructive flex flex-col items-center gap-2">
             <AlertCircle className="w-6 h-6" />
             {error}
           </div>
         )}
 
-        {enabledAddons.length > 0 && !loading && !resolving && !error && streams.length === 0 && (
+        {enabledAddons.length > 0 && !loading && !resolving && !showEpisodePicker && !error && streams.length === 0 && (
           <div className="py-8 text-center text-sm text-muted-foreground">
             Nenhuma fonte encontrada nos addons ativos.
           </div>
         )}
 
-        {!loading && !resolving && streams.length > 0 && (
+        {!loading && !resolving && !showEpisodePicker && streams.length > 0 && (
           <div className="space-y-4">
             {Object.entries(grouped).map(([addonName, list]) => (
               <div key={addonName}>
