@@ -24,7 +24,7 @@ Deno.serve(async (req) => {
     if (!user) return json({ error: "Token inválido" }, 401);
 
     const body = await req.json();
-    const { imdbId, type, season, episode, sourceAddonId } = body ?? {};
+    const { action, imdbId, type, season, episode, sourceAddonId } = body ?? {};
     if (!imdbId || typeof imdbId !== "string") return json({ error: "id inválido" }, 400);
     if (!type || !["movie", "series"].includes(type)) return json({ error: "type inválido" }, 400);
 
@@ -35,6 +35,54 @@ Deno.serve(async (req) => {
       .eq("user_id", user.id)
       .eq("enabled", true)
       .order("sort_order", { ascending: true });
+
+    // Helper: fetch meta from source addon (or any addon w/ meta resource)
+    const fetchMeta = async (rawId: string) => {
+      const cands = [
+        ...(sourceAddonId ? (addons ?? []).filter((a: any) => a.id === sourceAddonId) : []),
+        ...(addons ?? []).filter((a: any) => Array.isArray(a.resources) && a.resources.includes("meta")),
+      ];
+      for (const a of cands) {
+        try {
+          const ctrl = new AbortController();
+          const t = setTimeout(() => ctrl.abort(), 7000);
+          const r = await fetch(`${a.transport_url}/meta/${type}/${encodeURIComponent(rawId)}.json`, {
+            signal: ctrl.signal, headers: { Accept: "application/json" },
+          });
+          clearTimeout(t);
+          if (!r.ok) continue;
+          const d = await r.json();
+          if (d?.meta) return d.meta;
+        } catch { /* next */ }
+      }
+      return null;
+    };
+
+    if (action === "meta") {
+      const meta = await fetchMeta(imdbId);
+      if (!meta) return json({ meta: null });
+      const videos = Array.isArray(meta.videos)
+        ? meta.videos
+            .filter((v: any) => v && (v.season != null || v.episode != null))
+            .map((v: any) => ({
+              id: v.id ?? null,
+              season: v.season ?? null,
+              episode: v.episode ?? null,
+              title: v.title ?? v.name ?? null,
+              released: v.released ?? null,
+              overview: v.overview ?? null,
+            }))
+        : [];
+      return json({
+        meta: {
+          id: meta.id ?? imdbId,
+          imdb_id: meta.imdb_id ?? meta.imdbId ?? null,
+          name: meta.name ?? null,
+          type: meta.type ?? type,
+          videos,
+        },
+      });
+    }
 
     if (!addons || addons.length === 0) return json({ streams: [], addons: 0 });
 
