@@ -89,29 +89,9 @@ Deno.serve(async (req) => {
     // Resolve to IMDB id when the incoming id isn't already tt-prefixed.
     let resolvedImdb = /^tt\d+/.test(imdbId) ? imdbId.split(":")[0] : null;
     if (!resolvedImdb) {
-      // Try the source addon first (it knows its own id), then fall back to any addon with `meta`.
-      const metaCandidates = [
-        ...(sourceAddonId ? addons.filter((a: any) => a.id === sourceAddonId) : []),
-        ...addons.filter((a: any) => Array.isArray(a.resources) && a.resources.includes("meta")),
-      ];
-      for (const a of metaCandidates) {
-        try {
-          const ctrl = new AbortController();
-          const t = setTimeout(() => ctrl.abort(), 6000);
-          const r = await fetch(`${a.transport_url}/meta/${type}/${encodeURIComponent(imdbId)}.json`, {
-            signal: ctrl.signal,
-            headers: { Accept: "application/json" },
-          });
-          clearTimeout(t);
-          if (!r.ok) continue;
-          const d = await r.json();
-          const imdb = d?.meta?.imdb_id || d?.meta?.imdbId;
-          if (imdb && /^tt\d+/.test(imdb)) {
-            resolvedImdb = imdb;
-            break;
-          }
-        } catch { /* try next */ }
-      }
+      const meta = await fetchMeta(imdbId);
+      const imdb = meta?.imdb_id || meta?.imdbId;
+      if (imdb && /^tt\d+/.test(imdb)) resolvedImdb = imdb;
     }
 
     const baseId = resolvedImdb ?? imdbId;
