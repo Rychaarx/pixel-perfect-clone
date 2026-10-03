@@ -113,7 +113,17 @@ const BuscaPage = () => {
     <div className="min-h-screen bg-background pb-20">
       <Navbar />
       <div className="pt-20 px-4 sm:px-6 max-w-7xl mx-auto">
-        <h1 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-6 neon-text">Buscar</h1>
+        <div className="flex items-center justify-between gap-3 mb-6">
+          <h1 className="font-display text-2xl md:text-3xl font-bold text-foreground neon-text">Buscar</h1>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => openManualDialog()}
+            className="shrink-0 border-primary/40 text-primary hover:bg-primary/10"
+          >
+            <Link2 className="w-4 h-4 mr-1.5" /> Fonte manual
+          </Button>
+        </div>
 
         <div className="flex flex-col sm:flex-row gap-3 mb-6">
           <div className="relative flex-1">
