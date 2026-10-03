@@ -26,6 +26,7 @@ interface ManualSource {
 const BuscaPage = () => {
   const { items, loading } = useCatalog();
   const { addons } = useAddons();
+  const { user } = useAuth();
   const { search, loading: tmdbLoading } = useTmdbSearch();
   const [query, setQuery] = useState("");
   const [filterType, setFilterType] = useState<string>("all");
@@ -33,8 +34,46 @@ const BuscaPage = () => {
   const [tmdbResults, setTmdbResults] = useState<TmdbSearchResult[]>([]);
   const [picked, setPicked] = useState<TmdbSearchResult | null>(null);
   const [externalSrc, setExternalSrc] = useState<string | null>(null);
+  const [manualSources, setManualSources] = useState<ManualSource[]>([]);
+  const [manualOpen, setManualOpen] = useState(false);
+  const [manualPrefill, setManualPrefill] = useState<{ title?: string; tmdbId?: string; mediaType?: string }>({});
 
   const hasEnabledAddons = addons.some((a) => a.enabled);
+
+  const loadManualSources = useCallback(async () => {
+    if (!user) {
+      setManualSources([]);
+      return;
+    }
+    const { data } = await supabase
+      .from("user_manual_sources")
+      .select("id, title, url, media_type, source_type, tmdb_id")
+      .order("created_at", { ascending: false });
+    setManualSources((data as ManualSource[]) ?? []);
+  }, [user]);
+
+  useEffect(() => {
+    loadManualSources();
+  }, [loadManualSources]);
+
+  const openManualDialog = (prefill?: { title?: string; tmdbId?: string; mediaType?: string }) => {
+    setManualPrefill(prefill ?? {});
+    setManualOpen(true);
+  };
+
+  const handleDeleteManual = async (id: string) => {
+    const { error } = await supabase.from("user_manual_sources").delete().eq("id", id);
+    if (error) {
+      toast.error("Não foi possível remover a fonte.");
+      return;
+    }
+    setManualSources((prev) => prev.filter((s) => s.id !== id));
+    toast.success("Fonte removida.");
+  };
+
+  const visibleManualSources = manualSources.filter(
+    (s) => !query.trim() || s.title.toLowerCase().includes(query.toLowerCase())
+  );
 
   // Debounced TMDB search whenever query changes (and addons are configured)
   useEffect(() => {
