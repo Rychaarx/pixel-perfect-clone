@@ -373,6 +373,39 @@ export type Database = {
         }
         Relationships: []
       }
+      user_manual_sources: {
+        Row: {
+          created_at: string
+          id: string
+          media_type: string
+          source_type: string
+          title: string
+          tmdb_id: string | null
+          url: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          media_type?: string
+          source_type?: string
+          title: string
+          tmdb_id?: string | null
+          url: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          media_type?: string
+          source_type?: string
+          title?: string
+          tmdb_id?: string | null
+          url?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_profiles: {
         Row: {
           avatar_url: string | null

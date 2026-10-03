@@ -1,17 +1,32 @@
-import { useState, useEffect } from "react";
-import { Search as SearchIcon, X, Play, Puzzle, Loader2 } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { Search as SearchIcon, X, Play, Puzzle, Loader2, Link2, Trash2 } from "lucide-react";
 import { useCatalog } from "@/hooks/useCatalog";
 import { useTmdbSearch, TmdbSearchResult } from "@/hooks/useTmdbSearch";
 import { useAddons, StreamSource } from "@/hooks/useAddons";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import MovieCard from "@/components/MovieCard";
 import Navbar from "@/components/Navbar";
 import SourcesDialog from "@/components/SourcesDialog";
+import ManualSourceDialog from "@/components/ManualSourceDialog";
 import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
+interface ManualSource {
+  id: string;
+  title: string;
+  url: string;
+  media_type: string;
+  source_type: string;
+  tmdb_id: string | null;
+}
 
 const BuscaPage = () => {
   const { items, loading } = useCatalog();
   const { addons } = useAddons();
+  const { user } = useAuth();
   const { search, loading: tmdbLoading } = useTmdbSearch();
   const [query, setQuery] = useState("");
   const [filterType, setFilterType] = useState<string>("all");
@@ -19,8 +34,46 @@ const BuscaPage = () => {
   const [tmdbResults, setTmdbResults] = useState<TmdbSearchResult[]>([]);
   const [picked, setPicked] = useState<TmdbSearchResult | null>(null);
   const [externalSrc, setExternalSrc] = useState<string | null>(null);
+  const [manualSources, setManualSources] = useState<ManualSource[]>([]);
+  const [manualOpen, setManualOpen] = useState(false);
+  const [manualPrefill, setManualPrefill] = useState<{ title?: string; tmdbId?: string; mediaType?: string }>({});
 
   const hasEnabledAddons = addons.some((a) => a.enabled);
+
+  const loadManualSources = useCallback(async () => {
+    if (!user) {
+      setManualSources([]);
+      return;
+    }
+    const { data } = await supabase
+      .from("user_manual_sources")
+      .select("id, title, url, media_type, source_type, tmdb_id")
+      .order("created_at", { ascending: false });
+    setManualSources((data as ManualSource[]) ?? []);
+  }, [user]);
+
+  useEffect(() => {
+    loadManualSources();
+  }, [loadManualSources]);
+
+  const openManualDialog = (prefill?: { title?: string; tmdbId?: string; mediaType?: string }) => {
+    setManualPrefill(prefill ?? {});
+    setManualOpen(true);
+  };
+
+  const handleDeleteManual = async (id: string) => {
+    const { error } = await supabase.from("user_manual_sources").delete().eq("id", id);
+    if (error) {
+      toast.error("Não foi possível remover a fonte.");
+      return;
+    }
+    setManualSources((prev) => prev.filter((s) => s.id !== id));
+    toast.success("Fonte removida.");
+  };
+
+  const visibleManualSources = manualSources.filter(
+    (s) => !query.trim() || s.title.toLowerCase().includes(query.toLowerCase())
+  );
 
   // Debounced TMDB search whenever query changes (and addons are configured)
   useEffect(() => {
@@ -60,7 +113,17 @@ const BuscaPage = () => {
     <div className="min-h-screen bg-background pb-20">
       <Navbar />
       <div className="pt-20 px-4 sm:px-6 max-w-7xl mx-auto">
-        <h1 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-6 neon-text">Buscar</h1>
+        <div className="flex items-center justify-between gap-3 mb-6">
+          <h1 className="font-display text-2xl md:text-3xl font-bold text-foreground neon-text">Buscar</h1>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => openManualDialog()}
+            className="shrink-0 border-primary/40 text-primary hover:bg-primary/10"
+          >
+            <Link2 className="w-4 h-4 mr-1.5" /> Fonte manual
+          </Button>
+        </div>
 
         <div className="flex flex-col sm:flex-row gap-3 mb-6">
           <div className="relative flex-1">
@@ -131,6 +194,49 @@ const BuscaPage = () => {
           </section>
         ) : null}
 
+        {/* Manual sources */}
+        {visibleManualSources.length > 0 && (
+          <section className="mb-10">
+            <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-2">
+              <Link2 className="w-4 h-4 text-primary" />
+              Suas fontes manuais ({visibleManualSources.length})
+            </h2>
+            <div className="space-y-2">
+              {visibleManualSources.map((s) => (
+                <div
+                  key={s.id}
+                  className="flex items-center gap-3 rounded-lg bg-secondary/40 border border-border/40 px-4 py-3"
+                >
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-foreground truncate">{s.title}</p>
+                    <p className="text-xs text-muted-foreground truncate">
+                      {s.media_type === "movie" ? "Filme" : s.media_type === "series" ? "Série" : "Anime"}
+                      {" • "}
+                      {s.source_type === "direct" ? "Vídeo direto" : s.source_type === "youtube" ? "YouTube" : "Embed"}
+                    </p>
+                  </div>
+                  <Button
+                    size="sm"
+                    onClick={() => window.open(s.url, "_blank")}
+                    className="shrink-0"
+                  >
+                    <Play className="w-3.5 h-3.5 mr-1 fill-current" /> Assistir
+                  </Button>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    onClick={() => handleDeleteManual(s.id)}
+                    className="shrink-0 text-muted-foreground hover:text-destructive"
+                    aria-label="Remover fonte"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
         {/* Addon / TMDB results */}
         {hasEnabledAddons ? (
           query.trim() && (
@@ -168,9 +274,26 @@ const BuscaPage = () => {
                       </div>
                       <div className="mt-2">
                         <p className="text-sm text-foreground line-clamp-1">{r.title}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {r.year} • {r.mediaType === "movie" ? "Filme" : r.isAnime ? "Anime" : "Série"}
-                        </p>
+                        <div className="flex items-center justify-between gap-1">
+                          <p className="text-xs text-muted-foreground">
+                            {r.year} • {r.mediaType === "movie" ? "Filme" : r.isAnime ? "Anime" : "Série"}
+                          </p>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openManualDialog({
+                                title: r.title,
+                                tmdbId: String(r.id),
+                                mediaType: r.mediaType === "movie" ? "movie" : r.isAnime ? "anime" : "series",
+                              });
+                            }}
+                            className="text-muted-foreground hover:text-primary transition-colors"
+                            aria-label={`Adicionar fonte manual para ${r.title}`}
+                            title="Adicionar fonte manual"
+                          >
+                            <Link2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
                       </div>
                     </button>
                   ))}
@@ -212,6 +335,15 @@ const BuscaPage = () => {
         title={picked?.title}
         year={picked?.year}
         onPick={handlePick}
+      />
+
+      <ManualSourceDialog
+        open={manualOpen}
+        onOpenChange={setManualOpen}
+        defaultTitle={manualPrefill.title}
+        defaultTmdbId={manualPrefill.tmdbId}
+        defaultMediaType={manualPrefill.mediaType}
+        onSaved={loadManualSources}
       />
     </div>
   );
