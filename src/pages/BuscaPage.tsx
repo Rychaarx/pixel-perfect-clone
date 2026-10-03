@@ -194,6 +194,49 @@ const BuscaPage = () => {
           </section>
         ) : null}
 
+        {/* Manual sources */}
+        {visibleManualSources.length > 0 && (
+          <section className="mb-10">
+            <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-2">
+              <Link2 className="w-4 h-4 text-primary" />
+              Suas fontes manuais ({visibleManualSources.length})
+            </h2>
+            <div className="space-y-2">
+              {visibleManualSources.map((s) => (
+                <div
+                  key={s.id}
+                  className="flex items-center gap-3 rounded-lg bg-secondary/40 border border-border/40 px-4 py-3"
+                >
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-foreground truncate">{s.title}</p>
+                    <p className="text-xs text-muted-foreground truncate">
+                      {s.media_type === "movie" ? "Filme" : s.media_type === "series" ? "Série" : "Anime"}
+                      {" • "}
+                      {s.source_type === "direct" ? "Vídeo direto" : s.source_type === "youtube" ? "YouTube" : "Embed"}
+                    </p>
+                  </div>
+                  <Button
+                    size="sm"
+                    onClick={() => window.open(s.url, "_blank")}
+                    className="shrink-0"
+                  >
+                    <Play className="w-3.5 h-3.5 mr-1 fill-current" /> Assistir
+                  </Button>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    onClick={() => handleDeleteManual(s.id)}
+                    className="shrink-0 text-muted-foreground hover:text-destructive"
+                    aria-label="Remover fonte"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
         {/* Addon / TMDB results */}
         {hasEnabledAddons ? (
           query.trim() && (
