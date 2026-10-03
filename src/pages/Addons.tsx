@@ -6,6 +6,7 @@ import { useAddons } from "@/hooks/useAddons";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import AddonDiagnose from "@/components/AddonDiagnose";
 
 const SUGGESTED = [
   { name: "Torrentio", url: "https://torrentio.strem.fun/manifest.json", note: "Torrent/Debrid — configure no site para Real-Debrid/AllDebrid" },
@@ -19,6 +20,7 @@ const Addons = () => {
   const navigate = useNavigate();
   const [url, setUrl] = useState("");
   const [adding, setAdding] = useState(false);
+  const [lastFail, setLastFail] = useState<{ url: string; error: string } | null>(null);
 
   if (!authLoading && !user) {
     navigate("/login?redirect=/addons", { replace: true });
@@ -37,6 +39,7 @@ const Addons = () => {
       setUrl("");
     } catch (e: any) {
       toast.error(e.message || "Falha ao adicionar addon");
+      setLastFail({ url: manifestUrl.trim(), error: e.message || "Falha ao adicionar addon" });
     } finally {
       setAdding(false);
     }
@@ -77,6 +80,8 @@ const Addons = () => {
             Addons de torrent precisam de um serviço de debrid configurado na própria URL do addon.
           </p>
         </div>
+
+        <AddonDiagnose initialUrl={lastFail?.url} initialError={lastFail?.error} />
 
         <h2 className="text-sm font-semibold text-muted-foreground mb-3 uppercase tracking-wider">Sugestões</h2>
         <div className="grid gap-2 mb-8">
