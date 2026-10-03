@@ -1,13 +1,27 @@
-import { useState, useEffect } from "react";
-import { Search as SearchIcon, X, Play, Puzzle, Loader2 } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { Search as SearchIcon, X, Play, Puzzle, Loader2, Link2, Trash2 } from "lucide-react";
 import { useCatalog } from "@/hooks/useCatalog";
 import { useTmdbSearch, TmdbSearchResult } from "@/hooks/useTmdbSearch";
 import { useAddons, StreamSource } from "@/hooks/useAddons";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import MovieCard from "@/components/MovieCard";
 import Navbar from "@/components/Navbar";
 import SourcesDialog from "@/components/SourcesDialog";
+import ManualSourceDialog from "@/components/ManualSourceDialog";
 import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
+interface ManualSource {
+  id: string;
+  title: string;
+  url: string;
+  media_type: string;
+  source_type: string;
+  tmdb_id: string | null;
+}
 
 const BuscaPage = () => {
   const { items, loading } = useCatalog();
