@@ -336,6 +336,15 @@ const BuscaPage = () => {
         year={picked?.year}
         onPick={handlePick}
       />
+
+      <ManualSourceDialog
+        open={manualOpen}
+        onOpenChange={setManualOpen}
+        defaultTitle={manualPrefill.title}
+        defaultTmdbId={manualPrefill.tmdbId}
+        defaultMediaType={manualPrefill.mediaType}
+        onSaved={loadManualSources}
+      />
     </div>
   );
 };
