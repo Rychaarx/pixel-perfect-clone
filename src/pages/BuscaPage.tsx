@@ -274,9 +274,26 @@ const BuscaPage = () => {
                       </div>
                       <div className="mt-2">
                         <p className="text-sm text-foreground line-clamp-1">{r.title}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {r.year} • {r.mediaType === "movie" ? "Filme" : r.isAnime ? "Anime" : "Série"}
-                        </p>
+                        <div className="flex items-center justify-between gap-1">
+                          <p className="text-xs text-muted-foreground">
+                            {r.year} • {r.mediaType === "movie" ? "Filme" : r.isAnime ? "Anime" : "Série"}
+                          </p>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openManualDialog({
+                                title: r.title,
+                                tmdbId: String(r.id),
+                                mediaType: r.mediaType === "movie" ? "movie" : r.isAnime ? "anime" : "series",
+                              });
+                            }}
+                            className="text-muted-foreground hover:text-primary transition-colors"
+                            aria-label={`Adicionar fonte manual para ${r.title}`}
+                            title="Adicionar fonte manual"
+                          >
+                            <Link2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
                       </div>
                     </button>
                   ))}
